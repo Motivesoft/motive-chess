@@ -113,7 +113,7 @@ std::vector<std::string> getUciCommands()
 
 bool processUciCommand( Engine& engine, std::vector<std::string> input )
 {
-    bool keepRunning = true;
+    bool quit = false;
 
     // Pop the command (first item) and leave the rest
     std::string command = input[ 0 ];
@@ -161,8 +161,8 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     }
     else if ( command == "quit" )
     {
-        keepRunning = false;
+        quit = engine.quit();
     }
 
-    return keepRunning;
+    return !quit;
 }

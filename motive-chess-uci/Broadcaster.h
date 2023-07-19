@@ -32,5 +32,11 @@ public:
     {
         stream << "readyok" << std::endl;
     }
+
+    void id( std::string name, std::string author )
+    {
+        stream << "id name " << name << std::endl;
+        stream << "id author " << name << std::endl;
+    }
 };
 

@@ -13,6 +13,7 @@ private:
 
     bool initialized;
 
+    volatile bool quitting;
     volatile bool debugging;
 
     void debug( std::string message )
@@ -23,10 +24,14 @@ private:
         }
     }
 
+    void stopImpl();
+    void isreadyImpl();
+
 public:
     Engine( Broadcaster& broadcaster ) : 
         broadcaster( broadcaster ), 
         initialized( false ),
+        quitting( false ),
         debugging( false )
     {
         broadcaster.info( "MotiveChess" );
@@ -42,5 +47,6 @@ public:
     void debug( std::vector<std::string>& arguments );
     void isready();
     void stop();
+    bool quit();
 };
 
