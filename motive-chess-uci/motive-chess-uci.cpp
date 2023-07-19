@@ -8,8 +8,17 @@
 #include <tuple>
 #include <vector>
 
+#define DEBUG
+
 int main( int argc, char** argv )
 {
+    std::cout << "MotiveChess" << std::endl;
+
+    // Initialize list of UCI commands
+    std::vector<std::string> uci;
+    uci.push_back( "uci" );
+    uci.push_back( "quit" );
+
     std::vector<std::string> input;
     std::string line;
     while( std::getline( std::cin, line ) )
@@ -29,8 +38,24 @@ int main( int argc, char** argv )
             }
         }
 
-        // 
+        // Prune unrecognized commands from start of input
+        while ( std::find( uci.begin(), uci.end(), *input.begin() ) == uci.end() )
+        {
+            input.erase( input.begin() );
+            if ( input.size() == 0 )
+            {
+                break;
+            }
+        }
+        
+        // If nothing left, loop around
+        if ( input.size() == 0 )
+        {
+            continue;
+        }
+
         // Dump the sanitized input
+#ifdef DEBUG
         bool first = true;
         std::cout << "Input: [";
         for ( std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++ )
@@ -47,6 +72,7 @@ int main( int argc, char** argv )
             std::cout << *it;
         }
         std::cout << "]" << std::endl;
+#endif
 
         if ( line == "quit" || 
              ( !input.empty() && input[ 0 ] == "quit" ) )
