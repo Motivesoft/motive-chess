@@ -17,7 +17,8 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
-    Engine engine;
+    Broadcaster broadcaster( std::cout );
+    Engine engine( broadcaster );
 
     // Initialize list of UCI commands
     std::vector<std::string> uci = getUciCommands();
@@ -42,12 +43,15 @@ int main( int argc, char** argv )
         }
 
         // Prune unrecognized commands from start of input
-        while ( std::find( uci.begin(), uci.end(), *input.begin() ) == uci.end() )
+        if ( input.size() )
         {
-            input.erase( input.begin() );
-            if ( input.size() == 0 )
+            while ( std::find( uci.begin(), uci.end(), *input.begin() ) == uci.end() )
             {
-                break;
+                input.erase( input.begin() );
+                if ( input.size() == 0 )
+                {
+                    break;
+                }
             }
         }
         
@@ -111,47 +115,51 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
 {
     bool keepRunning = true;
 
-    if ( input[ 0 ] == "uci" )
+    // Pop the command (first item) and leave the rest
+    std::string command = input[ 0 ];
+    input.erase( input.begin() );
+
+    if ( command == "uci" )
     {
-        engine.initialize();
+        engine.uci();
     }
-    else if ( input[ 0 ] == "debug" )
+    else if ( command == "debug" )
+    {
+        engine.debug( input );
+    }
+    else if ( command == "isready" )
+    {
+        engine.isready();
+    }
+    else if ( command == "setoption" )
     {
 
     }
-    else if ( input[ 0 ] == "isready" )
+    else if ( command == "register" )
     {
 
     }
-    else if ( input[ 0 ] == "setoption" )
+    else if ( command == "ucinewgame" )
     {
 
     }
-    else if ( input[ 0 ] == "register" )
+    else if ( command == "position" )
     {
 
     }
-    else if ( input[ 0 ] == "ucinewgame" )
+    else if ( command == "go" )
     {
 
     }
-    else if ( input[ 0 ] == "position" )
+    else if ( command == "stop" )
     {
 
     }
-    else if ( input[ 0 ] == "go" )
+    else if ( command == "ponderhit" )
     {
 
     }
-    else if ( input[ 0 ] == "stop" )
-    {
-
-    }
-    else if ( input[ 0 ] == "ponderhit" )
-    {
-
-    }
-    else if ( input[ 0 ] == "quit" )
+    else if ( command == "quit" )
     {
         keepRunning = false;
     }

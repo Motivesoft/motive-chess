@@ -139,10 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Broadcaster.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="motive-chess-uci.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Broadcaster.h" />
     <ClInclude Include="Engine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

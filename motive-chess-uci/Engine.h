@@ -2,21 +2,34 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+
+#include "Broadcaster.h"
 
 class Engine
 {
 private:
+    Broadcaster& broadcaster;
+
     bool initialized;
 
-    void broadcast( std::string output )
+    volatile bool debugging;
+
+    void debug( std::string message )
     {
-        std::cout << output << std::endl;
+        if ( debugging )
+        {
+            broadcaster.info( message );
+        }
     }
 
 public:
-    Engine()
+    Engine( Broadcaster& broadcaster ) : 
+        broadcaster( broadcaster ), 
+        initialized( false ),
+        debugging( false )
     {
-        broadcast( "info string MotiveChess" );
+        broadcaster.info( "MotiveChess" );
     }
 
     virtual ~Engine()
@@ -25,13 +38,9 @@ public:
         initialized = false;
     }
 
-    void initialize()
-    {
-        initialized = true;
-
-        broadcast( "uciok" );
-    }
-
+    void uci();
+    void debug( std::vector<std::string>& arguments );
+    void isready();
     void stop();
 };
 
