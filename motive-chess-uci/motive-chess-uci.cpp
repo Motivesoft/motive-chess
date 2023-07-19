@@ -8,14 +8,16 @@
 #include <tuple>
 #include <vector>
 
+#include "Engine.h"
+
 #define DEBUG
 
 std::vector<std::string> getUciCommands();
-bool processUciCommand( std::vector<std::string> input );
+bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
-    std::cout << "MotiveChess" << std::endl;
+    Engine engine;
 
     // Initialize list of UCI commands
     std::vector<std::string> uci = getUciCommands();
@@ -24,9 +26,9 @@ int main( int argc, char** argv )
     std::string line;
     while( std::getline( std::cin, line ) )
     {
-        // Tokenize the input into a list of strings
         input.clear();
 
+        // Tokenize the input into a list of strings
         std::replace( line.begin(), line.end(), '\n', ' ' );
         std::replace( line.begin(), line.end(), '\t', ' ' );
         std::stringstream stream( line );
@@ -55,8 +57,8 @@ int main( int argc, char** argv )
             continue;
         }
 
-        // Dump the sanitized input
 #ifdef DEBUG
+        // Dump the sanitized input
         bool first = true;
         std::cout << "Input: [";
         for ( std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++ )
@@ -76,7 +78,7 @@ int main( int argc, char** argv )
 #endif
 
         // Process command input until told to quit
-        if ( !processUciCommand( input ) )
+        if ( !processUciCommand( engine, input ) )
         {
             break;
         }
@@ -105,13 +107,13 @@ std::vector<std::string> getUciCommands()
     return uci;
 }
 
-bool processUciCommand( std::vector<std::string> input )
+bool processUciCommand( Engine& engine, std::vector<std::string> input )
 {
     bool keepRunning = true;
 
     if ( input[ 0 ] == "uci" )
     {
-
+        engine.initialize();
     }
     else if ( input[ 0 ] == "debug" )
     {
