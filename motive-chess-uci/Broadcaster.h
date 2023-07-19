@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "CopyProtection.h"
+
 class Broadcaster
 {
 private:
@@ -36,7 +38,35 @@ public:
     void id( std::string name, std::string author )
     {
         stream << "id name " << name << std::endl;
-        stream << "id author " << name << std::endl;
+        stream << "id author " << author << std::endl;
+    }
+
+    void bestmove( std::string bestmove )
+    {
+        stream << "bestmove " << bestmove << std::endl;
+    }
+
+    void bestmove( std::string bestmove, std::string ponder )
+    {
+        stream << "bestmove " << bestmove << " ponder " << ponder << std::endl;
+    }
+
+    void copyprotection( CopyProtection::Status status )
+    {
+        switch ( status )
+        {
+            case CopyProtection::CHECKING:
+                stream << "copyprotection checking" << std::endl;
+                break;
+            case CopyProtection::OK:
+                stream << "copyprotection ok" << std::endl;
+                break;
+            case CopyProtection::ERROR:
+                stream << "copyprotection error" << std::endl;
+                break;
+            default:
+                break;
+        }
     }
 };
 

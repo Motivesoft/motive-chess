@@ -12,7 +12,11 @@ void Engine::uci()
     // TODO do any actual initialization/reset here
 
     broadcaster.id( "MotiveChess", "Motivesoft");
-    // TODO broadcast options, ...
+    // TODO broadcast options,...
+
+    broadcaster.copyprotection( CopyProtection::Status::CHECKING );
+    // TODO implement copy protection check
+    broadcaster.copyprotection( CopyProtection::Status::OK );
 
     broadcaster.uciok();
 
