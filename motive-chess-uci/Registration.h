@@ -1,5 +1,5 @@
 #pragma once
-class CopyProtection
+class Registration
 {
 public:
     enum Status

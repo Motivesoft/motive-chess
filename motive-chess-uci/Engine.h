@@ -10,7 +10,6 @@ class Engine
 {
 private:
     Broadcaster& broadcaster;
-    CopyProtection copyProtection;
 
     bool initialized;
 

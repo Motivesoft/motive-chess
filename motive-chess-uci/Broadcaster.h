@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "CopyProtection.h"
+#include "Registration.h"
 
 class Broadcaster
 {
@@ -63,6 +64,24 @@ public:
                 break;
             case CopyProtection::ERROR:
                 stream << "copyprotection error" << std::endl;
+                break;
+            default:
+                break;
+        }
+    }
+
+    void registration( Registration::Status status )
+    {
+        switch ( status )
+        {
+            case Registration::CHECKING:
+                stream << "registration checking" << std::endl;
+                break;
+            case Registration::OK:
+                stream << "registration ok" << std::endl;
+                break;
+            case Registration::ERROR:
+                stream << "registration error" << std::endl;
                 break;
             default:
                 break;
