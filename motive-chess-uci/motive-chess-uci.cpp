@@ -10,14 +10,15 @@
 
 #define DEBUG
 
+std::vector<std::string> getUciCommands();
+bool processUciCommand( std::vector<std::string> input );
+
 int main( int argc, char** argv )
 {
     std::cout << "MotiveChess" << std::endl;
 
     // Initialize list of UCI commands
-    std::vector<std::string> uci;
-    uci.push_back( "uci" );
-    uci.push_back( "quit" );
+    std::vector<std::string> uci = getUciCommands();
 
     std::vector<std::string> input;
     std::string line;
@@ -74,12 +75,84 @@ int main( int argc, char** argv )
         std::cout << "]" << std::endl;
 #endif
 
-        if ( line == "quit" || 
-             ( !input.empty() && input[ 0 ] == "quit" ) )
+        // Process command input until told to quit
+        if ( !processUciCommand( input ) )
         {
             break;
         }
     }
 
     return 0;
+}
+
+std::vector<std::string> getUciCommands()
+{
+    std::vector<std::string> uci;
+
+    // From 2006 version of UCI spec from ShredderChess site
+    uci.push_back( "uci" );
+    uci.push_back( "debug" );
+    uci.push_back( "isready" );
+    uci.push_back( "setoption" );
+    uci.push_back( "register" );
+    uci.push_back( "ucinewgame" );
+    uci.push_back( "position" );
+    uci.push_back( "go" );
+    uci.push_back( "stop" );
+    uci.push_back( "ponderhit" );
+    uci.push_back( "quit" );
+
+    return uci;
+}
+
+bool processUciCommand( std::vector<std::string> input )
+{
+    bool keepRunning = true;
+
+    if ( input[ 0 ] == "uci" )
+    {
+
+    }
+    else if ( input[ 0 ] == "debug" )
+    {
+
+    }
+    else if ( input[ 0 ] == "isready" )
+    {
+
+    }
+    else if ( input[ 0 ] == "setoption" )
+    {
+
+    }
+    else if ( input[ 0 ] == "register" )
+    {
+
+    }
+    else if ( input[ 0 ] == "ucinewgame" )
+    {
+
+    }
+    else if ( input[ 0 ] == "position" )
+    {
+
+    }
+    else if ( input[ 0 ] == "go" )
+    {
+
+    }
+    else if ( input[ 0 ] == "stop" )
+    {
+
+    }
+    else if ( input[ 0 ] == "ponderhit" )
+    {
+
+    }
+    else if ( input[ 0 ] == "quit" )
+    {
+        keepRunning = false;
+    }
+
+    return keepRunning;
 }
