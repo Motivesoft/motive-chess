@@ -1,8 +1,9 @@
 #pragma once
+
 class Registration
 {
 public:
-    enum Status
+    enum class Status
     {
         CHECKING,
         OK,

@@ -8,31 +8,58 @@
 
 class Engine
 {
+public:
+    enum class DebugSwitch
+    {
+        OFF,
+        ON
+    };
+
 private:
     Broadcaster& broadcaster;
 
     bool initialized;
 
     volatile bool quitting;
-    volatile bool debugging;
+    volatile DebugSwitch debugging;
 
     void debug( std::string message )
     {
-        if ( debugging )
+        if ( debugging == DebugSwitch::ON )
         {
             broadcaster.info( message );
         }
     }
 
+    void debug( std::string message, std::string value )
+    {
+        if ( debugging == DebugSwitch::ON )
+        {
+            debug( message + " " + value );
+        }
+    }
+
+    void error( std::string message )
+    {
+        std::cerr << "Error: " << message << std::endl;
+    }
+
+    void error( std::string message, std::string value )
+    {
+        error( message + " " + value );
+    }
+
+    // Implementation methods that do not broadcast notifications 
     void stopImpl();
     void isreadyImpl();
+    void debugImpl( DebugSwitch flag );
 
 public:
     Engine( Broadcaster& broadcaster ) : 
         broadcaster( broadcaster ), 
         initialized( false ),
         quitting( false ),
-        debugging( false )
+        debugging( DebugSwitch::OFF )
     {
         broadcaster.info( "MotiveChess" );
     }
@@ -46,6 +73,8 @@ public:
     void uci();
     void debug( std::vector<std::string>& arguments );
     void isready();
+    void setoption( std::vector<std::string>& arguments );
+    void registerX( std::vector<std::string>& arguments ); // Can't call a method 'register'
     void stop();
     bool quit();
 };

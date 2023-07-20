@@ -4,11 +4,6 @@ void Engine::uci()
 {
     debug( "Received uci" );
 
-    // Not expecting a 'uci' event after having quit, but the protocol doesn't give us a way to decline
-    quitting = false;
-
-    initialized = true;
-
     // TODO do any actual initialization/reset here
 
     // TODO Pull this from resources and maybe add major version
@@ -16,37 +11,41 @@ void Engine::uci()
     
     // TODO broadcast options,...
 
+    // Send OK
+    initialized = true;
+    broadcaster.uciok();
+
     // TODO implement copy protection check
     broadcaster.copyprotection( CopyProtection::Status::CHECKING );
     broadcaster.copyprotection( CopyProtection::Status::OK );
 
-    // TODO implement copy protection check
+    // TODO implement registration check
     broadcaster.registration( Registration::Status::CHECKING );
     broadcaster.registration( Registration::Status::OK );
-
-    broadcaster.uciok();
-
-    // TODO Shredder does registration here
 }
 
 void Engine::debug( std::vector<std::string>& arguments )
 {
     debug( "Received debug" );
 
-    // Unchanged if no args or unrecognised first arg
     if ( arguments.size() > 0 )
     {
-        std::string argument = arguments[ 0 ];
-        if ( argument == "on" )
+        if ( arguments[ 0 ] == "on" )
         {
-            debugging = true;
-            debug( "debug on" );
+            debugImpl( Engine::DebugSwitch::ON );
         }
-        else if ( argument == "off" )
+        else if ( arguments[ 0 ] == "off" )
         {
-            debugging = false;
-            debug( "debug off" );
+            debugImpl( Engine::DebugSwitch::OFF );
         }
+        else
+        {
+            error( "Unknown debug argument", arguments[ 0 ] );
+        }
+    }
+    else
+    {
+        error( "Missing debug argument" );
     }
 }
 
@@ -85,6 +84,9 @@ bool Engine::quit()
     return true;
 }
 
+// Silent implementations - do the work, but do not directly communicate over uci, allowing the 
+// methods to be called from elsewhere
+
 void Engine::stopImpl()
 {
 
@@ -93,4 +95,11 @@ void Engine::stopImpl()
 void Engine::isreadyImpl()
 {
 
+}
+
+void Engine::debugImpl( Engine::DebugSwitch flag )
+{
+    debug( "Setting debug to " + std::string( flag == DebugSwitch::ON ? "on" : "off" ) );
+
+    debugging = flag;
 }

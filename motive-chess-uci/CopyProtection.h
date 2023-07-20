@@ -1,8 +1,9 @@
 #pragma once
+
 class CopyProtection
 {
 public:
-    enum Status
+    enum class Status
     {
         CHECKING,
         OK,

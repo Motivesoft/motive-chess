@@ -56,13 +56,13 @@ public:
     {
         switch ( status )
         {
-            case CopyProtection::CHECKING:
+            case CopyProtection::Status::CHECKING:
                 stream << "copyprotection checking" << std::endl;
                 break;
-            case CopyProtection::OK:
+            case CopyProtection::Status::OK:
                 stream << "copyprotection ok" << std::endl;
                 break;
-            case CopyProtection::ERROR:
+            case CopyProtection::Status::ERROR:
                 stream << "copyprotection error" << std::endl;
                 break;
             default:
@@ -74,13 +74,13 @@ public:
     {
         switch ( status )
         {
-            case Registration::CHECKING:
+            case Registration::Status::CHECKING:
                 stream << "registration checking" << std::endl;
                 break;
-            case Registration::OK:
+            case Registration::Status::OK:
                 stream << "registration ok" << std::endl;
                 break;
-            case Registration::ERROR:
+            case Registration::Status::ERROR:
                 stream << "registration error" << std::endl;
                 break;
             default:
