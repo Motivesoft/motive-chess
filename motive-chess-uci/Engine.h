@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "Broadcaster.h"
+#include "CopyProtection.h"
+#include "Registration.h"
 
 class Engine
 {
@@ -17,6 +19,9 @@ public:
 
 private:
     Broadcaster& broadcaster;
+
+    CopyProtection copyProtection;
+    Registration registration;
 
     bool initialized;
 
@@ -53,6 +58,8 @@ private:
     void stopImpl();
     void isreadyImpl();
     void debugImpl( DebugSwitch flag );
+    void registerImpl();
+    void registerImpl( std::string& name, std::string& code );
 
 public:
     Engine( Broadcaster& broadcaster ) : 

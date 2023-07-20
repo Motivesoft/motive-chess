@@ -137,7 +137,7 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     }
     else if ( command == "register" )
     {
-
+        engine.registerX( input );
     }
     else if ( command == "ucinewgame" )
     {

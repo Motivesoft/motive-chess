@@ -59,6 +59,71 @@ void Engine::isready()
     broadcaster.readyok();
 }
 
+void Engine::setoption( std::vector<std::string>& arguments )
+{
+    debug( "Received setoption" );
+}
+
+void Engine::registerX( std::vector<std::string>& arguments )
+{
+    debug( "Received register" );
+
+    // "later", or some combo of "name x" and "code y" where x and y might contain spaces
+    std::string name;
+    std::string code;
+    bool later = false;
+    bool isName = false;
+    bool isCode = false;
+
+    // Expect either (name and/or code), or (later), assuming that's what the UCI spec intends
+    for ( std::vector<std::string>::iterator it = arguments.begin(); it != arguments.end(); it++ )
+    {
+        if ( *it == "name" )
+        {
+            name.clear();
+            isName = true;
+            isCode = false;
+        }
+        else if ( *it == "code" )
+        {
+            code.clear();
+            isCode = true;
+            isName = false;
+        }
+        else if ( isName )
+        {
+            if ( name.length() > 0 )
+            {
+                name += " ";
+            }
+
+            name += *it;
+        }
+        else if ( isCode )
+        {
+            if ( code.length() > 0 )
+            {
+                code += " ";
+            }
+
+            code += *it;
+        }
+        else if ( *it == "later" )
+        {
+            later = true;
+            break;
+        }
+        else
+        {
+            error( "Unexpected register argument", *it );
+        }
+    }
+
+    debug( "Register " + std::string( later ? "later" : "now" ) );
+    debug( "Register name " + name );
+    debug( "Register code " + code );
+}
+
 void Engine::stop()
 {
     debug( "Received stop" );
@@ -102,4 +167,26 @@ void Engine::debugImpl( Engine::DebugSwitch flag )
     debug( "Setting debug to " + std::string( flag == DebugSwitch::ON ? "on" : "off" ) );
 
     debugging = flag;
+}
+
+void Engine::registerImpl()
+{
+    debug( "Register later" );
+
+    broadcaster.registration( Registration::Status::CHECKING );
+
+    bool registered = registration.registerLater();
+
+    broadcaster.registration( registered ? Registration::Status::OK : Registration::Status::ERROR );
+}
+
+void Engine::registerImpl( std::string& name, std::string& code )
+{
+    debug( "Register with name [" + name + "] and code [" + code + "]" );
+
+    broadcaster.registration( Registration::Status::CHECKING );
+
+    bool registered = registration.registerNameCode( name, code );
+    
+    broadcaster.registration( registered ? Registration::Status::OK : Registration::Status::ERROR );
 }
