@@ -33,6 +33,9 @@
     <ClCompile Include="Option.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Fen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -48,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Option.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

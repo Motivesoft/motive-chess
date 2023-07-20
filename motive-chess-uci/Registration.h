@@ -16,6 +16,12 @@ public:
         ERROR
     };
 
+    Registration() :
+        registered( false )
+    {
+
+    }
+
     bool registerLater()
     {
         registered = false;

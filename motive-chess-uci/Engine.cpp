@@ -204,7 +204,61 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
         ucinewgameExpected = false;
     }
 
-    // TODO implement
+    std::string fen;
+    std::vector<std::string> moves;
+    for ( std::vector<std::string>::iterator it = arguments.begin(); it != arguments.end(); )
+    {
+        if ( *it == "startpos" )
+        {
+            fen = Fen::startingPosition;
+            it++;
+        }
+        else if ( *it == "fen" )
+        {
+            // New FEN string, so clear moves as a safety measure
+            moves.clear();
+
+            std::stringstream stream;
+
+            it++;
+            for ( ; it != arguments.end(); it++ )
+            {
+                if ( *it == "moves" )
+                {
+                    break;
+                }
+
+                if ( !stream.str().empty() )
+                {
+                    stream << " ";
+                }
+
+                stream << *it;
+            }
+
+            fen = stream.str();
+        }
+        else if ( *it == "moves" )
+        {
+            // Reset collection as a safety measure
+            moves.clear();
+
+            it++;
+            for ( ; it != arguments.end(); it++ )
+            {
+                moves.push_back( *it );
+            }
+        }
+    }
+
+    if ( !fen.empty() )
+    {
+        // TODO implement
+    }
+    else
+    {
+        error( "Illegal position command" );
+    }
 }
 
 void Engine::goCommand( std::vector<std::string>& arguments )

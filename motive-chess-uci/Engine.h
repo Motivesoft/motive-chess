@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Broadcaster.h"
+#include "Fen.h"
 #include "CopyProtection.h"
 #include "Registration.h"
 
