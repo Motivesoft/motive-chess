@@ -8,12 +8,15 @@
 #include <vector>
 
 #include "Engine.h"
+#include "Logger.h"
 
 std::vector<std::string> getUciCommands();
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
+    Logger::trace( "Hello" );
+
     Broadcaster broadcaster( std::cout );
     Engine engine( broadcaster );
 
