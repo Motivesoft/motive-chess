@@ -119,9 +119,14 @@ void Engine::registerX( std::vector<std::string>& arguments )
         }
     }
 
-    debug( "Register " + std::string( later ? "later" : "now" ) );
-    debug( "Register name " + name );
-    debug( "Register code " + code );
+    if ( later )
+    {
+        registerImpl();
+    }
+    else if ( isName || isCode )
+    {
+        registerImpl( name, code );
+    }
 }
 
 void Engine::stop()
