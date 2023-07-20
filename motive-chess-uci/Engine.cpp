@@ -179,17 +179,45 @@ void Engine::registerX( std::vector<std::string>& arguments )
     }
 }
 
+void Engine::ucinewgame()
+{
+    debug( "Received ucinewgame" );
+
+    // TODO implement
+}
+
+void Engine::position( std::vector<std::string>& arguments )
+{
+    debug( "Received position" );
+
+    // TODO implement
+}
+
+void Engine::go( std::vector<std::string>& arguments )
+{
+    debug( "Received go" );
+
+    // TODO implement
+}
+
 void Engine::stop()
 {
     debug( "Received stop" );
 
     stopImpl();
 
-    // TODO do something now we've stopped
+    // TODO do something now we've stopped - bestmove and possibly ponder
     if ( !quitting )
     {
 
     }
+}
+
+void Engine::ponderhit()
+{
+    debug( "Received ponderhit" );
+
+    // TODO implement
 }
 
 bool Engine::quit()

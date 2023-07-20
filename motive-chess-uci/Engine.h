@@ -83,7 +83,11 @@ public:
     void isready();
     void setoption( std::vector<std::string>& arguments );
     void registerX( std::vector<std::string>& arguments ); // Can't call a method 'register'
+    void ucinewgame();
+    void position( std::vector<std::string>& arguments );
+    void go( std::vector<std::string>& arguments );
     void stop();
+    void ponderhit();
     bool quit();
 };
 

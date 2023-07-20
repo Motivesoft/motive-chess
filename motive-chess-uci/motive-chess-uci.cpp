@@ -141,23 +141,23 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     }
     else if ( command == "ucinewgame" )
     {
-
+        engine.ucinewgame();
     }
     else if ( command == "position" )
     {
-
+        engine.position( input );
     }
     else if ( command == "go" )
     {
-
+        engine.go( input );
     }
     else if ( command == "stop" )
     {
-
+        engine.stop();
     }
     else if ( command == "ponderhit" )
     {
-
+        engine.ponderhit();
     }
     else if ( command == "quit" )
     {
