@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <tuple>
+#include <vector>
 
 #include "CopyProtection.h"
 #include "Option.h"
@@ -22,11 +24,6 @@ public:
     virtual ~Broadcaster()
     {
         // Do nothing
-    }
-
-    void info( std::string message )
-    {
-        stream << "info string " << message << std::endl;
     }
 
     void uciok()
@@ -91,9 +88,25 @@ public:
         }
     }
 
-    void info()
+    void info( std::vector<std::pair<std::string,std::string>> values )
     {
+        std::stringstream details;
+        bool first = true;
+        for ( std::pair<std::string, std::string> value : values )
+        {
+            if ( first )
+            {
+                first = false;
+            }
+            else
+            {
+                details << " ";
+            }
 
+            details << value.first << " " << value.second;
+        }
+
+        stream << "info " << details.str() << std::endl;
     }
 
     void option( std::string& name, Option::Type type, std::string def, std::string min, std::string max, std::string vars[] )
@@ -132,6 +145,20 @@ public:
         }
 
         stream << "option name " << name << " type " << details.str() << std::endl;
+    }
+
+    // Helper functions
+
+    void info( std::string message )
+    {
+        info( std::pair<std::string, std::string>( "string", message ) );
+    }
+
+    void info( std::pair<std::string, std::string> value )
+    {
+        std::vector< std::pair<std::string, std::string>> values;
+        values.push_back( value );
+        info( values );
     }
 };
 
