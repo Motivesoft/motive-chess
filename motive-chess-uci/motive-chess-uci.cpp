@@ -26,6 +26,8 @@ int main( int argc, char** argv )
     {
         input.clear();
 
+        std::cerr << "Raw input: [" << line << "]" << std::endl;
+
         // Tokenize the input into a list of strings
         std::replace( line.begin(), line.end(), '\n', ' ' );
         std::replace( line.begin(), line.end(), '\t', ' ' );
@@ -57,6 +59,24 @@ int main( int argc, char** argv )
         {
             continue;
         }
+
+        // Dump the sanitized input
+        bool first = true;
+        std::cerr << "Input: [";
+        for ( std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++ )
+        {
+            if ( first )
+            {
+                first = false;
+            }
+            else
+            {
+                std::cerr << " ";
+            }
+
+            std::cerr << *it;
+        }
+        std::cerr << "]" << std::endl;
 
         // Process command input until told to quit
         if ( !processUciCommand( engine, input ) )
