@@ -143,12 +143,14 @@
     <ClCompile Include="CopyProtection.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="motive-chess-uci.cpp" />
+    <ClCompile Include="Option.cpp" />
     <ClCompile Include="Registration.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Broadcaster.h" />
     <ClInclude Include="CopyProtection.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="Option.h" />
     <ClInclude Include="Registration.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

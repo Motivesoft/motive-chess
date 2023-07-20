@@ -1,8 +1,11 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "CopyProtection.h"
+#include "Option.h"
 #include "Registration.h"
 
 class Broadcaster
@@ -86,6 +89,49 @@ public:
             default:
                 break;
         }
+    }
+
+    void info()
+    {
+
+    }
+
+    void option( std::string& name, Option::Type type, std::string def, std::string min, std::string max, std::string vars[] )
+    {
+        std::stringstream details;
+
+        switch ( type )
+        {
+            case Option::Type::CHECK:
+                details << "check default " << def;
+                break;
+
+            case Option::Type::SPIN:
+                details << "spin default " << def << " min " << min << " max " << max;
+                break;
+
+            case Option::Type::COMBO:
+                details << "combo default " << def;
+                for ( int loop = 0; loop < sizeof( vars ); loop++ )
+                {
+                    details << " var " << vars[ loop ];
+                }
+                break;
+
+            case Option::Type::BUTTON:
+                details << "button";
+                break;
+
+            case Option::Type::STRING:
+                details << "string default " << def;
+                break;
+
+            default:
+                // TODO what's the best thing here?
+                break;
+        }
+
+        stream << "option name " << name << " type " << details.str() << std::endl;
     }
 };
 
