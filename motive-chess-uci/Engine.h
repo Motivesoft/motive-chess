@@ -60,6 +60,7 @@ private:
     void debugImpl( DebugSwitch flag );
     void registerImpl();
     void registerImpl( std::string& name, std::string& code );
+    void setoptionImpl( std::string& name, std::string& value );
 
 public:
     Engine( Broadcaster& broadcaster ) : 

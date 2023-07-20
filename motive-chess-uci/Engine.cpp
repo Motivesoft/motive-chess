@@ -62,6 +62,56 @@ void Engine::isready()
 void Engine::setoption( std::vector<std::string>& arguments )
 {
     debug( "Received setoption" );
+
+    // "name x" and, optionally, "value y" where x and y might contain spaces
+    std::string name;
+    std::string value;
+    bool isName = false;
+    bool isValue = false;
+
+    // Expect either (name and/or code), or (later), assuming that's what the UCI spec intends
+    for ( std::vector<std::string>::iterator it = arguments.begin(); it != arguments.end(); it++ )
+    {
+        if ( *it == "name" )
+        {
+            name.clear();
+            isName = true;
+            isValue = false;
+        }
+        else if ( *it == "value" )
+        {
+            value.clear();
+            isValue = true;
+            isName = false;
+        }
+        else if ( isName )
+        {
+            if ( name.length() > 0 )
+            {
+                name += " ";
+            }
+
+            name += *it;
+        }
+        else if ( isValue )
+        {
+            if ( value.length() > 0 )
+            {
+                value += " ";
+            }
+
+            value += *it;
+        }
+        else
+        {
+            error( "Unexpected setoption argument", *it );
+        }
+    }
+
+    if ( isName || isValue )
+    {
+        setoptionImpl( name, value );
+    }
 }
 
 void Engine::registerX( std::vector<std::string>& arguments )
@@ -194,4 +244,11 @@ void Engine::registerImpl( std::string& name, std::string& code )
     bool registered = registration.registerNameCode( name, code );
     
     broadcaster.registration( registered ? Registration::Status::OK : Registration::Status::ERROR );
+}
+
+void Engine::setoptionImpl( std::string& name, std::string& value )
+{
+    debug( "SetOption with name [" + name + "] and value [" + value + "]" );
+
+    // TODO store the value
 }
