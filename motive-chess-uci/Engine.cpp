@@ -183,12 +183,26 @@ void Engine::ucinewgameCommand()
 {
     debug( "Received ucinewgame" );
 
-    // TODO implement
+    if ( ucinewgameExpected )
+    {
+        ucinewgameReceived = true;
+
+        // TODO implement
+    }
+    else
+    {
+        error( "ucinewgame received out of sequence. Ignoring" );
+    }
 }
 
 void Engine::positionCommand( std::vector<std::string>& arguments )
 {
     debug( "Received position" );
+
+    if ( !ucinewgameReceived )
+    {
+        ucinewgameExpected = false;
+    }
 
     // TODO implement
 }

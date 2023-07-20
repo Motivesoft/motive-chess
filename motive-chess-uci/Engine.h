@@ -25,6 +25,9 @@ private:
 
     bool initialized;
 
+    bool ucinewgameExpected;
+    bool ucinewgameReceived;
+
     volatile bool quitting;
     volatile DebugSwitch debugging;
 
@@ -67,7 +70,9 @@ public:
         broadcaster( broadcaster ), 
         initialized( false ),
         quitting( false ),
-        debugging( DebugSwitch::OFF )
+        debugging( DebugSwitch::OFF ),
+        ucinewgameExpected( true ),
+        ucinewgameReceived( false )
     {
         broadcaster.info( "MotiveChess" );
     }
