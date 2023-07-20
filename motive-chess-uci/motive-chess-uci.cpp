@@ -5,12 +5,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "Engine.h"
-
-#define DEBUG
 
 std::vector<std::string> getUciCommands();
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
@@ -61,26 +58,6 @@ int main( int argc, char** argv )
             continue;
         }
 
-#ifdef DEBUG
-        // Dump the sanitized input
-        bool first = true;
-        std::cout << "Input: [";
-        for ( std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++ )
-        {
-            if ( first )
-            {
-                first = false;
-            }
-            else
-            {
-                std::cout << " ";
-            }
-
-            std::cout << *it;
-        }
-        std::cout << "]" << std::endl;
-#endif
-
         // Process command input until told to quit
         if ( !processUciCommand( engine, input ) )
         {
@@ -121,47 +98,47 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
 
     if ( command == "uci" )
     {
-        engine.uci();
+        engine.uciCommand();
     }
     else if ( command == "debug" )
     {
-        engine.debug( input );
+        engine.debugCommand( input );
     }
     else if ( command == "isready" )
     {
-        engine.isready();
+        engine.isreadyCommand();
     }
     else if ( command == "setoption" )
     {
-
+        engine.setoptionCommand( input );
     }
     else if ( command == "register" )
     {
-        engine.registerX( input );
+        engine.registerCommand( input );
     }
     else if ( command == "ucinewgame" )
     {
-        engine.ucinewgame();
+        engine.ucinewgameCommand();
     }
     else if ( command == "position" )
     {
-        engine.position( input );
+        engine.positionCommand( input );
     }
     else if ( command == "go" )
     {
-        engine.go( input );
+        engine.goCommand( input );
     }
     else if ( command == "stop" )
     {
-        engine.stop();
+        engine.stopCommand();
     }
     else if ( command == "ponderhit" )
     {
-        engine.ponderhit();
+        engine.ponderhitCommand();
     }
     else if ( command == "quit" )
     {
-        quit = engine.quit();
+        quit = engine.quitCommand();
     }
 
     return !quit;

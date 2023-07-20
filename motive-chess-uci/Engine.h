@@ -74,20 +74,20 @@ public:
 
     virtual ~Engine()
     {
-        stop();
+        stopCommand();
         initialized = false;
     }
 
-    void uci();
-    void debug( std::vector<std::string>& arguments );
-    void isready();
-    void setoption( std::vector<std::string>& arguments );
-    void registerX( std::vector<std::string>& arguments ); // Can't call a method 'register'
-    void ucinewgame();
-    void position( std::vector<std::string>& arguments );
-    void go( std::vector<std::string>& arguments );
-    void stop();
-    void ponderhit();
-    bool quit();
+    void uciCommand();
+    void debugCommand( std::vector<std::string>& arguments );
+    void isreadyCommand();
+    void setoptionCommand( std::vector<std::string>& arguments );
+    void registerCommand( std::vector<std::string>& arguments );
+    void ucinewgameCommand();
+    void positionCommand( std::vector<std::string>& arguments );
+    void goCommand( std::vector<std::string>& arguments );
+    void stopCommand();
+    void ponderhitCommand();
+    bool quitCommand();
 };
 

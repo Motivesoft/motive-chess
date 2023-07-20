@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-void Engine::uci()
+void Engine::uciCommand()
 {
     debug( "Received uci" );
 
@@ -24,7 +24,7 @@ void Engine::uci()
     broadcaster.registration( Registration::Status::OK );
 }
 
-void Engine::debug( std::vector<std::string>& arguments )
+void Engine::debugCommand( std::vector<std::string>& arguments )
 {
     debug( "Received debug" );
 
@@ -49,7 +49,7 @@ void Engine::debug( std::vector<std::string>& arguments )
     }
 }
 
-void Engine::isready()
+void Engine::isreadyCommand()
 {
     debug( "Received isready" );
 
@@ -59,7 +59,7 @@ void Engine::isready()
     broadcaster.readyok();
 }
 
-void Engine::setoption( std::vector<std::string>& arguments )
+void Engine::setoptionCommand( std::vector<std::string>& arguments )
 {
     debug( "Received setoption" );
 
@@ -114,7 +114,7 @@ void Engine::setoption( std::vector<std::string>& arguments )
     }
 }
 
-void Engine::registerX( std::vector<std::string>& arguments )
+void Engine::registerCommand( std::vector<std::string>& arguments )
 {
     debug( "Received register" );
 
@@ -179,28 +179,28 @@ void Engine::registerX( std::vector<std::string>& arguments )
     }
 }
 
-void Engine::ucinewgame()
+void Engine::ucinewgameCommand()
 {
     debug( "Received ucinewgame" );
 
     // TODO implement
 }
 
-void Engine::position( std::vector<std::string>& arguments )
+void Engine::positionCommand( std::vector<std::string>& arguments )
 {
     debug( "Received position" );
 
     // TODO implement
 }
 
-void Engine::go( std::vector<std::string>& arguments )
+void Engine::goCommand( std::vector<std::string>& arguments )
 {
     debug( "Received go" );
 
     // TODO implement
 }
 
-void Engine::stop()
+void Engine::stopCommand()
 {
     debug( "Received stop" );
 
@@ -213,14 +213,14 @@ void Engine::stop()
     }
 }
 
-void Engine::ponderhit()
+void Engine::ponderhitCommand()
 {
     debug( "Received ponderhit" );
 
     // TODO implement
 }
 
-bool Engine::quit()
+bool Engine::quitCommand()
 {
     debug( "Received quit" );
 
