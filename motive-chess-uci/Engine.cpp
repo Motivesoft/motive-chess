@@ -253,7 +253,7 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
 
     if ( !fen.empty() )
     {
-        // TODO implement
+        positionImpl( fen, moves );
     }
     else
     {
@@ -266,6 +266,170 @@ void Engine::goCommand( std::vector<std::string>& arguments )
     debug( "Received go" );
 
     // TODO implement
+    std::vector<std::string> searchMoves;
+    bool ponder = false;
+    int wtime = 0;
+    int btime = 0;
+    int winc = 0;
+    int binc = 0;
+    int movestogo = 0;
+    int depth = 0;
+    int nodes = 0;
+    int mate = 0;
+    int movetime = 0;
+    bool infinite = false;
+
+    bool parseError = false;
+
+    for ( std::vector<std::string>::iterator it = arguments.begin(); it != arguments.end(); )
+    {
+        if ( *it == "searchmoves" )
+        {
+            std::vector<std::string> directives = getGoDirectives();
+
+            for ( ; it != arguments.end(); it++ )
+            {
+                if ( std::find( directives.begin(), directives.end(), *it ) != directives.end() )
+                {
+                    break;
+                }
+
+                searchMoves.push_back( *it );
+            }
+        }
+        else if ( *it == "ponder" )
+        {
+            ponder = true;
+        }
+        else if ( *it == "wtime" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                wtime = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "btime" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                btime = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "winc" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                winc = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "binc" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                binc = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "movestogo" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                movestogo = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "depth" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                depth = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "nodes" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                nodes = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "mate" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                mate = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "movetime" )
+        {
+            it++;
+            if ( it != arguments.end() )
+            {
+                movetime = stoi( *it );
+            }
+            else
+            {
+                parseError = true;
+            }
+        }
+        else if ( *it == "infinite" )
+        {
+            infinite = true;
+        }
+
+        if ( parseError )
+        {
+            break;
+        }
+
+        it++;
+    }
+
+    if ( !parseError )
+    {
+        goImpl( searchMoves, ponder, wtime, btime, winc, binc, movestogo, depth, nodes, mate, movetime, infinite );
+    }
+    else
+    {
+        error( "Error parsing go command" );
+    }
 }
 
 void Engine::stopCommand()
@@ -347,4 +511,16 @@ void Engine::setoptionImpl( std::string& name, std::string& value )
     debug( "SetOption with name [" + name + "] and value [" + value + "]" );
 
     // TODO store the value
+}
+
+void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
+{
+    debug( "Position with FEN [" + fen + "] and " + std::to_string( moves.size() ) + " moves" );
+
+    // TODO implement
+}
+
+void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite )
+{
+    // TODO implement
 }
