@@ -33,6 +33,7 @@ public:
 
 private:
     inline static Logger::Level selectedLevel = Logger::Level::INFO;
+    inline static std::ostream* defaultStream = &std::cerr;
 
     Logger::Level level;
 
@@ -93,8 +94,19 @@ public:
         Logger::selectedLevel = level;
     }
 
+    static void configure( std::ostream* stream )
+    {
+        Logger::defaultStream = stream;
+    }
+
+    static void configure( std::ostream* stream, Logger::Level level )
+    {
+        Logger::defaultStream = stream;
+        Logger::selectedLevel = level;
+    }
+
     Logger( Logger::Level level ) :
-        stream( std::cerr ),
+        stream( *defaultStream ),
         level( level )
     {
         // Nothing to do
