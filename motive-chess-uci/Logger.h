@@ -10,6 +10,8 @@
 #include <time.h>
 
 // Helper macros
+#define LOG_LEVEL( level ) Logger::configure( level )
+
 #define LOG_TRACE Logger( Logger::Level::TRACE ).log()
 #define LOG_DEBUG Logger( Logger::Level::DEBUG ).log()
 #define LOG_INFO Logger( Logger::Level::INFO ).log()
@@ -107,15 +109,6 @@ public:
         }
     }
 
-    std::ostringstream& log( const std::source_location location = std::source_location::current() )
-    {
-        // only generate and insert the extra context if we're going to use it
-        if ( level >= selectedLevel )
-        {
-            os << getTimestamp() << " " << getLevelName() << " " << std::setw( 20 ) << location.function_name() << " (" << location.line() << ") ";
-        }
-
-        return os;
-    }
+    std::ostringstream& log( const std::source_location location = std::source_location::current() );
 };
 

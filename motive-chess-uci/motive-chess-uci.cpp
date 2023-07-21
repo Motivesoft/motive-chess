@@ -11,16 +11,13 @@
 #include "Logger.h"
 
 std::vector<std::string> getUciCommands();
+void logSanitizedInput( std::vector<std::string> input );
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
-    LOG_TRACE << "Hello world";
-    LOG_DEBUG << "Hello world";
-    LOG_INFO << "Hello world";
-    LOG_WARN << "Hello world";
-    LOG_ERROR << "Hello world";
-    //Logger::trace( "Hello" );
+    LOG_LEVEL( Logger::Level::TRACE );
+    LOG_INFO << "Starting";
 
     Broadcaster broadcaster( std::cout );
     Engine engine( broadcaster );
@@ -34,7 +31,7 @@ int main( int argc, char** argv )
     {
         input.clear();
 
-        std::cerr << "Raw input: [" << line << "]" << std::endl;
+        LOG_DEBUG << "Raw input: [" << line << "]";
 
         // Tokenize the input into a list of strings
         std::replace( line.begin(), line.end(), '\n', ' ' );
@@ -69,22 +66,7 @@ int main( int argc, char** argv )
         }
 
         // Dump the sanitized input
-        bool first = true;
-        std::cerr << "Input: [";
-        for ( std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++ )
-        {
-            if ( first )
-            {
-                first = false;
-            }
-            else
-            {
-                std::cerr << " ";
-            }
-
-            std::cerr << *it;
-        }
-        std::cerr << "]" << std::endl;
+        logSanitizedInput( input );
 
         // Process command input until told to quit
         if ( !processUciCommand( engine, input ) )
@@ -94,6 +76,26 @@ int main( int argc, char** argv )
     }
 
     return 0;
+}
+
+void logSanitizedInput( std::vector<std::string> input )
+{
+    std::ostringstream sanitized;
+    bool first = true;
+    for ( std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++ )
+    {
+        if ( first )
+        {
+            first = false;
+        }
+        else
+        {
+            sanitized << " ";
+        }
+
+        sanitized << *it;
+    }
+    LOG_TRACE << "Cleaned input: [" << sanitized.str() << "]";
 }
 
 std::vector<std::string> getUciCommands()
@@ -123,6 +125,8 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     // Pop the command (first item) and leave the rest
     std::string command = input[ 0 ];
     input.erase( input.begin() );
+
+    LOG_DEBUG << "Processing " << command;
 
     if ( command == "uci" )
     {
@@ -168,6 +172,8 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     {
         quit = engine.quitCommand();
     }
+
+    LOG_DEBUG << "Quit state is " << quit;
 
     return !quit;
 }
