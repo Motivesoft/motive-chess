@@ -68,6 +68,8 @@ private:
         Logger::Level level;
     };
 
+    static void thinking( Engine* engine );
+
     // Implementation methods that do not broadcast notifications 
     void stopImpl();
     void isreadyImpl();

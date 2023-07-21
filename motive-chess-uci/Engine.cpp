@@ -1,3 +1,6 @@
+#include <chrono>
+#include <thread>
+
 #include "Engine.h"
 
 #define UCI_DEBUG Engine::UciLogger( *this, Logger::Level::DEBUG ).log( "" )
@@ -530,4 +533,21 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
     LOG_INFO << "Go";
 
     // TODO implement
+    std::thread thinking( &Engine::thinking, this );
+    thinking.detach();
+
+    LOG_DEBUG << "Thread detached";
+}
+
+void Engine::thinking( Engine* engine )
+{
+    int loop = 1;
+    while ( !engine->quitting )
+    {
+        LOG_DEBUG << "Thinking (" << loop << ")";
+        std::this_thread::sleep_for( std::chrono::milliseconds( 2000 ) );
+
+        if ( loop++ == 10 )
+            break;
+    }
 }
