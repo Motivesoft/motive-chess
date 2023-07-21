@@ -5,8 +5,9 @@
 #include <vector>
 
 #include "Broadcaster.h"
-#include "Fen.h"
 #include "CopyProtection.h"
+#include "Fen.h"
+#include "Logger.h"
 #include "Registration.h"
 
 class Engine
@@ -34,6 +35,8 @@ private:
 
     void debug( std::string message )
     {
+        LOG_DEBUG << message;
+
         if ( debugging == DebugSwitch::ON )
         {
             broadcaster.info( message );
@@ -42,15 +45,14 @@ private:
 
     void debug( std::string message, std::string value )
     {
-        if ( debugging == DebugSwitch::ON )
-        {
-            debug( message + " " + value );
-        }
+        debug( message + " " + value );
     }
 
     void error( std::string message )
     {
-        std::cerr << "Error: " << message << std::endl;
+        LOG_ERROR << message;
+
+        broadcaster.info( message );
     }
 
     void error( std::string message, std::string value )

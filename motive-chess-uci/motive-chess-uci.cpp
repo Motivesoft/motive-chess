@@ -81,6 +81,7 @@ int main( int argc, char** argv )
 void logSanitizedInput( std::vector<std::string> input )
 {
     std::ostringstream sanitized;
+
     bool first = true;
     for ( std::vector<std::string>::iterator it = input.begin(); it != input.end(); it++ )
     {
@@ -95,6 +96,7 @@ void logSanitizedInput( std::vector<std::string> input )
 
         sanitized << *it;
     }
+
     LOG_TRACE << "Cleaned input: [" << sanitized.str() << "]";
 }
 
