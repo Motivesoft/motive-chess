@@ -15,7 +15,11 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
+    LOG_TRACE << "Hello world";
     LOG_DEBUG << "Hello world";
+    LOG_INFO << "Hello world";
+    LOG_WARN << "Hello world";
+    LOG_ERROR << "Hello world";
     //Logger::trace( "Hello" );
 
     Broadcaster broadcaster( std::cout );

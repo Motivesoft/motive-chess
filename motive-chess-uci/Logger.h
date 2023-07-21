@@ -10,25 +10,33 @@
 #include <time.h>
 
 // Helper macros
-#define LOG_DEBUG Logger().debug()
+#define LOG_TRACE Logger( Logger::Level::TRACE ).log()
+#define LOG_DEBUG Logger( Logger::Level::DEBUG ).log()
+#define LOG_INFO Logger( Logger::Level::INFO ).log()
+#define LOG_WARN Logger( Logger::Level::WARN ).log()
+#define LOG_ERROR Logger( Logger::Level::ERROR ).log()
 
 class Logger
 {
-private:
-    std::ostringstream os;
-
-    bool enabled;
-
-private:
-    std::ostringstream& log( const std::source_location location, std::string level )
+public:
+    enum class Level
     {
-        // only generate and insert the extra context if we're going to use it
-        if ( enabled )
-        {
-            os << getTimestamp() << " " << level << " ";
-        }
-        return os;
-    }
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR,
+        NONE
+    };
+
+private:
+    inline static Logger::Level selectedLevel = Logger::Level::INFO;
+
+    Logger::Level level;
+
+    std::ostream& stream;
+
+    std::ostringstream os;
 
     std::string getTimestamp()
     {
@@ -36,7 +44,6 @@ private:
 
         std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
         auto ms = duration_cast<std::chrono::milliseconds>( now.time_since_epoch() ) % 1000;
-
 
         // convert to std::time_t in order to convert to std::tm (broken time)
         time_t timer = std::chrono::system_clock::to_time_t( now );
@@ -53,43 +60,62 @@ private:
         return timestamp.str();
     }
 
+    const char* getLevelName()
+    {
+        switch ( level )
+        {
+            case Logger::Level::TRACE:
+                return "TRACE";
+
+            case Logger::Level::DEBUG:
+                return "DEBUG";
+
+            case Logger::Level::INFO:
+                return "INFO ";
+
+            case Logger::Level::WARN:
+                return "WARN ";
+
+            case Logger::Level::ERROR:
+                return "ERROR";
+
+            default:
+            case Logger::Level::NONE:
+                return "     ";
+        };
+    }
+
 public:
-    Logger() : enabled( true )
+    static void configure( Logger::Level level )
+    {
+        Logger::selectedLevel = level;
+    }
+
+    Logger( Logger::Level level ) :
+        stream( std::cerr ),
+        level( level )
     {
         // Nothing to do
     }
 
     virtual ~Logger()
     {
-        if ( enabled )
+        if ( level >= selectedLevel )
         {
             os << std::endl;
-            std::cerr << os.str() << std::flush;
+            stream << os.str() << std::flush;
         }
     }
 
-    std::ostringstream& debug( const std::source_location location = std::source_location::current() )
+    std::ostringstream& log( const std::source_location location = std::source_location::current() )
     {
-        return log( location, "DEBUG" );
-    }
-
-
-
-
-/*
-private:
-    inline static bool enabled = true;
-
-    inline static std::ostream& stream = std::cerr;
-
-public:
-    static void trace( std::string message, const std::source_location location = std::source_location::current() )
-    {
-        if ( enabled )
+        // only generate and insert the extra context if we're going to use it
+        if ( level >= selectedLevel )
         {
-            stream << location.file_name() << " " << location.function_name() << " " << location.line() << " " << message << std::endl << std::flush;
+            os << getTimestamp() << " " << getLevelName() << " " << std::setw( 20 ) << location.function_name() << " (" << location.line() << ") ";
         }
+
+        return os;
     }
-    */
 };
 
