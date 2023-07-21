@@ -1,8 +1,13 @@
 #include "Engine.h"
 
+#define UCI_DEBUG Engine::UciLogger( *this, Logger::Level::DEBUG ).log( "" )
+#define UCI_INFO  Engine::UciLogger( *this, Logger::Level::INFO ).log( "" )
+#define UCI_WARN  Engine::UciLogger( *this, Logger::Level::WARN ).log( "Warning - " )
+#define UCI_ERROR Engine::UciLogger( *this, Logger::Level::ERROR ).log( "Error - " )
+
 void Engine::uciCommand()
 {
-    debug( "Received uci" );
+    UCI_DEBUG << "Starting engine";
 
     // TODO do any actual initialization/reset here
 
@@ -26,7 +31,7 @@ void Engine::uciCommand()
 
 void Engine::debugCommand( std::vector<std::string>& arguments )
 {
-    debug( "Received debug" );
+    UCI_DEBUG << "Received debug";
 
     if ( arguments.size() > 0 )
     {
@@ -40,18 +45,18 @@ void Engine::debugCommand( std::vector<std::string>& arguments )
         }
         else
         {
-            error( "Unknown debug argument", arguments[ 0 ] );
+            UCI_ERROR << "Unknown debug argument: " << arguments[ 0 ];
         }
     }
     else
     {
-        error( "Missing debug argument" );
+        UCI_ERROR << "Missing debug argument";
     }
 }
 
 void Engine::isreadyCommand()
 {
-    debug( "Received isready" );
+    UCI_DEBUG << "Received isready";
 
     // TODO make sure we are actually ready, once there is something running here
     isreadyImpl();
@@ -61,7 +66,7 @@ void Engine::isreadyCommand()
 
 void Engine::setoptionCommand( std::vector<std::string>& arguments )
 {
-    debug( "Received setoption" );
+    UCI_DEBUG << "Received setoption";
 
     // "name x" and, optionally, "value y" where x and y might contain spaces
     std::string name;
@@ -104,7 +109,7 @@ void Engine::setoptionCommand( std::vector<std::string>& arguments )
         }
         else
         {
-            error( "Unexpected setoption argument", *it );
+            UCI_ERROR << "Unexpected setoption argument: " << *it;
         }
     }
 
@@ -116,7 +121,7 @@ void Engine::setoptionCommand( std::vector<std::string>& arguments )
 
 void Engine::registerCommand( std::vector<std::string>& arguments )
 {
-    debug( "Received register" );
+    UCI_DEBUG << "Received register";
 
     // "later", or some combo of "name x" and "code y" where x and y might contain spaces
     std::string name;
@@ -165,7 +170,7 @@ void Engine::registerCommand( std::vector<std::string>& arguments )
         }
         else
         {
-            error( "Unexpected register argument", *it );
+            UCI_ERROR << "Unexpected register argument: " << *it;
         }
     }
 
@@ -181,7 +186,7 @@ void Engine::registerCommand( std::vector<std::string>& arguments )
 
 void Engine::ucinewgameCommand()
 {
-    debug( "Received ucinewgame" );
+    UCI_DEBUG << "Received ucinewgame";
 
     if ( ucinewgameExpected )
     {
@@ -191,13 +196,13 @@ void Engine::ucinewgameCommand()
     }
     else
     {
-        error( "ucinewgame received out of sequence. Ignoring" );
+        UCI_WARN << "Command ucinewgame received out of sequence. Ignoring";
     }
 }
 
 void Engine::positionCommand( std::vector<std::string>& arguments )
 {
-    debug( "Received position" );
+    UCI_DEBUG << "Received position";
 
     if ( !ucinewgameReceived )
     {
@@ -257,13 +262,13 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
     }
     else
     {
-        error( "Illegal position command" );
+        UCI_ERROR << "Illegal position command";
     }
 }
 
 void Engine::goCommand( std::vector<std::string>& arguments )
 {
-    debug( "Received go" );
+    UCI_DEBUG << "Received go";
 
     // TODO implement
     std::vector<std::string> searchMoves;
@@ -428,13 +433,13 @@ void Engine::goCommand( std::vector<std::string>& arguments )
     }
     else
     {
-        error( "Error parsing go command" );
+        UCI_ERROR << "Parsing issue with go command";
     }
 }
 
 void Engine::stopCommand()
 {
-    debug( "Received stop" );
+    UCI_DEBUG << "Received stop";
 
     stopImpl();
 
@@ -447,14 +452,14 @@ void Engine::stopCommand()
 
 void Engine::ponderhitCommand()
 {
-    debug( "Received ponderhit" );
+    UCI_DEBUG << "Received ponderhit";
 
     // TODO implement
 }
 
 bool Engine::quitCommand()
 {
-    debug( "Received quit" );
+    UCI_DEBUG << "Received quit";
 
     quitting = true;
 
@@ -479,14 +484,14 @@ void Engine::isreadyImpl()
 
 void Engine::debugImpl( Engine::DebugSwitch flag )
 {
-    debug( "Setting debug to " + std::string( flag == DebugSwitch::ON ? "on" : "off" ) );
+    LOG_INFO << "Setting debug to [" << (flag == DebugSwitch::ON ? "on" : "off") << "]";
 
     debugging = flag;
 }
 
 void Engine::registerImpl()
 {
-    debug( "Register later" );
+    LOG_INFO << "Register later";
 
     broadcaster.registration( Registration::Status::CHECKING );
 
@@ -497,7 +502,7 @@ void Engine::registerImpl()
 
 void Engine::registerImpl( std::string& name, std::string& code )
 {
-    debug( "Register with name [" + name + "] and code [" + code + "]" );
+    LOG_INFO << "Register with name [" << name << "] and code [" << code << "]";
 
     broadcaster.registration( Registration::Status::CHECKING );
 
@@ -508,19 +513,21 @@ void Engine::registerImpl( std::string& name, std::string& code )
 
 void Engine::setoptionImpl( std::string& name, std::string& value )
 {
-    debug( "SetOption with name [" + name + "] and value [" + value + "]" );
+    LOG_INFO << "SetOption with name [" << name << "] and value [" << value << "]";
 
     // TODO store the value
 }
 
 void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
 {
-    debug( "Position with FEN [" + fen + "] and " + std::to_string( moves.size() ) + " moves" );
+    LOG_INFO << "Position with FEN [" << fen << "] and " << moves.size() << " moves";
 
     // TODO implement
 }
 
 void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite )
 {
+    LOG_INFO << "Go";
+
     // TODO implement
 }

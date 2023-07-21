@@ -33,32 +33,40 @@ private:
     volatile bool quitting;
     volatile DebugSwitch debugging;
 
-    void debug( std::string message )
+    class UciLogger
     {
-        LOG_DEBUG << message;
-
-        if ( debugging == DebugSwitch::ON )
+    public:
+        UciLogger( Engine& engine, Logger::Level level ) :
+            engine( engine ),
+            level( level )
         {
-            broadcaster.info( message );
+            // Nothing to do
         }
-    }
 
-    void debug( std::string message, std::string value )
-    {
-        debug( message + " " + value );
-    }
+        virtual ~UciLogger()
+        {
+            // Write the same message to the regular log
+            Logger( level ).log() << "UCI " << os.str();
 
-    void error( std::string message )
-    {
-        LOG_ERROR << message;
+            // Log only INFO or above unless in debugging mode
+            if ( level >= Logger::Level::INFO || engine.debugging == Engine::DebugSwitch::ON )
+            {
+                engine.broadcaster.info( os.str() );
+            }
+        }
 
-        broadcaster.info( message );
-    }
+        std::ostringstream& log( std::string prefix )
+        {
+            os << prefix;
+            return os;
+        }
 
-    void error( std::string message, std::string value )
-    {
-        error( message + " " + value );
-    }
+    private:
+        std::ostringstream os;
+
+        Engine& engine;
+        Logger::Level level;
+    };
 
     // Implementation methods that do not broadcast notifications 
     void stopImpl();
