@@ -18,12 +18,19 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
-    //std::ofstream logfile;
-    //logfile.open("./log.txt");
-    //Logger::configure( &logfile );
+    // TODO remove this temporary setup code
+    std::ofstream logfile;
+    logfile.open("./motive-chess.log");
+    Logger::configure( &logfile );
+
+    std::ifstream infile;
+    infile.open( "C:/Projects/GitHub/motive-chess/x64/Debug/x.txt" );
+
+    std::istream* inputStream = &infile;// std::cin;
 
     // Default logging setup
-    LOG_LEVEL( Logger::Level::INFO );
+    // TODO set this to INFO
+    LOG_LEVEL( Logger::Level::TRACE );
 
     Broadcaster broadcaster( std::cout );
     Engine engine( broadcaster );
@@ -33,12 +40,14 @@ int main( int argc, char** argv )
     {
         LOG_DEBUG << "Starting";
 
+        engine.open();
+
         // Initialize list of UCI commands
         std::vector<std::string> uci = getUciCommands();
 
         std::vector<std::string> input;
         std::string line;
-        while ( std::getline( std::cin, line ) )
+        while ( std::getline( *inputStream, line ) )
         {
             input.clear();
 
@@ -140,7 +149,6 @@ std::vector<std::string> getUciCommands()
     // Special testing commands - perft
     uci.push_back( "eval" );
     uci.push_back( "perft" );
-    uci.push_back( "eval" );
 
     return uci;
 }
@@ -279,6 +287,15 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     else if ( command == "quit" )
     {
         quit = engine.quitCommand();
+    }
+    // Special perft commands
+    else if ( command == "eval" )
+    {
+        engine.evalCommand();
+    }
+    else if ( command == "perft" )
+    {
+        engine.perftCommand( input );
     }
 
     LOG_DEBUG << "Quit state is " << quit;

@@ -20,7 +20,7 @@ public:
     };
 
 private:
-    inline static const std::string OPTION_BENCH = "bench";
+    inline static const std::string OPTION_BENCH = "Benchmark";
 
     Broadcaster& broadcaster;
 
@@ -89,6 +89,8 @@ private:
     void setoptionImpl( std::string& name, std::string& value );
     void positionImpl( std::string& fen, std::vector<std::string> moves );
     void goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite );
+    void evalImpl();
+    void perftImpl( int depth, std::string& fen);
 
     std::vector<std::string> getGoDirectives()
     {
@@ -120,7 +122,7 @@ public:
         ucinewgameExpected( true ),
         ucinewgameReceived( false )
     {
-        broadcaster.info( "MotiveChess" );
+        // Do nothing
     }
 
     virtual ~Engine()
@@ -141,11 +143,23 @@ public:
     void ponderhitCommand();
     bool quitCommand();
 
+    // Special perft commands
+    void evalCommand();
+    void perftCommand( std::vector<std::string>& arguments );
+
+    // Option methods
+
     void setBenchmarking( bool benchmarking )
     {
         LOG_INFO << "Set benchmarking " << ( benchmarking ? "on" : "off" );
 
         this->benchmarking = benchmarking;
+    }
+
+    // Other external controls
+    void open()
+    {
+        broadcaster.info( "MotiveChess" );
     }
 };
 

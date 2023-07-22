@@ -473,6 +473,62 @@ bool Engine::quitCommand()
     return true;
 }
 
+// Special perft commands
+
+void Engine::evalCommand()
+{
+    UCI_DEBUG << "Received eval";
+
+    evalImpl();
+
+    // TODO respond with outcome
+}
+
+void Engine::perftCommand( std::vector<std::string>& arguments )
+{
+    UCI_DEBUG << "Received perft";
+
+    int depth = 0;
+    std::string fen;
+    std::stringstream stream;
+
+    std::vector<std::string>::iterator it = arguments.begin();
+    if ( it != arguments.end() )
+    {
+        depth = stoi( *it );
+
+        for ( ; it != arguments.end(); it++ )
+        {
+            if ( !stream.str().empty() )
+            {
+                stream << " ";
+            }
+
+            stream << *it;
+        }
+
+        fen = stream.str();
+
+        if ( !fen.empty() )
+        {
+            perftImpl( depth, fen );
+
+            // TODO respond with outcome
+            std::stringstream response;
+            response << "nodes " << 100;
+            broadcaster.info( response.str() );
+        }
+        else
+        {
+            UCI_ERROR << "Missing FEN in perft command";
+        }
+    }
+    else
+    {
+        UCI_ERROR << "Missing depth in perft command";
+    }
+}
+
 // Helper methods
 
 void Engine::listVisibleOptions()
@@ -550,6 +606,24 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
 
     LOG_DEBUG << "Thread detached";
 }
+
+// Special perft commands
+
+void Engine::evalImpl()
+{
+    LOG_INFO << "Eval";
+
+    // TODO implement
+}
+
+void Engine::perftImpl( int depth, std::string& fen )
+{
+    LOG_INFO << "Perft at depth " << depth << " with FEN " << fen;
+
+    // TODO Implement
+}
+
+// Internal methods
 
 void Engine::thinking( Engine* engine )
 {
