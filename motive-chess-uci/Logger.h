@@ -91,18 +91,30 @@ private:
 public:
     static void configure( Logger::Level level )
     {
-        Logger::selectedLevel = level;
+        Logger::selectedLevel = defaultStream == nullptr ? Level::NONE : level;
     }
 
     static void configure( std::ostream* stream )
     {
         Logger::defaultStream = stream;
+
+        if ( defaultStream == nullptr )
+        {
+            Logger::selectedLevel = Level::NONE;
+        }
     }
 
     static void configure( std::ostream* stream, Logger::Level level )
     {
         Logger::defaultStream = stream;
-        Logger::selectedLevel = level;
+        Logger::selectedLevel = defaultStream == nullptr ? Level::NONE : level;
+    }
+
+    static void shutdown()
+    {
+        Logger::defaultStream->flush();
+        Logger::defaultStream = nullptr;
+        Logger::selectedLevel = Level::NONE;
     }
 
     Logger( Logger::Level level ) :
@@ -114,7 +126,7 @@ public:
 
     virtual ~Logger()
     {
-        if ( level >= selectedLevel )
+        if ( level >= Logger::selectedLevel && Logger::selectedLevel != Level::NONE )
         {
             os << std::endl;
             stream << os.str() << std::flush;

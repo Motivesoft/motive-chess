@@ -3,7 +3,7 @@
 std::ostringstream& Logger::log( const std::source_location location )
 {
     // only generate and insert the extra context if we're going to use it
-    if ( level >= selectedLevel )
+    if ( level >= Logger::selectedLevel && Logger::selectedLevel != Level::NONE )
     {
         os << getTimestamp() << " " << getLevelName();
 

@@ -17,9 +17,9 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
-    std::ofstream logfile;
-    logfile.open("./log.txt");
-    Logger::configure( &logfile );
+    //std::ofstream logfile;
+    //logfile.open("./log.txt");
+    //Logger::configure( &logfile );
 
     LOG_LEVEL( Logger::Level::TRACE );
     LOG_INFO << "Starting";
@@ -79,6 +79,8 @@ int main( int argc, char** argv )
             break;
         }
     }
+
+    Logger::shutdown();
 
     return 0;
 }
