@@ -23,10 +23,11 @@ int main( int argc, char** argv )
     logfile.open("./motive-chess.log");
     Logger::configure( &logfile );
 
-    std::ifstream infile;
-    infile.open( "C:/Projects/GitHub/motive-chess/x64/Debug/x.txt" );
-
-    std::istream* inputStream = &infile;// std::cin;
+    // Debugging purposes
+    //   std::ifstream infile;
+    //   infile.open( "C:/Projects/GitHub/motive-chess/x64/Debug/x.txt" );
+    //   std::istream* inputStream = &infile;// std::cin;
+    std::istream* inputStream = &std::cin;
 
     // Default logging setup
     // TODO set this to INFO
