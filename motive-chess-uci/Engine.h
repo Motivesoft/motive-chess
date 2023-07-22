@@ -46,7 +46,7 @@ private:
         virtual ~UciLogger()
         {
             // Write the same message to the regular log
-            Logger( level ).log() << "UCI " << os.str();
+            Logger( level ).log( location ) << "UCI " << os.str();
 
             // Log only INFO or above unless in debugging mode
             if ( level >= Logger::Level::INFO || engine.debugging == Engine::DebugSwitch::ON )
@@ -55,14 +55,18 @@ private:
             }
         }
 
-        std::ostringstream& log( std::string prefix )
+        std::ostringstream& log( std::string prefix = "", const std::source_location location = std::source_location::current() )
         {
+            this->location = location;
+
             os << prefix;
             return os;
         }
 
     private:
         std::ostringstream os;
+
+        std::source_location location;
 
         Engine& engine;
         Logger::Level level;
