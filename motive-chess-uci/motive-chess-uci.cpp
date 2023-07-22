@@ -181,10 +181,11 @@ bool processCommandLineArguments( Engine& engine, int argc, char** argv )
         Logger::configure( Logger::Level::NONE );
     }
 
-    LOG_INFO << "Command line args:";
-    for ( int loop = 1; loop < argc; loop++ )
+    // Don't count argv[0] as an argument, or list it here
+    LOG_INFO << arguments.size() << " command line argument(s)";
+    for ( it = arguments.begin(); it != arguments.end(); it++ )
     {
-        LOG_INFO << std::setw( 2 ) << std::right << loop << " " << argv[ loop ];
+        LOG_INFO << "  " << *it;
     }
 
     // Now check for other instructions
