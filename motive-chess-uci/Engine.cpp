@@ -18,6 +18,7 @@ void Engine::uciCommand()
     broadcaster.id( "MotiveChess", "Motivesoft" );
     
     // TODO broadcast options,...
+    listVisibleOptions();
 
     // Send OK
     initialized = true;
@@ -472,6 +473,13 @@ bool Engine::quitCommand()
     return true;
 }
 
+// Helper methods
+
+void Engine::listVisibleOptions()
+{
+    broadcaster.option( OPTION_BENCH, benchmarking );
+}
+ 
 // Silent implementations - do the work, but do not directly communicate over uci, allowing the 
 // methods to be called from elsewhere
 
@@ -518,7 +526,11 @@ void Engine::setoptionImpl( std::string& name, std::string& value )
 {
     LOG_INFO << "SetOption with name [" << name << "] and value [" << value << "]";
 
-    // TODO store the value
+    // Store the new value
+    if ( name == OPTION_BENCH )
+    {
+        setBenchmarking( value == "true" );
+    }
 }
 
 void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )

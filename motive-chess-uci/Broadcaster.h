@@ -109,7 +109,12 @@ public:
         stream << "info " << details.str() << std::endl;
     }
 
-    void option( std::string& name, Option::Type type, std::string def, std::string min, std::string max, std::string vars[] )
+    void option( std::string name, bool def )
+    {
+        option( name, Option::Type::CHECK, def ? "true" : "false", "", "", new std::string[0]);
+    }
+
+    void option( std::string name, Option::Type type, std::string def, std::string min, std::string max, std::string vars[] )
     {
         std::stringstream details;
 

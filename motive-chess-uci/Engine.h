@@ -20,6 +20,8 @@ public:
     };
 
 private:
+    inline static const std::string OPTION_BENCH = "bench";
+
     Broadcaster& broadcaster;
 
     CopyProtection copyProtection;
@@ -74,6 +76,9 @@ private:
     };
 
     static void thinking( Engine* engine );
+
+    // Helper methods
+    void listVisibleOptions();
 
     // Implementation methods that do not broadcast notifications 
     void stopImpl();
