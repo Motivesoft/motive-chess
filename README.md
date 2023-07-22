@@ -16,3 +16,4 @@ Areas to experiment:
 
 ## References
 Links that have helped:
+ * [perft engine tests](https://github.com/TerjeKir/EngineTests)

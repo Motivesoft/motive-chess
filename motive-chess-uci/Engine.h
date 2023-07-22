@@ -30,6 +30,7 @@ private:
     bool ucinewgameExpected;
     bool ucinewgameReceived;
 
+    volatile bool benchmarking;
     volatile bool quitting;
     volatile DebugSwitch debugging;
 
@@ -108,6 +109,7 @@ public:
     Engine( Broadcaster& broadcaster ) : 
         broadcaster( broadcaster ), 
         initialized( false ),
+        benchmarking( false ),
         quitting( false ),
         debugging( DebugSwitch::OFF ),
         ucinewgameExpected( true ),
@@ -133,5 +135,12 @@ public:
     void stopCommand();
     void ponderhitCommand();
     bool quitCommand();
+
+    void setBenchmarking( bool benchmarking )
+    {
+        LOG_INFO << "Set benchmarking " << ( benchmarking ? "on" : "off" );
+
+        this->benchmarking = benchmarking;
+    }
 };
 
