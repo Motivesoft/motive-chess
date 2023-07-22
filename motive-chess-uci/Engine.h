@@ -89,8 +89,7 @@ private:
     void setoptionImpl( std::string& name, std::string& value );
     void positionImpl( std::string& fen, std::vector<std::string> moves );
     void goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite );
-    void evalImpl();
-    void perftImpl( int depth, std::string& fen);
+    void perftImpl( int depth, std::string& fen );
 
     std::vector<std::string> getGoDirectives()
     {
@@ -143,8 +142,7 @@ public:
     void ponderhitCommand();
     bool quitCommand();
 
-    // Special perft commands
-    void evalCommand();
+    // Special perft command
     void perftCommand( std::vector<std::string>& arguments );
 
     // Option methods

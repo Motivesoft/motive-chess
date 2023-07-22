@@ -147,8 +147,7 @@ std::vector<std::string> getUciCommands()
     uci.push_back( "ponderhit" );
     uci.push_back( "quit" );
 
-    // Special testing commands - perft
-    uci.push_back( "eval" );
+    // Special testing command - perft
     uci.push_back( "perft" );
 
     return uci;
@@ -289,11 +288,7 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     {
         quit = engine.quitCommand();
     }
-    // Special perft commands
-    else if ( command == "eval" )
-    {
-        engine.evalCommand();
-    }
+    // Special perft command
     else if ( command == "perft" )
     {
         engine.perftCommand( input );

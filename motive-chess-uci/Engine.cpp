@@ -473,16 +473,7 @@ bool Engine::quitCommand()
     return true;
 }
 
-// Special perft commands
-
-void Engine::evalCommand()
-{
-    UCI_DEBUG << "Received eval";
-
-    evalImpl();
-
-    // TODO respond with outcome
-}
+// Special perft command
 
 void Engine::perftCommand( std::vector<std::string>& arguments )
 {
@@ -607,14 +598,7 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
     LOG_DEBUG << "Thread detached";
 }
 
-// Special perft commands
-
-void Engine::evalImpl()
-{
-    LOG_INFO << "Eval";
-
-    // TODO implement
-}
+// Special perft command
 
 void Engine::perftImpl( int depth, std::string& fen )
 {
