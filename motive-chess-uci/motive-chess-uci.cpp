@@ -13,15 +13,149 @@
 
 std::vector<std::string> getUciCommands();
 void logSanitizedInput( std::vector<std::string> input );
+bool configureLogging( int argc, char** argv );
 bool processCommandLineArguments( Engine& engine, int argc, char** argv );
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
+class Streams
+{
+private:
+    std::istream* inputStream;
+    std::ostream* outputStream;
+    std::ostream* logStream;
+
+    std::ifstream* inputFile;
+    std::ofstream* outputFile;
+    std::ofstream* logFile;
+
+    void close( std::ifstream** stream )
+    {
+        if ( *stream )
+        {
+            (*stream)->close();
+            
+            delete* stream;
+            
+            (*stream) = nullptr;
+        }
+    }
+
+    void close( std::ofstream** stream )
+    {
+        if ( *stream )
+        {
+            (*stream)->flush();
+            (*stream)->close();
+
+            delete* stream;
+            
+            (*stream) = nullptr;
+        }
+    }
+
+public:
+    Streams() :
+        inputStream( &std::cin ),
+        outputStream( &std::cout ),
+        logStream( &std::cerr ),
+        inputFile( nullptr ),
+        outputFile( nullptr ),
+        logFile( nullptr )
+    {
+
+    }
+
+    virtual ~Streams()
+    {
+        close( &inputFile );
+        close( &outputFile );
+        close( &logFile );
+    }
+
+    void setInputFile( std::string filename )
+    {
+        close( &inputFile );
+
+        inputFile = new std::ifstream();
+        inputFile->open( filename );
+        inputStream = inputFile;
+    }
+
+    void setOutputFile( std::string filename )
+    {
+        close( &outputFile );
+
+        outputFile = new std::ofstream();
+        outputFile->open( filename );
+        outputStream = outputFile;
+    }
+
+    void setLogFile( std::string filename )
+    {
+        close( &logFile );
+
+        logFile = new std::ofstream();
+        logFile->open( filename );
+        logStream = logFile;
+    }
+
+    std::istream* getInputStream() const
+    {
+        return inputStream;
+    }
+
+    std::ostream* getOuputStream() const
+    {
+        return outputStream;
+    }
+
+    std::ostream* getLogStream() const
+    {
+        return logStream;
+    }
+};
+
+bool processCommandLineArguments( int argc,
+                                  char** argv,
+                                  bool* benchmarking, Streams& streams )
+{
+    *benchmarking = true;
+
+    if ( argc > 1 )
+    {
+        streams.setInputFile( "C:/Projects/GitHub/motive-chess/x64/Debug/in.txt" );
+    }
+    if ( argc > 2 )
+    {
+        streams.setOutputFile( "C:/Projects/GitHub/motive-chess/x64/Debug/out.txt" );
+    }
+    if ( argc > 3 )
+    {
+        streams.setLogFile( "C:/Projects/GitHub/motive-chess/x64/Debug/log.txt" );
+    }
+
+    return true;
+}
+
 int main( int argc, char** argv )
 {
-    // TODO remove this temporary setup code
-    std::ofstream logfile;
-    logfile.open("./motive-chess.log");
-    Logger::configure( &logfile );
+    bool b;
+
+    Streams streams;
+    processCommandLineArguments( argc, argv, &b, streams );
+    std::string x;
+
+    std::getline( *streams.getInputStream(), x );
+    *streams.getOuputStream() << "[UCI] Got: [" << x << "] with benchmarking: " << b << std::endl;
+    *streams.getLogStream() << "[LOG] Got: [" << x << "] with benchmarking: " << b << std::endl;
+    if ( 0 == 0 )return 0;
+
+
+    // Allow problems during logging configuration to tear us down
+    if ( !configureLogging( argc, argv ) )
+    {
+        return -1;
+    }
 
     // Debugging purposes
     //   std::ifstream infile;
@@ -29,10 +163,7 @@ int main( int argc, char** argv )
     //   std::istream* inputStream = &infile;// std::cin;
     std::istream* inputStream = &std::cin;
 
-    // Default logging setup
-    // TODO set this to INFO
-    LOG_LEVEL( Logger::Level::TRACE );
-
+    // Configure output location for where to post our UCI responses
     Broadcaster broadcaster( std::cout );
     Engine engine( broadcaster );
 
@@ -151,6 +282,21 @@ std::vector<std::string> getUciCommands()
     uci.push_back( "perft" );
 
     return uci;
+}
+
+bool configureLogging( int argc, char** argv )
+{
+
+    // TODO remove this temporary setup code
+    std::ofstream logfile;
+    logfile.open( "./motive-chess.log" );
+    Logger::configure( &logfile );
+
+    // Default logging setup
+    // TODO set this to INFO
+    LOG_LEVEL( Logger::Level::TRACE );
+
+    return true;
 }
 
 bool processCommandLineArguments( Engine& engine, int argc, char** argv )
