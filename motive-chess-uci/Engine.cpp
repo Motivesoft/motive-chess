@@ -2,6 +2,7 @@
 #include <thread>
 
 #include "Engine.h"
+#include "Move.h"
 
 #define UCI_DEBUG Engine::UciLogger( *this, Logger::Level::DEBUG ).log( "" )
 #define UCI_INFO  Engine::UciLogger( *this, Logger::Level::INFO ).log( "" )
@@ -585,6 +586,12 @@ void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
     LOG_INFO << "Position with FEN [" << fen << "] and " << moves.size() << " moves";
 
     // TODO implement
+    LOG_DEBUG << "Moves:";
+    for ( std::string move : moves )
+    {
+        Move* m = Move::fromString( move );
+        LOG_DEBUG << Move::toString( m );
+    }
 }
 
 void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite )
