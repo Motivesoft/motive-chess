@@ -14,7 +14,6 @@
 
 std::vector<std::string> getUciCommands();
 void logSanitizedInput( std::vector<std::string> input );
-bool configureLogging( int argc, char** argv );
 bool processCommandLineArguments( Engine& engine, int argc, char** argv );
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
@@ -43,102 +42,90 @@ bool processCommandLineArguments( int argc,
 
 int main( int argc, char** argv )
 {
-    bool b;
-
     Streams streams;
-    processCommandLineArguments( argc, argv, &b, streams );
-    std::string x;
 
-    std::getline( *streams.getInputStream(), x );
-    *streams.getOuputStream() << "[UCI] Got: [" << x << "] with benchmarking: " << b << std::endl;
-    *streams.getLogStream() << "[LOG] Got: [" << x << "] with benchmarking: " << b << std::endl;
-    if ( 0 == 0 )return 0;
+    bool benchmarking;
 
-
-    // Allow problems during logging configuration to tear us down
-    if ( !configureLogging( argc, argv ) )
+    // Allow command line processing to cause an exit without further activity
+    if ( processCommandLineArguments( argc, argv, &benchmarking, streams ) )
     {
-        return -1;
-    }
+        // Default logging setup
+        // TODO set this to INFO
+        Logger::configure( &streams.getLogStream(), Logger::Level::TRACE );
+    
+        // Configure output location for where to post our UCI responses
+        Broadcaster broadcaster( streams.getOuputStream() );
+        Engine engine( broadcaster );
 
-    // Debugging purposes
-    //   std::ifstream infile;
-    //   infile.open( "C:/Projects/GitHub/motive-chess/x64/Debug/x.txt" );
-    //   std::istream* inputStream = &infile;// std::cin;
-    std::istream* inputStream = &std::cin;
-
-    // Configure output location for where to post our UCI responses
-    Broadcaster broadcaster( std::cout );
-    Engine engine( broadcaster );
-
-    // Process command line
-    if ( processCommandLineArguments( engine, argc, argv ) )
-    {
-        LOG_DEBUG << "Starting";
-
-        engine.open();
-
-        // Initialize list of UCI commands
-        std::vector<std::string> uci = getUciCommands();
-
-        std::vector<std::string> input;
-        std::string line;
-        while ( std::getline( *inputStream, line ) )
+        // Process command line
+        if ( processCommandLineArguments( engine, argc, argv ) )
         {
-            input.clear();
+            LOG_DEBUG << "Starting";
 
-            LOG_DEBUG << "Raw input: [" << line << "]";
+            engine.open();
 
-            // Tokenize the input into a list of strings
-            std::replace( line.begin(), line.end(), '\n', ' ' );
-            std::replace( line.begin(), line.end(), '\t', ' ' );
-            std::stringstream stream( line );
-            std::string token;
-            while ( std::getline( stream, token, ' ' ) )
+            // Initialize list of UCI commands
+            std::vector<std::string> uci = getUciCommands();
+
+            std::vector<std::string> input;
+            std::string line;
+            while ( streams.getLine( line ) )
             {
-                if ( token.length() > 0 )
-                {
-                    input.push_back( token );
-                }
-            }
+                input.clear();
 
-            // Prune unrecognized commands from start of input
-            if ( input.size() )
-            {
-                while ( std::find( uci.begin(), uci.end(), *input.begin() ) == uci.end() )
+                LOG_DEBUG << "Raw input: [" << line << "]";
+
+                // Tokenize the input into a list of strings
+                std::replace( line.begin(), line.end(), '\n', ' ' );
+                std::replace( line.begin(), line.end(), '\t', ' ' );
+                std::stringstream stream( line );
+                std::string token;
+                while ( std::getline( stream, token, ' ' ) )
                 {
-                    input.erase( input.begin() );
-                    if ( input.size() == 0 )
+                    if ( token.length() > 0 )
                     {
-                        break;
+                        input.push_back( token );
                     }
                 }
+
+                // Prune unrecognized commands from start of input
+                if ( input.size() )
+                {
+                    while ( std::find( uci.begin(), uci.end(), *input.begin() ) == uci.end() )
+                    {
+                        input.erase( input.begin() );
+                        if ( input.size() == 0 )
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                // If nothing left, loop around
+                if ( input.size() == 0 )
+                {
+                    continue;
+                }
+
+                // Dump the sanitized input
+                logSanitizedInput( input );
+
+                // Process command input until told to quit
+                if ( !processUciCommand( engine, input ) )
+                {
+                    break;
+                }
             }
 
-            // If nothing left, loop around
-            if ( input.size() == 0 )
-            {
-                continue;
-            }
-
-            // Dump the sanitized input
-            logSanitizedInput( input );
-
-            // Process command input until told to quit
-            if ( !processUciCommand( engine, input ) )
-            {
-                break;
-            }
+            LOG_DEBUG << "Closing";
+        }
+        else
+        {
+            LOG_DEBUG << "Exiting";
         }
 
-        LOG_DEBUG << "Closing";
+        Logger::shutdown();
     }
-    else
-    {
-        LOG_DEBUG << "Exiting";
-    }
-
-    Logger::shutdown();
 
     return 0;
 }
@@ -186,21 +173,6 @@ std::vector<std::string> getUciCommands()
     uci.push_back( "perft" );
 
     return uci;
-}
-
-bool configureLogging( int argc, char** argv )
-{
-
-    // TODO remove this temporary setup code
-    std::ofstream logfile;
-    logfile.open( "./motive-chess.log" );
-    Logger::configure( &logfile );
-
-    // Default logging setup
-    // TODO set this to INFO
-    LOG_LEVEL( Logger::Level::TRACE );
-
-    return true;
 }
 
 bool processCommandLineArguments( Engine& engine, int argc, char** argv )

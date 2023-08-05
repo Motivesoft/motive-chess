@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 class Streams
 {
@@ -85,19 +86,19 @@ public:
         logStream = logFile;
     }
 
-    std::istream* getInputStream() const
+    std::ostream& getOuputStream() const
     {
-        return inputStream;
+        return *outputStream;
     }
 
-    std::ostream* getOuputStream() const
+    std::ostream& getLogStream() const
     {
-        return outputStream;
+        return *logStream;
     }
 
-    std::ostream* getLogStream() const
+    std::istream& getLine( std::string& line )
     {
-        return logStream;
+        return std::getline( *inputStream, line );
     }
 };
 
