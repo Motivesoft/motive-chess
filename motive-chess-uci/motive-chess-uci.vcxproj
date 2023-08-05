@@ -153,6 +153,7 @@
     <ClCompile Include="Option.cpp" />
     <ClCompile Include="Piece.cpp" />
     <ClCompile Include="Registration.cpp" />
+    <ClCompile Include="Streams.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Broadcaster.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Option.h" />
     <ClInclude Include="Piece.h" />
     <ClInclude Include="Registration.h" />
+    <ClInclude Include="Streams.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

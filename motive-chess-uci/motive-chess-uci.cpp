@@ -14,118 +14,87 @@
 
 std::vector<std::string> getUciCommands();
 void logSanitizedInput( std::vector<std::string> input );
-bool processCommandLineArguments( Engine& engine, int argc, char** argv );
+bool processCommandLineArguments( int argc, char** argv, bool* benchmarking, Streams& streams );
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
-
-
-bool processCommandLineArguments( int argc,
-                                  char** argv,
-                                  bool* benchmarking, Streams& streams )
-{
-    *benchmarking = true;
-
-    if ( argc > 1 )
-    {
-        streams.setInputFile( "C:/Projects/GitHub/motive-chess/x64/Debug/in.txt" );
-    }
-    if ( argc > 2 )
-    {
-        streams.setOutputFile( "C:/Projects/GitHub/motive-chess/x64/Debug/out.txt" );
-    }
-    if ( argc > 3 )
-    {
-        streams.setLogFile( "C:/Projects/GitHub/motive-chess/x64/Debug/log.txt" );
-    }
-
-    return true;
-}
 
 int main( int argc, char** argv )
 {
     Streams streams;
-
     bool benchmarking;
 
     // Allow command line processing to cause an exit without further activity
     if ( processCommandLineArguments( argc, argv, &benchmarking, streams ) )
     {
-        // Default logging setup
-        // TODO set this to INFO
-        Logger::configure( &streams.getLogStream(), Logger::Level::TRACE );
-    
+        LOG_DEBUG << "Starting";
+
         // Configure output location for where to post our UCI responses
         Broadcaster broadcaster( streams.getOuputStream() );
         Engine engine( broadcaster );
 
-        // Process command line
-        if ( processCommandLineArguments( engine, argc, argv ) )
+        engine.open();
+        engine.setBenchmarking( benchmarking );
+
+        // Initialize list of UCI commands
+        std::vector<std::string> uci = getUciCommands();
+
+        std::vector<std::string> input;
+        std::string line;
+        while ( streams.getLine( line ) )
         {
-            LOG_DEBUG << "Starting";
+            input.clear();
 
-            engine.open();
+            LOG_DEBUG << "Raw input: [" << line << "]";
 
-            // Initialize list of UCI commands
-            std::vector<std::string> uci = getUciCommands();
-
-            std::vector<std::string> input;
-            std::string line;
-            while ( streams.getLine( line ) )
+            // Tokenize the input into a list of strings
+            std::replace( line.begin(), line.end(), '\n', ' ' );
+            std::replace( line.begin(), line.end(), '\t', ' ' );
+            std::stringstream stream( line );
+            std::string token;
+            while ( std::getline( stream, token, ' ' ) )
             {
-                input.clear();
-
-                LOG_DEBUG << "Raw input: [" << line << "]";
-
-                // Tokenize the input into a list of strings
-                std::replace( line.begin(), line.end(), '\n', ' ' );
-                std::replace( line.begin(), line.end(), '\t', ' ' );
-                std::stringstream stream( line );
-                std::string token;
-                while ( std::getline( stream, token, ' ' ) )
+                if ( token.length() > 0 )
                 {
-                    if ( token.length() > 0 )
-                    {
-                        input.push_back( token );
-                    }
-                }
-
-                // Prune unrecognized commands from start of input
-                if ( input.size() )
-                {
-                    while ( std::find( uci.begin(), uci.end(), *input.begin() ) == uci.end() )
-                    {
-                        input.erase( input.begin() );
-                        if ( input.size() == 0 )
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                // If nothing left, loop around
-                if ( input.size() == 0 )
-                {
-                    continue;
-                }
-
-                // Dump the sanitized input
-                logSanitizedInput( input );
-
-                // Process command input until told to quit
-                if ( !processUciCommand( engine, input ) )
-                {
-                    break;
+                    input.push_back( token );
                 }
             }
 
-            LOG_DEBUG << "Closing";
-        }
-        else
-        {
-            LOG_DEBUG << "Exiting";
+            // Prune unrecognized commands from start of input
+            if ( input.size() )
+            {
+                while ( std::find( uci.begin(), uci.end(), *input.begin() ) == uci.end() )
+                {
+                    input.erase( input.begin() );
+                    if ( input.size() == 0 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            // If nothing left, loop around
+            if ( input.size() == 0 )
+            {
+                continue;
+            }
+
+            // Dump the sanitized input
+            logSanitizedInput( input );
+
+            // Process command input until told to quit
+            if ( !processUciCommand( engine, input ) )
+            {
+                break;
+            }
         }
 
-        Logger::shutdown();
+        LOG_DEBUG << "Closing";
     }
+    else
+    {
+        LOG_DEBUG << "Closing after command line processing";
+    }
+
+    Logger::shutdown();
 
     return 0;
 }
@@ -175,76 +144,131 @@ std::vector<std::string> getUciCommands()
     return uci;
 }
 
-bool processCommandLineArguments( Engine& engine, int argc, char** argv )
+bool processCommandLineArguments( int argc, char** argv, bool* benchmarking, Streams& streams )
 {
+    // Set initial defaults
+    
+    Logger::Level logLevel = Logger::Level::TRACE; // TODO set this to INFO
+    
+    *benchmarking = false;
+
+    // Process switches
+
     std::vector<std::string> arguments;
     for ( int loop = 1; loop < argc; loop++ )
     {
         arguments.push_back( argv[ loop ] );
     }
 
+    // Search for options, rather than looping through the input
+
     std::vector<std::string>::iterator it;
 
     // Check for logging configuration options before actually logging anything
 
-    it = std::find( arguments.begin(), arguments.end(), "verbose" );
+    it = std::find( arguments.begin(), arguments.end(), "-verbose" );
     if ( it != arguments.end() )
     {
-        Logger::configure( Logger::Level::TRACE );
+        logLevel = Logger::Level::TRACE;
     }
 
-    it = std::find( arguments.begin(), arguments.end(), "debug" );
+    it = std::find( arguments.begin(), arguments.end(), "-debug" );
     if ( it != arguments.end() )
     {
-        Logger::configure( Logger::Level::DEBUG );
+        logLevel = Logger::Level::DEBUG;
     }
 
-    it = std::find( arguments.begin(), arguments.end(), "quiet" );
+    it = std::find( arguments.begin(), arguments.end(), "-quiet" );
     if ( it != arguments.end() )
     {
-        Logger::configure( Logger::Level::ERROR );
+        logLevel = Logger::Level::ERROR;
     }
 
-    it = std::find( arguments.begin(), arguments.end(), "silent" );
+    it = std::find( arguments.begin(), arguments.end(), "-silent" );
     if ( it != arguments.end() )
     {
-        Logger::configure( Logger::Level::NONE );
+        logLevel = Logger::Level::NONE;
     }
 
-    // Don't count argv[0] as an argument, or list it here
-    LOG_INFO << arguments.size() << " command line argument(s)";
-    for ( it = arguments.begin(); it != arguments.end(); it++ )
+    // Allow control of input and output
+
+    it = std::find( arguments.begin(), arguments.end(), "-logfile" );
+    if ( it != arguments.end() )
     {
-        LOG_INFO << "  " << *it;
+        // Take the next argument as a filename
+        ++it;
+        if ( it != arguments.end() )
+        {
+            streams.setLogFile( *it );
+        }
+    }
+
+    // Complete logging setup now we have determined its configuration
+
+    Logger::configure( &streams.getLogStream(), logLevel );
+
+    it = std::find( arguments.begin(), arguments.end(), "-input" );
+    if ( it != arguments.end() )
+    {
+        // Take the next argument as a filename
+        ++it;
+        if ( it != arguments.end() )
+        {
+            streams.setInputFile( *it );
+        }
+    }
+
+    it = std::find( arguments.begin(), arguments.end(), "-output" );
+    if ( it != arguments.end() )
+    {
+        // Take the next argument as a filename
+        ++it;
+        if ( it != arguments.end() )
+        {
+            streams.setOutputFile( *it );
+        }
     }
 
     // Now check for other instructions
 
-    it = std::find( arguments.begin(), arguments.end(), "bench" );
+    it = std::find( arguments.begin(), arguments.end(), "-bench" );
     if ( it != arguments.end() )
     {
-        engine.setBenchmarking( true );
+        *benchmarking = true;
     }
 
-    it = std::find( arguments.begin(), arguments.end(), "help" );
+    // Informational stuff
+
+    // Dump the command line args for posterity.
+    LOG_DEBUG << arguments.size() << " command line argument(s)";
+    for ( it = arguments.begin(); it != arguments.end(); it++ )
+    {
+        LOG_DEBUG << "  " << *it;
+    }
+
+    it = std::find( arguments.begin(), arguments.end(), "-help" );
     if ( it != arguments.end() )
     {
         std::cout << std::endl << "Supported command line arguments..." << std::endl;
         std::cout << std::endl << "Logging:" << std::endl;
-        std::cout << "  silent  - no logging" << std::endl;
-        std::cout << "  quiet   - minimal logging" << std::endl;
-        std::cout << "  debug   - detailed logging" << std::endl;
-        std::cout << "  verbose - trace logging" << std::endl;
+        std::cout << "  -silent  - no logging" << std::endl;
+        std::cout << "  -quiet   - minimal logging" << std::endl;
+        std::cout << "  -debug   - detailed logging" << std::endl;
+        std::cout << "  -verbose - trace logging" << std::endl;
         std::cout << std::endl << "Information (application exits immediately):" << std::endl;
-        std::cout << "  help    - this help" << std::endl;
-        std::cout << "  version - version information" << std::endl;
+        std::cout << "  -help    - this help" << std::endl;
+        std::cout << "  -version - version information" << std::endl;
         std::cout << std::endl << "Configuration:" << std::endl;
-        std::cout << "  bench   - run in benchmark mode" << std::endl;
+        std::cout << "  -bench   - run in benchmark mode" << std::endl;
+        std::cout << std::endl << "Debug options:" << std::endl;
+        std::cout << "  -input <file>   - read input from file rather than stdin" << std::endl;
+        std::cout << "  -output <file>  - write output to file rather than stdout" << std::endl;
+        std::cout << "  -logfile <file> - write logging to file rather than stderr" << std::endl;
 
         return false;
     }
 
-    it = std::find( arguments.begin(), arguments.end(), "version" );
+    it = std::find( arguments.begin(), arguments.end(), "-version" );
     if ( it != arguments.end() )
     {
         // TODO extract this from resources?
