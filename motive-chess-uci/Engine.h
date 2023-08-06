@@ -121,7 +121,7 @@ public:
         ucinewgameExpected( true ),
         ucinewgameReceived( false )
     {
-        // Do nothing
+        broadcaster.info( "MotiveChess" );
     }
 
     virtual ~Engine()
@@ -152,12 +152,6 @@ public:
         LOG_INFO << "Set benchmarking " << ( benchmarking ? "on" : "off" );
 
         this->benchmarking = benchmarking;
-    }
-
-    // Other external controls
-    void open()
-    {
-        broadcaster.info( "MotiveChess" );
     }
 };
 

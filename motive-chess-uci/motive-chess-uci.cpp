@@ -31,7 +31,6 @@ int main( int argc, char** argv )
         Broadcaster broadcaster( streams.getOuputStream() );
         Engine engine( broadcaster );
 
-        engine.open();
         engine.setBenchmarking( benchmarking );
 
         // Initialize list of UCI commands
