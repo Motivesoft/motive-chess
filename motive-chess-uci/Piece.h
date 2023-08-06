@@ -10,6 +10,7 @@ public:
         WHITE,
         BLACK
     };
+
     enum class Type
     {
         KING,

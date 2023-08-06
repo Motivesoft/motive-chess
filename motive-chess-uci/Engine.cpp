@@ -1,6 +1,7 @@
 #include <chrono>
 #include <thread>
 
+#include "Board.h"
 #include "Engine.h"
 #include "Move.h"
 
@@ -590,7 +591,16 @@ void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
     for ( std::string move : moves )
     {
         Move* m = Move::fromString( move );
-        LOG_DEBUG << Move::toString( m );
+
+        LOG_DEBUG << Move::toString( m ) << " " << m->getFrom() << " " << m->getTo();
+
+        LOG_DEBUG << " From: " 
+            << (char)( 'a' + Board::indexToFile( m->getFrom() ) )
+            << (char)( '1' + Board::indexToRank( m->getFrom() ) );
+
+        LOG_DEBUG << " To:   " 
+            << (char)( 'a' + Board::indexToFile( m->getTo() ) )
+            << (char)( '1' + Board::indexToRank( m->getTo() ) );
     }
 }
 

@@ -265,6 +265,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
         std::cout << "  -output <file>  - write output to file rather than stdout" << std::endl;
         std::cout << "  -logfile <file> - write logging to file rather than stderr" << std::endl;
         std::cout << std::endl;
+
         return false;
     }
 

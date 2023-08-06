@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Board.cpp" />
     <ClCompile Include="Broadcaster.cpp" />
     <ClCompile Include="CopyProtection.cpp" />
     <ClCompile Include="Engine.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="VersionInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Board.h" />
     <ClInclude Include="Broadcaster.h" />
     <ClInclude Include="CopyProtection.h" />
     <ClInclude Include="Engine.h" />

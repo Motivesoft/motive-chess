@@ -24,19 +24,19 @@ public:
 
         if ( moveString.length() > 4 )
         {
-            return new Move( ( fromFile << 3 ) + fromRank, ( toFile << 3 ) + toRank, Piece::fromString( moveString[ 4 ] ) );
+            return new Move( ( fromRank << 3 ) + ( fromFile & 7 ), ( toRank << 3 ) + ( toFile & 7 ), Piece::fromString( moveString[ 4 ] ) );
         }
 
-        return new Move( ( fromFile << 3 ) + fromRank, ( toFile << 3 ) + toRank );
+        return new Move( ( fromRank << 3 ) + ( fromFile & 7 ), ( toRank << 3 ) + ( toFile & 7 ) );
     }
 
     static std::string toString( Move* move )
     {
         std::stringstream stream;
-        stream << (char)( ( move->from >> 3 ) + 'a' ) 
-            << (char)( ( move->from & 7 ) + '1' )
-            << (char)( ( move->to >> 3 ) + 'a' ) 
-            << (char)( ( move->to & 7 ) + '1' )
+        stream << (char)( ( move->from & 7 ) + 'a' ) 
+            << (char)( ( move->from >> 3 ) + '1' )
+            << (char)( ( move->to & 7 ) + 'a' ) 
+            << (char)( ( move->to >> 3 ) + '1' )
             << Piece::toString( move->promotion );
 
         return stream.str();
@@ -57,19 +57,29 @@ public:
     {
     }
 
-    bool operator == ( Move& move )
+    virtual ~Move()
+    {
+
+    }
+
+    bool operator == ( const Move& move )
     {
         return ( move.from == from && move.to == to && move.promotion == promotion );
     }
 
-    bool operator != ( Move& move )
+    bool operator != ( const Move& move )
     {
         return !( move.from == from && move.to == to && move.promotion == promotion );
     }
 
-    virtual ~Move()
+    inline short getFrom()
     {
+        return from;
+    }
 
+    inline short getTo()
+    {
+        return to;
     }
 };
 
