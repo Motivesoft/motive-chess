@@ -14,7 +14,7 @@
 
 std::vector<std::string> getUciCommands();
 void logSanitizedInput( std::vector<std::string> input );
-bool processCommandLineArguments( int argc, char** argv, bool* benchmarking, Streams& streams );
+bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& streams );
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
@@ -23,7 +23,7 @@ int main( int argc, char** argv )
     bool benchmarking;
 
     // Allow command line processing to cause an exit without further activity
-    if ( processCommandLineArguments( argc, argv, &benchmarking, streams ) )
+    if ( processCommandLine( argc, argv, &benchmarking, streams ) )
     {
         LOG_DEBUG << "Starting";
 
@@ -144,7 +144,7 @@ std::vector<std::string> getUciCommands()
     return uci;
 }
 
-bool processCommandLineArguments( int argc, char** argv, bool* benchmarking, Streams& streams )
+bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& streams )
 {
     // Set initial defaults
     
@@ -264,7 +264,7 @@ bool processCommandLineArguments( int argc, char** argv, bool* benchmarking, Str
         std::cout << "  -input <file>   - read input from file rather than stdin" << std::endl;
         std::cout << "  -output <file>  - write output to file rather than stdout" << std::endl;
         std::cout << "  -logfile <file> - write logging to file rather than stderr" << std::endl;
-
+        std::cout << std::endl;
         return false;
     }
 

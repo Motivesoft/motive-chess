@@ -7,7 +7,7 @@ std::ostringstream& Logger::log( const std::source_location location )
     {
         os << getTimestamp() << " " << getLevelName();
 
-        os << " " << std::setw( 30 ) << std::left << location.function_name() << " : " << std::setw( 5 ) << std::right << location.line() << " : ";
+        os << " " << std::setw( 20 ) << std::left << location.function_name() << " : " << std::setw( 5 ) << std::right << location.line() << " : ";
     }
 
     return os;
