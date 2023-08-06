@@ -9,6 +9,7 @@
 #include "Fen.h"
 #include "Logger.h"
 #include "Registration.h"
+#include "VersionInfo.h"
 
 class Engine
 {
@@ -121,7 +122,18 @@ public:
         ucinewgameExpected( true ),
         ucinewgameReceived( false )
     {
-        broadcaster.info( "MotiveChess" );
+        VersionInfo* versionInfo = VersionInfo::getVersionInfo();
+
+        if ( versionInfo->isAvailable() )
+        {
+            std::stringstream details;
+            details << versionInfo->getProductName() << " version " << versionInfo->getProductVersion();
+            broadcaster.info( details.str() );
+        }
+        else
+        {
+            broadcaster.info( "MotiveChess" );
+        }
     }
 
     virtual ~Engine()

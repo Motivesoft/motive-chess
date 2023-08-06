@@ -11,6 +11,7 @@
 #include "Engine.h"
 #include "Logger.h"
 #include "Streams.h"
+#include "VersionInfo.h"
 
 std::vector<std::string> getUciCommands();
 void logSanitizedInput( std::vector<std::string> input );
@@ -270,8 +271,16 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     it = std::find( arguments.begin(), arguments.end(), "-version" );
     if ( it != arguments.end() )
     {
-        // TODO extract this from resources?
-        std::cout << "Motive Chess version 0.0" << std::endl;
+        VersionInfo* versionInfo = VersionInfo::getVersionInfo();
+
+        if ( versionInfo->isAvailable() )
+        {
+            std::cout << versionInfo->getProductName() << " version " << versionInfo->getProductVersion() << std::endl;
+        }
+        else
+        {
+            std::cout << "MotiveChess, version unknown" << std::endl;
+        }
 
         return false;
     }
