@@ -4,6 +4,7 @@
 #include "Board.h"
 #include "Engine.h"
 #include "Move.h"
+#include "Utilities.h"
 
 #define UCI_DEBUG Engine::UciLogger( *this, Logger::Level::DEBUG ).log( "" )
 #define UCI_INFO  Engine::UciLogger( *this, Logger::Level::INFO ).log( "" )
@@ -592,15 +593,17 @@ void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
     {
         Move* m = Move::fromString( move );
 
+        LOG_DEBUG << move;
+
         LOG_DEBUG << Move::toString( m ) << " " << m->getFrom() << " " << m->getTo();
 
         LOG_DEBUG << " From: " 
-            << (char)( 'a' + Board::indexToFile( m->getFrom() ) )
-            << (char)( '1' + Board::indexToRank( m->getFrom() ) );
+            << (char)( 'a' + Utilities::indexToFile( m->getFrom() ) )
+            << (char)( '1' + Utilities::indexToRank( m->getFrom() ) );
 
         LOG_DEBUG << " To:   " 
-            << (char)( 'a' + Board::indexToFile( m->getTo() ) )
-            << (char)( '1' + Board::indexToRank( m->getTo() ) );
+            << (char)( 'a' + Utilities::indexToFile( m->getTo() ) )
+            << (char)( '1' + Utilities::indexToRank( m->getTo() ) );
     }
 }
 

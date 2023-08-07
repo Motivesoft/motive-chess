@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sstream>
 #include <string>
 
 /// <summary>
@@ -22,7 +23,6 @@
 class Utilities
 {
 public:
-
     inline static unsigned short squareToIndex( const std::string& square )
     {
         // Support upper and lower case files
@@ -34,15 +34,30 @@ public:
         return ( rank << 3 ) + ( file & 7 );
     }
 
+    inline static unsigned short squareToIndex( unsigned short file, unsigned short rank )
+    {
+        return ( rank << 3 ) + ( file & 7 );
+    }
+
     inline static std::string indexToSquare( const unsigned short index, const bool lowercase = true )
     {
-        char square[ 3 ];
+        std::stringstream square;
 
-        square[ 0 ] = ( index & 7 ) + ( lowercase ? 'a' : 'A' );
-        square[ 1 ] = ( ( index >> 3 ) & 7 ) + '1';
-        square[ 2 ] = '\0';
+        square << (char)( ( index & 7 ) + ( lowercase ? 'a' : 'A' ) )
+               << (char)( ( ( index >> 3 ) & 7 ) + '1' );
 
-        return std::string( square );
+        return square.str();
     }
+
+    inline static unsigned short indexToFile( unsigned short index )
+    {
+        return index & 7;
+    }
+
+    inline static unsigned short indexToRank( unsigned short index )
+    {
+        return (index >> 3) & 7;
+    }
+
 };
 

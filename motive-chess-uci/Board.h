@@ -43,20 +43,5 @@ public:
     {
         return !positionMatch( board );
     }
-
-    inline static unsigned short squareToIndex( unsigned short file, unsigned short rank )
-    {
-        return (rank << 3) + (file & 7);
-    }
-
-    inline static unsigned short indexToFile( unsigned short index )
-    {
-        return index & 7;
-    }
-
-    inline static unsigned short indexToRank( unsigned short index )
-    {
-        return index >> 3;
-    }
 };
 
