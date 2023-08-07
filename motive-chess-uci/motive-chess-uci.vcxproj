@@ -159,6 +159,7 @@
     <ClCompile Include="Piece.cpp" />
     <ClCompile Include="Registration.cpp" />
     <ClCompile Include="Streams.cpp" />
+    <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="VersionInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +175,7 @@
     <ClInclude Include="Registration.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Streams.h" />
+    <ClInclude Include="Utilities.h" />
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
   <ItemGroup>

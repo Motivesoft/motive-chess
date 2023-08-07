@@ -22,27 +22,27 @@ public:
         NONE
     };
 
-    static std::string toString( Piece::Type piece )
+    static std::string toString( Piece::Type piece, bool lowercase = true )
     {
         switch ( piece )
         {
             case Type::KING:
-                return "k";
+                return lowercase ? "k" : "K";
 
             case Type::QUEEN:
-                return "q";
+                return lowercase ? "q" : "Q";
 
             case Type::ROOK:
-                return "r";
+                return lowercase ? "r" : "R";
 
             case Type::BISHOP:
-                return "b";
+                return lowercase ? "b" : "B";
 
             case Type::KNIGHT:
-                return "n";
+                return lowercase ? "n" : "N";
 
             case Type::PAWN:
-                return "p";
+                return lowercase ? "p" : "P";
 
             default:
                 return "";
@@ -59,17 +59,29 @@ public:
         switch ( piece )
         {
             case 'k':
+            case 'K':
                 return Type::KING;
+            
             case 'q':
+            case 'Q':
                 return Type::QUEEN;
+            
             case 'r':
+            case 'R':
                 return Type::ROOK;
+            
             case 'b':
+            case 'B':
                 return Type::BISHOP;
+            
             case 'n':
+            case 'N':
                 return Type::KNIGHT;
+            
             case 'p':
+            case 'P':
                 return Type::PAWN;
+            
             default:
                 return Type::NONE;
         }
