@@ -170,6 +170,51 @@ public:
 
     static inline Piece byteToPiece( const unsigned char piece )
     {
+        switch ( piece & 0b1111 )
+        {
+            case 0b0001:
+                return wp;
+
+            case 0b0010:
+                return wn;
+
+            case 0b0011:
+                return wb;
+
+            case 0b0100:
+                return wr;
+
+            case 0b0101:
+                return wq;
+
+            case 0b0110:
+                return wk;
+
+            case 0b1001:
+                return bp;
+
+            case 0b1010:
+                return bn;
+
+            case 0b1011:
+                return bb;
+
+            case 0b1100:
+                return br;
+
+            case 0b1101:
+                return bq;
+
+            case 0b1110:
+                return bk;
+
+            case 0b0000:
+                return nn;
+        }
+    }
+
+    static inline Piece xbyteToPiece( const unsigned char piece )
+    {
         Piece::Type type;
         Piece::Color color = ( piece & 8 ) == 8 ? Piece::Color::BLACK : Piece::Color::WHITE;
 
@@ -261,12 +306,19 @@ public:
 
     Piece( Piece::Type type, Piece::Color color ) :
         type( type ),
-        color( color )
+        color( type == Piece::Type::NONE ? Piece::Color::NONE : color )
     {
 
     }
 
     Piece( Piece& piece ) :
+        type( piece.type ),
+        color( piece.color )
+    {
+
+    }
+
+    Piece( const Piece& piece ) :
         type( piece.type ),
         color( piece.color )
     {
@@ -287,5 +339,19 @@ public:
     {
         return type != piece.type || color != piece.color;
     }
-};
 
+    // Constant declarations
+    static const Piece wk;
+    static const Piece wq;
+    static const Piece wr;
+    static const Piece wb;
+    static const Piece wn;
+    static const Piece wp;
+    static const Piece bk;
+    static const Piece bq;
+    static const Piece br;
+    static const Piece bb;
+    static const Piece bn;
+    static const Piece bp;
+    static const Piece nn;
+};
