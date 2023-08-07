@@ -69,6 +69,11 @@ public:
         }
     }
 
+    static std::string toString( Piece piece )
+    {
+        return toString( piece.type, isBlack( piece ) );
+    }
+
     static Piece::Type fromString( std::string piece )
     {
         return fromString( piece[ 0 ] );
@@ -105,6 +110,17 @@ public:
             default:
                 return Type::NONE;
         }
+    }
+
+    static Piece fromFENString( char piece )
+    {
+        return Piece( fromString( piece ), 
+                      ( piece >= 'A' && piece <= 'Z' ) ? Piece::Color::WHITE : Piece::Color::BLACK );
+    }
+
+    static Piece fromFENString( std::string piece )
+    {
+        return fromFENString( piece[ 0 ] );
     }
 
     /// <summary>

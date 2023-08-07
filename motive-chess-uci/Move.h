@@ -56,5 +56,10 @@ public:
     {
         return to;
     }
+
+    inline bool isNullMove()
+    {
+        return from == 0 && to == 0;
+    }
 };
 

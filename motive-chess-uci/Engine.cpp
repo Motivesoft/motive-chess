@@ -604,6 +604,13 @@ void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
         LOG_DEBUG << " To:   " 
             << (char)( 'a' + Utilities::indexToFile( m->getTo() ) )
             << (char)( '1' + Utilities::indexToRank( m->getTo() ) );
+
+        Piece wk = Piece( Piece::Type::KNIGHT, Piece::Color::BLACK );
+        Piece bq = Piece::fromFENString( "B" );
+
+        LOG_DEBUG << " Pieces: "
+            << Piece::toString( wk )
+            << Piece::toString( bq );
     }
 }
 
