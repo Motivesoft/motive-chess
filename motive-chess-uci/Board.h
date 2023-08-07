@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Fen.h"
+
 class Board
 {
 private:
@@ -20,6 +22,11 @@ private:
 
 public:
     Board()
+    {
+
+    }
+
+    Board( Fen fenString )
     {
 
     }

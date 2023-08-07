@@ -8,7 +8,8 @@ public:
     enum class Color
     {
         WHITE,
-        BLACK
+        BLACK,
+        NONE
     };
 
     enum class Type
@@ -22,6 +23,11 @@ public:
         NONE
     };
 
+private:
+    Type type;
+    Color color;
+
+public:
     static std::string toString( Piece::Type piece, bool lowercase = true )
     {
         switch ( piece )
@@ -85,6 +91,35 @@ public:
             default:
                 return Type::NONE;
         }
+    }
+
+    Piece() :
+        type( Piece::Type::NONE ),
+        color( Piece::Color::NONE )
+    {
+
+    }
+
+    Piece( Piece& piece ) :
+        type( piece.type ),
+        color( piece.color )
+    {
+
+    }
+
+    virtual ~Piece()
+    {
+
+    }
+
+    bool operator == ( const Piece& piece )
+    {
+        return type == piece.type && color == piece.color;
+    }
+
+    bool operator != ( const Piece& piece )
+    {
+        return type != piece.type || color != piece.color;
     }
 };
 
