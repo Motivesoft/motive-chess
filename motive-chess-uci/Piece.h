@@ -114,8 +114,49 @@ public:
 
     static Piece fromFENString( char piece )
     {
-        return Piece( fromString( piece ), 
-                      ( piece >= 'A' && piece <= 'Z' ) ? Piece::Color::WHITE : Piece::Color::BLACK );
+        switch ( piece )
+        {
+            case 'K':
+                return wk;
+
+            case 'Q':
+                return wq;
+
+            case 'R':
+                return wr;
+
+            case 'B':
+                return wb;
+
+            case 'N':
+                return wn;
+
+            case 'P':
+                return wp;
+
+            case 'k':
+                return bk;
+
+            case 'q':
+                return bq;
+
+            case 'r':
+                return br;
+
+            case 'b':
+                return bb;
+
+            case 'n':
+                return bn;
+
+            case 'p':
+                return bp;
+
+            default:
+                return nn;
+        }
+        //return Piece( fromString( piece ), 
+        //              ( piece >= 'A' && piece <= 'Z' ) ? Piece::Color::WHITE : Piece::Color::BLACK );
     }
 
     static Piece fromFENString( std::string piece )
