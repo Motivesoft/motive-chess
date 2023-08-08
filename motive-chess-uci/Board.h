@@ -1,11 +1,13 @@
 #pragma once
 
+#include <array>
+
 #include "Fen.h"
 
 class Board
 {
 private:
-    unsigned char pieces[ 64 ];
+    std::array<unsigned char, 64> pieces;
 
     bool positionMatch( const Board& board )
     {
@@ -21,20 +23,32 @@ private:
     }
 
 public:
-    Board()
+    Board() :
+        pieces( std::array< unsigned char, 64>() )
     {
+        for ( int loop = 0; loop < 64; loop++ )
+        {
+            pieces[ loop ] = Piece::pieceToByte( Piece::nn );
+        }
+    };
 
-    }
-
-    Board( Fen fenString )
+    Board( Fen fenString ) :
+        pieces( std::array< unsigned char, 64>() )
     {
+        for ( int loop = 0; loop < 64; loop++ )
+        {
+            pieces[ loop ] = Piece::pieceToByte( Piece::nn );
+        }
+    };
 
-    }
-
-    Board( Board& board )
+    Board( Board& board ) :
+        pieces( std::array< unsigned char, 64>() )
     {
-
-    }
+        for ( int loop = 0; loop < 64; loop++ )
+        {
+            pieces[ loop ] = board.pieces[ loop ];
+        }
+    };
 
     virtual ~Board()
     {

@@ -261,6 +261,12 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
                 moves.push_back( *it );
             }
         }
+        else
+        {
+            // Assuming missing 'moves' section
+            LOG_WARN << "Unknown or unexpected position argument " << *it;
+            break;
+        }
     }
 
     if ( !fen.empty() )
@@ -583,9 +589,9 @@ void Engine::setoptionImpl( std::string& name, std::string& value )
     }
 }
 
-void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
+void Engine::positionImpl( std::string& fenString, std::vector<std::string> moves )
 {
-    LOG_INFO << "Position with FEN [" << fen << "] and " << moves.size() << " moves";
+    LOG_INFO << "Position with FEN [" << fenString << "] and " << moves.size() << " moves";
 
     // TODO implement
     LOG_DEBUG << "Moves:";
@@ -612,6 +618,9 @@ void Engine::positionImpl( std::string& fen, std::vector<std::string> moves )
             << Piece::toString( wk )
             << Piece::toString( bq );
     }
+
+    LOG_DEBUG << "Applying FEN string " << fenString;
+    Fen fen = Fen::fromPosition( fenString );
 }
 
 void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite )

@@ -44,34 +44,42 @@ private:
 public:
     static std::string toString( Piece::Type piece, bool lowercase = true )
     {
-        switch ( piece )
-        {
-            case Type::KING:
-                return lowercase ? "k" : "K";
-
-            case Type::QUEEN:
-                return lowercase ? "q" : "Q";
-
-            case Type::ROOK:
-                return lowercase ? "r" : "R";
-
-            case Type::BISHOP:
-                return lowercase ? "b" : "B";
-
-            case Type::KNIGHT:
-                return lowercase ? "n" : "N";
-
-            case Type::PAWN:
-                return lowercase ? "p" : "P";
-
-            default:
-                return "";
-        }
+        return toString( piece,
+                         piece == Piece::Type::NONE ? 
+                             Piece::Color::NONE : 
+                             lowercase ? Piece::Color::BLACK : Piece::Color::WHITE );
     }
 
     static std::string toString( Piece piece )
     {
-        return toString( piece.type, isBlack( piece ) );
+        return toString( piece.type, piece.color );
+    }
+
+    static std::string toString( Piece::Type piece, Piece::Color color )
+    {
+        switch ( piece )
+        {
+            case Type::KING:
+                return color == Piece::Color::WHITE ? "K" : "k";
+
+            case Type::QUEEN:
+                return color == Piece::Color::WHITE ? "Q" : "q";
+
+            case Type::ROOK:
+                return color == Piece::Color::WHITE ? "R" : "r";
+
+            case Type::BISHOP:
+                return color == Piece::Color::WHITE ? "B" : "b";
+
+            case Type::KNIGHT:
+                return color == Piece::Color::WHITE ? "N" : "n";
+
+            case Type::PAWN:
+                return color == Piece::Color::WHITE ? "P" : "p";
+
+            default:
+                return "";
+        }
     }
 
     static Piece::Type fromString( std::string piece )
@@ -112,7 +120,7 @@ public:
         }
     }
 
-    static Piece fromFENString( char piece )
+    static const Piece fromFENString( char piece )
     {
         switch ( piece )
         {
@@ -159,7 +167,7 @@ public:
         //              ( piece >= 'A' && piece <= 'Z' ) ? Piece::Color::WHITE : Piece::Color::BLACK );
     }
 
-    static Piece fromFENString( std::string piece )
+    static const Piece fromFENString( std::string piece )
     {
         return fromFENString( piece[ 0 ] );
     }
@@ -254,45 +262,45 @@ public:
         }
     }
 
-    static inline Piece xbyteToPiece( const unsigned char piece )
-    {
-        Piece::Type type;
-        Piece::Color color = ( piece & 8 ) == 8 ? Piece::Color::BLACK : Piece::Color::WHITE;
+    //static inline Piece xbyteToPiece( const unsigned char piece )
+    //{
+    //    Piece::Type type;
+    //    Piece::Color color = ( piece & 8 ) == 8 ? Piece::Color::BLACK : Piece::Color::WHITE;
 
-        switch ( piece & 7 )
-        {
-            case 0b001:
-                type = Piece::Type::PAWN;
-                break;
+    //    switch ( piece & 7 )
+    //    {
+    //        case 0b001:
+    //            type = Piece::Type::PAWN;
+    //            break;
 
-            case 0b010:
-                type = Piece::Type::KNIGHT;
-                break;
+    //        case 0b010:
+    //            type = Piece::Type::KNIGHT;
+    //            break;
 
-            case 0b011:
-                type = Piece::Type::BISHOP;
-                break;
+    //        case 0b011:
+    //            type = Piece::Type::BISHOP;
+    //            break;
 
-            case 0b100:
-                type = Piece::Type::ROOK;
-                break;
+    //        case 0b100:
+    //            type = Piece::Type::ROOK;
+    //            break;
 
-            case 0b101:
-                type = Piece::Type::QUEEN;
-                break;
+    //        case 0b101:
+    //            type = Piece::Type::QUEEN;
+    //            break;
 
-            case 0b110:
-                type = Piece::Type::KING;
-                break;
+    //        case 0b110:
+    //            type = Piece::Type::KING;
+    //            break;
 
-            default:
-            case 0b000:
-                type = Piece::Type::NONE;
-                break;
-        }
+    //        default:
+    //        case 0b000:
+    //            type = Piece::Type::NONE;
+    //            break;
+    //    }
 
-        return Piece( type, color );
-    }
+    //    return Piece( type, color );
+    //}
 
     static inline unsigned char colorBit( const unsigned char& piece )
     {
@@ -369,6 +377,11 @@ public:
     virtual ~Piece()
     {
 
+    }
+
+    Piece operator = ( const Piece& piece )
+    {
+        return Piece( piece.type, piece.color );
     }
 
     bool operator == ( const Piece& piece )
