@@ -21,8 +21,8 @@
 class Piece
 {
 public:
-    static const unsigned char COLOR_MASK         = 0b00110000;
-    static const unsigned char INVERSE_COLOR_MASK = 0b11000111;
+    static const unsigned char COLOR_MASK         = 0b00011000;
+    static const unsigned char INVERSE_COLOR_MASK = 0b11100111;
     static const unsigned char PIECE_MASK         = 0b00000111; // Mask
     static const unsigned char INVERSE_PIECE_MASK = 0b11111000; // Mask
 

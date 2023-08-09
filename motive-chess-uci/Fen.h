@@ -43,5 +43,7 @@ public:
     {
 
     }
+
+    friend class Board;
 };
 
