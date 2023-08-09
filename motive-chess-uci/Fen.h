@@ -12,16 +12,34 @@ class Fen
 {
 private:
     std::array< Piece, 64 > board;
+    Piece::Color activeColor;
+    bool castlingWK;
+    bool castlingWQ;
+    bool castlingBK;
+    bool castlingBQ;
+    unsigned short enPassantIndex;
+    unsigned short halfmoveClock;
+    unsigned short fullmoveNumber;
 
     Fen( std::string position )
     {
-        // Fen starts at eighth rank and first file, so the indexing here looks a little goofy
-        std::string::iterator it;
-        short index = 56;
-
         LOG_DEBUG << "Processing FEN string " << position;
 
+        std::string::iterator it;
+        std::string::iterator end = position.end();
+
+        // Default setup before processing
+
         std::fill( board.begin(), board.end(), Piece::nn );
+
+        castlingWK = false;
+        castlingWQ = false;
+        castlingBK = false;
+        castlingBQ = false;
+
+        // Board contents - starts at eighth rank and first file, so the indexing here looks a little goofy
+
+        short index = 56;
 
         for ( it = position.begin(); it != position.end(); it++ )
         {
@@ -80,12 +98,117 @@ private:
                     break;
             }
 
-            if ( index < 0 || *it == ' ' )
+            if ( *it == ' ' )
             {
                 LOG_DEBUG << "Finished board extraction with index at " << index << " (expected at 8)";
                 break;
             }
         }
+
+        skipSpace( it, end );
+
+        // Active color
+
+        activeColor = *it++ == 'w' ? Piece::Color::WHITE : Piece::Color::BLACK;
+
+        LOG_DEBUG << "Active color: " << (activeColor == Piece::Color::WHITE ? "White" : "Black" );
+
+        skipSpace( it, end );
+
+        // Castling rights (whichever still available are presented from KQkq with '-' for none)
+
+        while ( *it != ' ' )
+        {
+            if ( *it == 'K' )
+            {
+                castlingWK = true;
+
+                LOG_DEBUG << "King-side castling available for White";
+            }
+            else if ( *it == 'Q' )
+            {
+                castlingWQ = true;
+
+                LOG_DEBUG << "Queen-side castling available for White";
+            }
+            else if ( *it == 'k' )
+            {
+                castlingBK = true;
+
+                LOG_DEBUG << "King-side castling available for Black";
+            }
+            else if ( *it == 'q' )
+            {
+                castlingBQ = true;
+
+                LOG_DEBUG << "Queen-side castling available for Black";
+            }
+            else if ( *it != '-' )
+            {
+                LOG_ERROR << "Unexpected entry in castling section of FEN string " << *it;
+            }
+
+            it++;
+        }
+
+        skipSpace( it, end );
+
+        // En passant target square or '-' for none
+
+        std::string enPassantValue = nextWord( it, end );
+
+        enPassantIndex = enPassantValue == "-" ? USHRT_MAX : Utilities::squareToIndex( enPassantValue );
+
+        LOG_DEBUG << "En passant square: " << (enPassantIndex == USHRT_MAX ? "none" : Utilities::indexToSquare( enPassantIndex ) );
+
+        skipSpace( it, end );
+
+        // Halfmove clock
+
+        std::string halfmoveClockValue = nextWord( it, end );
+
+        halfmoveClock = atoi( halfmoveClockValue.c_str() );
+
+        LOG_DEBUG << "Halfmove clock " << halfmoveClock;
+
+        skipSpace( it, end );
+
+        // Fullmove number
+
+        std::string fullmoveValue = nextWord( it, end );
+
+        fullmoveNumber = atoi( fullmoveValue.c_str() );
+
+        LOG_DEBUG << "Fullmove number " << fullmoveNumber;
+
+        // Should be at end now
+
+        if ( it != position.end() )
+        {
+            LOG_ERROR << "Unexpected data at end of FEN string";
+        }
+    }
+
+    void skipSpace( std::string::iterator& it, std::string::iterator& end )
+    {
+        while ( it != end && *it == ' ' )
+        {
+            it++;
+        }
+    }
+
+    std::string nextWord( std::string::iterator& it, std::string::iterator& end )
+    {
+        std::stringstream stream;
+
+        stream.clear();
+
+        while ( it != end && *it != ' ' )
+        {
+            stream << *it++;
+        }
+
+        return stream.str();
     }
 
 public:
