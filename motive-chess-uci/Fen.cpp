@@ -11,8 +11,6 @@ Fen::Fen( std::string position )
 
     // Default setup before processing
 
-    std::fill( board.begin(), board.end(), Piece::nn );
-
     castlingWK = false;
     castlingWQ = false;
     castlingBK = false;
@@ -38,10 +36,22 @@ Fen::Fen( std::string position )
             case 'b':
             case 'n':
             case 'p':
-                LOG_DEBUG << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")";
-                board[ index++ ] = Piece::fromFENString( *it );
+            {
+                LOG_TRACE << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")";
+                LOG_TRACE << "PRE: Board[ " << index << " ] = " << board[ index ].toString() << ".Setting to " << *it;
+                board[ index ] = Piece::fromFENString( *it );
+                LOG_TRACE << "SET: Board[ " << index << " ] = " << board[ index ].toString() << ". Should be " << Piece::fromFENString( *it ).toString();
+                index++;
                 break;
-
+            }
+            //{
+            //    LOG_TRACE << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")";
+            //    LOG_TRACE << "PRE: Board[ " << index << " ] = " << board[ index ] << ".Setting to " << *it;
+            //    board[ index ] = Piece::pieceToByte( Piece::fromFENString( *it ) );
+            //    LOG_TRACE << "SET: Board[ " << index << " ] = " << board[ index ] << ". Should be " << Piece::fromFENString( *it ).toString();
+            //    index++;
+            //    break;
+            //}
             case '1':
             case '2':
             case '3':
@@ -54,9 +64,9 @@ Fen::Fen( std::string position )
                 std::stringstream digit;
                 digit << *it;
 
-                LOG_DEBUG << "Skipping " << digit.str() << " from " << index;
+                LOG_TRACE << "Skipping " << digit.str() << " from " << index;
                 index += atoi( digit.str().c_str() );
-                LOG_DEBUG << " to " << index;
+                LOG_TRACE << " to " << index;
 
                 break;
             }
@@ -65,14 +75,14 @@ Fen::Fen( std::string position )
                 // If we are not currently at the start of the next line, jump to it
                 if ( ( index & 0b0111 ) != 0 )
                 {
-                    LOG_DEBUG << "Jumping to end of line from " << index;
+                    LOG_TRACE << "Jumping to end of line from " << index;
                     index = ( index & ~0b0111 ) + 8;
-                    LOG_DEBUG << " to " << index;
+                    LOG_TRACE << " to " << index;
                 }
 
-                LOG_DEBUG << "Stepping to next line from " << index;
+                LOG_TRACE << "Stepping to next line from " << index;
                 index -= 16;
-                LOG_DEBUG << " to " << index;
+                LOG_TRACE << " to " << index;
 
             default:
             case ' ':
@@ -81,10 +91,29 @@ Fen::Fen( std::string position )
 
         if ( *it == ' ' )
         {
-            LOG_DEBUG << "Finished board extraction with index at " << index << " (expected at 8)";
+            LOG_TRACE << "Finished board extraction with index at " << index << " (expected at 8)";
             break;
         }
     }
+
+    LOG_DEBUG << "Board:";
+    LOG_DEBUG << "  ABCDEFGH";
+    for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
+    {
+        std::stringstream stream;
+        for ( index = rankIndex; index < rankIndex + 8; index++ )
+        {
+            stream << ( board[ index ] == Piece::nn ?
+                        ( ( index & 1 ) == 0 ? "." : " " ) :
+                        Piece::toString( board[ index ] ) );
+            //stream << ( board[ index ] == Piece::pieceToByte( Piece::nn ) ?
+            //                ((index & 1) == 0 ? "." : " ") :
+            //                Piece::toString( Piece::byteToPiece( board[ index ] ) ) );
+        }
+
+        LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
+    }
+    LOG_DEBUG << "  ABCDEFGH";
 
     skipSpace( it, end );
 

@@ -19,6 +19,208 @@
 class Piece
 {
 public:
+    static const unsigned char WHITE    = 0b00010000;
+    static const unsigned char BLACK    = 0b00100000;
+    static const unsigned char NOCOLOR  = 0b00000000;
+
+    static const unsigned char NOPIECE = 0b00000000;
+    static const unsigned char KING    = 0b00000110;
+    static const unsigned char QUEEN   = 0b00000101;
+    static const unsigned char ROOK    = 0b00000100;
+    static const unsigned char BISHOP  = 0b00000011;
+    static const unsigned char KNIGHT  = 0b00000010;
+    static const unsigned char PAWN    = 0b00000001;
+
+    static const unsigned char NOTHING = 0b00000000; // NOCOLOR | NOPIECE
+    static const unsigned char WKING   = 0b00001110; // WHITE   | KING  
+    static const unsigned char WQUEEN  = 0b00001101; // WHITE   | QUEEN 
+    static const unsigned char WROOK   = 0b00001100; // WHITE   | ROOK  
+    static const unsigned char WBISHOP = 0b00001011; // WHITE   | BISHOP
+    static const unsigned char WKNIGHT = 0b00001010; // WHITE   | KNIGHT
+    static const unsigned char WPAWN   = 0b00001001; // WHITE   | PAWN  
+    static const unsigned char BKING   = 0b00010110; // BLACK   | KING  
+    static const unsigned char BQUEEN  = 0b00010101; // BLACK   | QUEEN 
+    static const unsigned char BROOK   = 0b00010100; // BLACK   | ROOK  
+    static const unsigned char BBISHOP = 0b00010011; // BLACK   | BISHOP
+    static const unsigned char BKNIGHT = 0b00010010; // BLACK   | KNIGHT
+    static const unsigned char BPAWN   = 0b00010001; // BLACK   | PAWN  
+    
+    static std::string toFENStrin0b001g( const unsigned char value )
+    {
+        switch ( value )
+        {
+            case WKING:
+                return "K";
+
+            case WQUEEN:
+                return "Q";
+
+            case WROOK:
+                return "R";
+
+            case WBISHOP:
+                return "B";
+
+            case WKNIGHT:
+                return "N";
+
+            case WPAWN:
+                return "P";
+
+            case BKING:
+                return "k";
+
+            case BQUEEN:
+                return "q";
+
+            case BROOK:
+                return "r";
+
+            case BBISHOP:
+                return "b";
+
+            case BKNIGHT:
+                return "n";
+
+            case BPAWN:
+                return "p";
+
+            case NOTHING:
+            default:
+                return "";
+        }
+    }
+
+    static std::string toMovesString( unsigned char value )
+    {
+        switch ( value )
+        {
+            case WKING:
+            case BKING:
+                return "k";
+
+            case WQUEEN:
+            case BQUEEN:
+                return "q";
+
+            case WROOK:
+            case BROOK:
+                return "r";
+
+            case WBISHOP:
+            case BBISHOP:
+                return "b";
+
+            case WKNIGHT:
+            case BKNIGHT:
+                return "n";
+
+            case WPAWN:
+            case BPAWN:
+                return "p";
+
+            default:
+                return "";
+        }
+    }
+
+    static unsigned char fromFENString( std::string value )
+    {
+        return fromFENString( value[ 0 ] );
+    }
+
+    static unsigned char fromFENString( char value )
+    {
+        switch ( value )
+        {
+            case 'K':
+                return WKING;
+
+            case 'Q':
+                return WQUEEN;
+
+            case 'R':
+                return WROOK;
+
+            case 'B':
+                return WBISHOP;
+
+            case 'N':
+                return WKNIGHT;
+
+            case 'P':
+                return WPAWN;
+
+            case 'k':
+                return BKING;
+
+            case 'q':
+                return BQUEEN;
+
+            case 'r':
+                return BROOK;
+
+            case 'b':
+                return BBISHOP;
+
+            case 'n':
+                return BKNIGHT;
+
+            case 'p':
+                return BPAWN;
+
+            default:
+                return NOTHING;
+        }
+    }
+
+    inline static bool isEmpty( unsigned char value )
+    {
+        return value == NOTHING;
+    }
+
+    inline static bool isWhite( unsigned char value )
+    {
+        return value & WHITE == WHITE;
+    }
+
+    inline static bool isBlack( unsigned char value )
+    {
+        return value & BLACK == BLACK;
+    }
+
+    inline static bool isKing( unsigned char value )
+    {
+        return value & KING == KING;
+    }
+
+    inline static bool isQueen( unsigned char value )
+    {
+        return value & QUEEN == QUEEN;
+    }
+
+    inline static bool isRook( unsigned char value )
+    {
+        return value & ROOK == ROOK;
+    }
+
+    inline static bool isBishop( unsigned char value )
+    {
+        return value & BISHOP == BISHOP;
+    }
+
+    inline static bool isKnight( unsigned char value )
+    {
+        return value & KNIGHT == KNIGHT;
+    }
+
+    inline static bool isPawn( unsigned char value )
+    {
+        return value & PAWN == PAWN;
+    }
+
+    /*
+public:
     enum class Color
     {
         WHITE,
@@ -120,7 +322,7 @@ public:
         }
     }
 
-    static const Piece fromFENString( char piece )
+    static Piece fromFENString( char piece )
     {
         switch ( piece )
         {
@@ -167,7 +369,7 @@ public:
         //              ( piece >= 'A' && piece <= 'Z' ) ? Piece::Color::WHITE : Piece::Color::BLACK );
     }
 
-    static const Piece fromFENString( std::string piece )
+    static Piece fromFENString( std::string piece )
     {
         return fromFENString( piece[ 0 ] );
     }
@@ -257,6 +459,7 @@ public:
             case 0b1110:
                 return bk;
 
+            default:
             case 0b0000:
                 return nn;
         }
@@ -379,11 +582,6 @@ public:
 
     }
 
-    Piece operator = ( const Piece& piece )
-    {
-        return Piece( piece.type, piece.color );
-    }
-
     bool operator == ( const Piece& piece )
     {
         return type == piece.type && color == piece.color;
@@ -392,6 +590,11 @@ public:
     bool operator != ( const Piece& piece )
     {
         return type != piece.type || color != piece.color;
+    }
+
+    std::string toString()
+    {
+        return Piece::toString( *this );
     }
 
     // Constant declarations
@@ -408,4 +611,5 @@ public:
     static const Piece bn;
     static const Piece bp;
     static const Piece nn;
+    */
 };
