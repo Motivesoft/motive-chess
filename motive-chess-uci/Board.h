@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "Fen.h"
 #include "Piece.h"
 
 class Board
@@ -45,7 +46,7 @@ public:
            bool castlingWQ,
            bool castlingBK,
            bool castlingBQ,
-           unsigned short enPassanIndex,
+           unsigned short enPassantIndex,
            unsigned short halfmoveClock,
            unsigned short fullmoveNumber ) :
         pieces( pieces ),
@@ -68,6 +69,17 @@ public:
     {
         // TODO
     };
+
+    Board( Fen& fen ) :
+        pieces( fen.board ),
+        activeColor( fen.activeColor ),
+        castling { fen.castlingWK, fen.castlingWQ, fen.castlingBK, fen.castlingBQ },
+        enPassantIndex( fen.enPassantIndex ),
+        halfmoveClock( fen.halfmoveClock ),
+        fullmoveNumber( fen.fullmoveNumber )
+    {
+
+    }
 
     virtual ~Board()
     {
