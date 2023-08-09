@@ -181,42 +181,42 @@ public:
 
     inline static bool isWhite( unsigned char value )
     {
-        return value & WHITE == WHITE;
+        return (value & WHITE) == WHITE;
     }
 
     inline static bool isBlack( unsigned char value )
     {
-        return value & BLACK == BLACK;
+        return (value & BLACK) == BLACK;
     }
 
     inline static bool isKing( unsigned char value )
     {
-        return value & KING == KING;
+        return (value & KING) == KING;
     }
 
     inline static bool isQueen( unsigned char value )
     {
-        return value & QUEEN == QUEEN;
+        return (value & QUEEN) == QUEEN;
     }
 
     inline static bool isRook( unsigned char value )
     {
-        return value & ROOK == ROOK;
+        return (value & ROOK) == ROOK;
     }
 
     inline static bool isBishop( unsigned char value )
     {
-        return value & BISHOP == BISHOP;
+        return (value & BISHOP) == BISHOP;
     }
 
     inline static bool isKnight( unsigned char value )
     {
-        return value & KNIGHT == KNIGHT;
+        return (value & KNIGHT) == KNIGHT;
     }
 
     inline static bool isPawn( unsigned char value )
     {
-        return value & PAWN == PAWN;
+        return (value & PAWN) == PAWN;
     }
 
     /*
