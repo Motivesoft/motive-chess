@@ -26,24 +26,23 @@ public:
     Board() :
         pieces( std::array< unsigned char, 64>() )
     {
+        // TODO include other attributes
         for ( int loop = 0; loop < 64; loop++ )
         {
-            pieces[ loop ] = Piece::pieceToByte( Piece::nn );
+            pieces[ loop ] = Piece::NOTHING;
         }
     };
 
     Board( Fen fenString ) :
         pieces( std::array< unsigned char, 64>() )
     {
-        for ( int loop = 0; loop < 64; loop++ )
-        {
-            pieces[ loop ] = Piece::pieceToByte( Piece::nn );
-        }
+        // TODO implement this
     };
 
     Board( Board& board ) :
         pieces( std::array< unsigned char, 64>() )
     {
+        // TODO copy other attributes
         for ( int loop = 0; loop < 64; loop++ )
         {
             pieces[ loop ] = board.pieces[ loop ];

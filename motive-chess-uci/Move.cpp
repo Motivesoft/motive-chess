@@ -10,7 +10,7 @@ Move* Move::fromString( std::string& moveString )
     {
         return new Move( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
                          Utilities::squareToIndex( moveString.substr( 2, 2 ) ),
-                         Piece::fromString( moveString[ 4 ] ) );
+                         Piece::fromMoveString( moveString[ 4 ] ) );
     }
 
     return new Move( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
@@ -23,7 +23,7 @@ std::string Move::toString( Move* move, bool lowercase )
 
     stream << Utilities::indexToSquare( move->from, lowercase )
            << Utilities::indexToSquare( move->to, lowercase )
-           << Piece::toString( move->promotion, lowercase );
+           << Piece::toMoveString( move->promotion );
 
     return stream.str();
 }

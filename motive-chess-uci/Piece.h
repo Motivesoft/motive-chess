@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "Logger.h"
+
 /// <summary>
 /// Bit mask for piece to byte:
 /// 76543210
@@ -19,17 +21,23 @@
 class Piece
 {
 public:
-    static const unsigned char WHITE    = 0b00010000;
-    static const unsigned char BLACK    = 0b00100000;
-    static const unsigned char NOCOLOR  = 0b00000000;
+    static const unsigned char COLOR_MASK         = 0b00110000;
+    static const unsigned char INVERSE_COLOR_MASK = 0b11000111;
+    static const unsigned char PIECE_MASK         = 0b00000111; // Mask
+    static const unsigned char INVERSE_PIECE_MASK = 0b11111000; // Mask
 
-    static const unsigned char NOPIECE = 0b00000000;
-    static const unsigned char KING    = 0b00000110;
-    static const unsigned char QUEEN   = 0b00000101;
-    static const unsigned char ROOK    = 0b00000100;
-    static const unsigned char BISHOP  = 0b00000011;
-    static const unsigned char KNIGHT  = 0b00000010;
-    static const unsigned char PAWN    = 0b00000001;
+    static const unsigned char WHITE      = 0b00001000;
+    static const unsigned char BLACK      = 0b00010000;
+    static const unsigned char NOCOLOR    = 0b00000000;
+
+    // Note that these are the non-colored (color unknow) versions
+    static const unsigned char NOPIECE   = 0b00000000;
+    static const unsigned char KING      = 0b00000110;
+    static const unsigned char QUEEN     = 0b00000101;
+    static const unsigned char ROOK      = 0b00000100;
+    static const unsigned char BISHOP    = 0b00000011;
+    static const unsigned char KNIGHT    = 0b00000010;
+    static const unsigned char PAWN      = 0b00000001;
 
     static const unsigned char NOTHING = 0b00000000; // NOCOLOR | NOPIECE
     static const unsigned char WKING   = 0b00001110; // WHITE   | KING  
@@ -45,7 +53,7 @@ public:
     static const unsigned char BKNIGHT = 0b00010010; // BLACK   | KNIGHT
     static const unsigned char BPAWN   = 0b00010001; // BLACK   | PAWN  
     
-    static std::string toFENStrin0b001g( const unsigned char value )
+    static std::string toFENString( const unsigned char value )
     {
         switch ( value )
         {
@@ -91,7 +99,7 @@ public:
         }
     }
 
-    static std::string toMovesString( unsigned char value )
+    static std::string toMoveString( unsigned char value )
     {
         switch ( value )
         {
@@ -170,8 +178,53 @@ public:
                 return BPAWN;
 
             default:
+                LOG_WARN << "Unexpected letter in FEN string: " << value;
                 return NOTHING;
         }
+    }
+
+    static unsigned char fromMoveString( std::string value )
+    {
+        return fromMoveString( value[ 0 ] );
+    }
+
+    /// <summary>
+    /// Return a piece from a letter value, but don't infer any color info as UCI 'moves' lists do not use case
+    /// for color in pawn promotions such as e7e8q
+    /// </summary>
+    /// <param name="value">a piece letter</param>
+    /// <returns>a piece</returns>
+    static unsigned char fromMoveString( char value )
+    {
+        switch ( value )
+        {
+            case 'k':
+            case 'K':
+                return Piece::KING;
+
+            case 'q':
+            case 'Q':
+                return Piece::QUEEN;
+
+            case 'r':
+            case 'R':
+                return Piece::ROOK;
+
+            case 'b':
+            case 'B':
+                return Piece::BISHOP;
+
+            case 'n':
+            case 'N':
+                return Piece::KNIGHT;
+
+            case 'p':
+            case 'P':
+                return Piece::PAWN;
+        }
+
+        LOG_WARN << "Unexpected letter in move string: " << value;
+        return Piece::NOTHING;
     }
 
     inline static bool isEmpty( unsigned char value )
@@ -219,397 +272,27 @@ public:
         return (value & PAWN) == PAWN;
     }
 
-    /*
-public:
-    enum class Color
-    {
-        WHITE,
-        BLACK,
-        NONE
-    };
-
-    enum class Type
-    {
-        KING,
-        QUEEN,
-        ROOK,
-        BISHOP,
-        KNIGHT,
-        PAWN,
-        NONE
-    };
-
-private:
-    const Type type;
-    const Color color;
-
-public:
-    static std::string toString( Piece::Type piece, bool lowercase = true )
-    {
-        return toString( piece,
-                         piece == Piece::Type::NONE ? 
-                             Piece::Color::NONE : 
-                             lowercase ? Piece::Color::BLACK : Piece::Color::WHITE );
-    }
-
-    static std::string toString( Piece piece )
-    {
-        return toString( piece.type, piece.color );
-    }
-
-    static std::string toString( Piece::Type piece, Piece::Color color )
-    {
-        switch ( piece )
-        {
-            case Type::KING:
-                return color == Piece::Color::WHITE ? "K" : "k";
-
-            case Type::QUEEN:
-                return color == Piece::Color::WHITE ? "Q" : "q";
-
-            case Type::ROOK:
-                return color == Piece::Color::WHITE ? "R" : "r";
-
-            case Type::BISHOP:
-                return color == Piece::Color::WHITE ? "B" : "b";
-
-            case Type::KNIGHT:
-                return color == Piece::Color::WHITE ? "N" : "n";
-
-            case Type::PAWN:
-                return color == Piece::Color::WHITE ? "P" : "p";
-
-            default:
-                return "";
-        }
-    }
-
-    static Piece::Type fromString( std::string piece )
-    {
-        return fromString( piece[ 0 ] );
-    }
-
-    static Piece::Type fromString( char piece )
-    {
-        switch ( piece )
-        {
-            case 'k':
-            case 'K':
-                return Type::KING;
-            
-            case 'q':
-            case 'Q':
-                return Type::QUEEN;
-            
-            case 'r':
-            case 'R':
-                return Type::ROOK;
-            
-            case 'b':
-            case 'B':
-                return Type::BISHOP;
-            
-            case 'n':
-            case 'N':
-                return Type::KNIGHT;
-            
-            case 'p':
-            case 'P':
-                return Type::PAWN;
-            
-            default:
-                return Type::NONE;
-        }
-    }
-
-    static Piece fromFENString( char piece )
-    {
-        switch ( piece )
-        {
-            case 'K':
-                return wk;
-
-            case 'Q':
-                return wq;
-
-            case 'R':
-                return wr;
-
-            case 'B':
-                return wb;
-
-            case 'N':
-                return wn;
-
-            case 'P':
-                return wp;
-
-            case 'k':
-                return bk;
-
-            case 'q':
-                return bq;
-
-            case 'r':
-                return br;
-
-            case 'b':
-                return bb;
-
-            case 'n':
-                return bn;
-
-            case 'p':
-                return bp;
-
-            default:
-                return nn;
-        }
-        //return Piece( fromString( piece ), 
-        //              ( piece >= 'A' && piece <= 'Z' ) ? Piece::Color::WHITE : Piece::Color::BLACK );
-    }
-
-    static Piece fromFENString( std::string piece )
-    {
-        return fromFENString( piece[ 0 ] );
-    }
-
     /// <summary>
-    /// Converts a piece into a byte representation
+    /// Takes a non-colored piece, such as a promotion piece from a UCI 'moves' list, and apply a color to it
     /// </summary>
-    /// <param name="piece">a piece</param>
-    /// <returns>a byte value representing a piece</returns>
-    static inline unsigned char pieceToByte( const Piece& piece )
+    /// <param name="piece">the piece</param>
+    /// <param name="color">the color to apply</param>
+    /// <returns>the colorised piece</returns>
+    inline static unsigned char toColor( unsigned char piece, unsigned char color )
     {
-        unsigned char value = piece.color == Piece::Color::WHITE ? 0 : 1 << 3;
-
-        switch ( piece.type )
+        // This looks like we could condense to a single line, but the compiler insists
+        // we have a logical/bitwise issue however we code it, so go with this version
+        switch ( color & COLOR_MASK )
         {
-            case Piece::Type::PAWN:
-                value |= 0b001;
-                break;
+            case WHITE:
+                return ( piece & INVERSE_COLOR_MASK ) + WHITE;
 
-            case Piece::Type::KNIGHT:
-                value |= 0b010;
-                break;
-
-            case Piece::Type::BISHOP:
-                value |= 0b011;
-                break;
-
-            case Piece::Type::ROOK:
-                value |= 0b100;
-                break;
-
-            case Piece::Type::QUEEN:
-                value |= 0b101;
-                break;
-
-            case Piece::Type::KING:
-                value |= 0b110;
-                break;
+            case BLACK:
+                return ( piece & INVERSE_COLOR_MASK ) | BLACK;
 
             default:
-            case Piece::Type::NONE:
-                // Do nothing
-                value |= 0b000;
-                break;
-        }
-
-        return value;
-    }
-
-    static inline Piece byteToPiece( const unsigned char piece )
-    {
-        switch ( piece & 0b1111 )
-        {
-            case 0b0001:
-                return wp;
-
-            case 0b0010:
-                return wn;
-
-            case 0b0011:
-                return wb;
-
-            case 0b0100:
-                return wr;
-
-            case 0b0101:
-                return wq;
-
-            case 0b0110:
-                return wk;
-
-            case 0b1001:
-                return bp;
-
-            case 0b1010:
-                return bn;
-
-            case 0b1011:
-                return bb;
-
-            case 0b1100:
-                return br;
-
-            case 0b1101:
-                return bq;
-
-            case 0b1110:
-                return bk;
-
-            default:
-            case 0b0000:
-                return nn;
+                // Unexpected, and nothing obvious to do here, so just strip the color
+                return ( piece & INVERSE_COLOR_MASK ); 
         }
     }
-
-    //static inline Piece xbyteToPiece( const unsigned char piece )
-    //{
-    //    Piece::Type type;
-    //    Piece::Color color = ( piece & 8 ) == 8 ? Piece::Color::BLACK : Piece::Color::WHITE;
-
-    //    switch ( piece & 7 )
-    //    {
-    //        case 0b001:
-    //            type = Piece::Type::PAWN;
-    //            break;
-
-    //        case 0b010:
-    //            type = Piece::Type::KNIGHT;
-    //            break;
-
-    //        case 0b011:
-    //            type = Piece::Type::BISHOP;
-    //            break;
-
-    //        case 0b100:
-    //            type = Piece::Type::ROOK;
-    //            break;
-
-    //        case 0b101:
-    //            type = Piece::Type::QUEEN;
-    //            break;
-
-    //        case 0b110:
-    //            type = Piece::Type::KING;
-    //            break;
-
-    //        default:
-    //        case 0b000:
-    //            type = Piece::Type::NONE;
-    //            break;
-    //    }
-
-    //    return Piece( type, color );
-    //}
-
-    static inline unsigned char colorBit( const unsigned char& piece )
-    {
-        return piece & 8;
-    }
-
-    static inline unsigned char typeBits( const unsigned char& piece )
-    {
-        return piece & 7;
-    }
-
-    static inline bool isNothing( const Piece& piece )
-    {
-        return piece.type == Piece::Type::NONE;
-    }
-
-    static inline bool isNothing( const unsigned char& piece )
-    {
-        return typeBits( piece ) == 0b000;
-    }
-
-    static inline bool isWhite( const Piece& piece )
-    {
-        // Piece has white color and is a piece type
-        return piece.color == Piece::Color::WHITE && !isNothing( piece );
-    }
-
-    static inline bool isWhite( const unsigned char& piece )
-    {
-        // Piece has white bit set and is a piece type
-        return !colorBit( piece ) && !isNothing( piece );
-    }
-
-    static inline bool isBlack( const Piece& piece )
-    {
-        // Piece has black color and is a piece type
-        return piece.color == Piece::Color::BLACK && !isNothing( piece );
-    }
-
-    static inline bool isBlack( const unsigned char& piece )
-    {
-        // Piece has black bit set and is a piece type
-        return colorBit( piece ) && !isNothing( piece );
-    }
-
-    Piece() :
-        type( Piece::Type::NONE ),
-        color( Piece::Color::NONE )
-    {
-
-    }
-
-    Piece( Piece::Type type, Piece::Color color ) :
-        type( type ),
-        color( type == Piece::Type::NONE ? Piece::Color::NONE : color )
-    {
-
-    }
-
-    Piece( Piece& piece ) :
-        type( piece.type ),
-        color( piece.color )
-    {
-
-    }
-
-    Piece( const Piece& piece ) :
-        type( piece.type ),
-        color( piece.color )
-    {
-
-    }
-
-    virtual ~Piece()
-    {
-
-    }
-
-    bool operator == ( const Piece& piece )
-    {
-        return type == piece.type && color == piece.color;
-    }
-
-    bool operator != ( const Piece& piece )
-    {
-        return type != piece.type || color != piece.color;
-    }
-
-    std::string toString()
-    {
-        return Piece::toString( *this );
-    }
-
-    // Constant declarations
-    static const Piece wk;
-    static const Piece wq;
-    static const Piece wr;
-    static const Piece wb;
-    static const Piece wn;
-    static const Piece wp;
-    static const Piece bk;
-    static const Piece bq;
-    static const Piece br;
-    static const Piece bb;
-    static const Piece bn;
-    static const Piece bp;
-    static const Piece nn;
-    */
 };

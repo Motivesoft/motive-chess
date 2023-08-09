@@ -10,8 +10,8 @@
 class Fen
 {
 private:
-    std::array< Piece&, 64 > board;
-    Piece::Color activeColor;
+    std::array< unsigned char, 64 > board;
+    unsigned char activeColor;
     bool castlingWK;
     bool castlingWQ;
     bool castlingBK;

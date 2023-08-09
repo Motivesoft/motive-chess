@@ -611,12 +611,12 @@ void Engine::positionImpl( std::string& fenString, std::vector<std::string> move
             << (char)( 'a' + Utilities::indexToFile( m->getTo() ) )
             << (char)( '1' + Utilities::indexToRank( m->getTo() ) );
 
-        Piece wk = Piece( Piece::Type::KNIGHT, Piece::Color::BLACK );
-        Piece bq = Piece::fromFENString( "B" );
+        unsigned char wk = Piece::WKNIGHT;
+        unsigned char bq = Piece::BQUEEN;
 
         LOG_DEBUG << " Pieces: "
-            << Piece::toString( wk )
-            << Piece::toString( bq );
+            << Piece::toFENString( wk )
+            << Piece::toFENString( bq );
     }
 
     LOG_DEBUG << "Applying FEN string " << fenString;

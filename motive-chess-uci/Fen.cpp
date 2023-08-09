@@ -11,6 +11,8 @@ Fen::Fen( std::string position )
 
     // Default setup before processing
 
+    std::fill( board.begin(), board.end(), Piece::NOTHING );
+
     castlingWK = false;
     castlingWQ = false;
     castlingBK = false;
@@ -38,20 +40,10 @@ Fen::Fen( std::string position )
             case 'p':
             {
                 LOG_TRACE << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")";
-                LOG_TRACE << "PRE: Board[ " << index << " ] = " << board[ index ].toString() << ".Setting to " << *it;
-                board[ index ] = Piece::fromFENString( *it );
-                LOG_TRACE << "SET: Board[ " << index << " ] = " << board[ index ].toString() << ". Should be " << Piece::fromFENString( *it ).toString();
-                index++;
+                board[ index++ ] = Piece::fromFENString( *it );
                 break;
             }
-            //{
-            //    LOG_TRACE << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")";
-            //    LOG_TRACE << "PRE: Board[ " << index << " ] = " << board[ index ] << ".Setting to " << *it;
-            //    board[ index ] = Piece::pieceToByte( Piece::fromFENString( *it ) );
-            //    LOG_TRACE << "SET: Board[ " << index << " ] = " << board[ index ] << ". Should be " << Piece::fromFENString( *it ).toString();
-            //    index++;
-            //    break;
-            //}
+
             case '1':
             case '2':
             case '3':
@@ -103,12 +95,9 @@ Fen::Fen( std::string position )
         std::stringstream stream;
         for ( index = rankIndex; index < rankIndex + 8; index++ )
         {
-            stream << ( board[ index ] == Piece::nn ?
+            stream << ( board[ index ] == Piece::NOTHING ?
                         ( ( index & 1 ) == 0 ? "." : " " ) :
-                        Piece::toString( board[ index ] ) );
-            //stream << ( board[ index ] == Piece::pieceToByte( Piece::nn ) ?
-            //                ((index & 1) == 0 ? "." : " ") :
-            //                Piece::toString( Piece::byteToPiece( board[ index ] ) ) );
+                        Piece::toFENString( board[ index ] ) );
         }
 
         LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
@@ -119,9 +108,9 @@ Fen::Fen( std::string position )
 
     // Active color
 
-    activeColor = *it++ == 'w' ? Piece::Color::WHITE : Piece::Color::BLACK;
+    activeColor = *it++ == 'w' ? Piece::WHITE : Piece::BLACK;
 
-    LOG_DEBUG << "Active color: " << ( activeColor == Piece::Color::WHITE ? "White" : "Black" );
+    LOG_DEBUG << "Active color: " << ( activeColor == Piece::WHITE ? "White" : "Black" );
 
     skipSpace( it, end );
 
