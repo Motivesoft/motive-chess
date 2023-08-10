@@ -22,7 +22,7 @@ public:
 
     }
 
-    const Fen& getFENString()
+    const Fen& getFEN()
     {
         return fen;
     }

@@ -554,7 +554,26 @@ void Engine::listVisibleOptions()
 
 void Engine::stopImpl()
 {
+    if ( thinkingThread == nullptr )
+    {
+        return;
+    }
 
+    LOG_TRACE << "Stop thinking";
+
+    // Set this volatile switch and it will be detected by a thinking thread if one is active
+    continueThinking = false;
+
+    // TODO I think we need a join in here
+    thinkingThread->join();
+
+    LOG_TRACE << "Thread stopped";
+
+    // TODO gather and make available any evidence (e.g. bestmove)
+
+    // Housekeeping
+    delete thinkingThread;
+    thinkingThread = nullptr;
 }
 
 void Engine::isreadyImpl()
@@ -637,10 +656,9 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
     }
 
     // TODO implement
-    std::thread thinking( &Engine::thinking, this );
-    thinking.detach();
+    thinkingThread = new std::thread( &Engine::thinking, this );
 
-    LOG_DEBUG << "Thread detached";
+    LOG_DEBUG << "Thread " << thinkingThread->get_id() << " detached and running";
 }
 
 // Special perft command
@@ -656,8 +674,10 @@ void Engine::perftImpl( int depth, std::string& fen )
 
 void Engine::thinking( Engine* engine )
 {
+    engine->continueThinking = true;
+
     int loop = 1;
-    while ( !engine->quitting )
+    while ( engine->continueThinking && !engine->quitting )
     {
         LOG_DEBUG << "Thinking (" << loop << ")";
         std::this_thread::sleep_for( std::chrono::milliseconds( 2000 ) );
@@ -665,4 +685,6 @@ void Engine::thinking( Engine* engine )
         if ( loop++ == 10 )
             break;
     }
+
+    LOG_DEBUG << "Thinking thread terminating";
 }

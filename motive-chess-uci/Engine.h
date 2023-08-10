@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "Broadcaster.h"
@@ -36,7 +37,10 @@ private:
 
     volatile bool benchmarking;
     volatile bool quitting;
+    volatile bool continueThinking;
     volatile DebugSwitch debugging;
+
+    std::thread* thinkingThread;
 
     volatile GameContext* gameContext;
 
@@ -129,10 +133,12 @@ public:
         initialized( false ),
         benchmarking( false ),
         quitting( false ),
+        continueThinking( false ),
         debugging( DebugSwitch::OFF ),
         ucinewgameExpected( true ),
         ucinewgameReceived( false ),
-        gameContext( nullptr )
+        gameContext( nullptr ),
+        thinkingThread( nullptr )
     {
         VersionInfo* versionInfo = VersionInfo::getVersionInfo();
 
