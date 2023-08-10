@@ -574,6 +574,9 @@ void Engine::stopImpl( ThinkingOutcome thinkingOutcome )
     // Housekeeping
     delete thinkingThread;
     thinkingThread = nullptr;
+
+    delete thinkingBoard;
+    thinkingBoard = nullptr;
 }
 
 void Engine::isreadyImpl()
@@ -658,7 +661,9 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
     // Report bestmove when thinking is done
     broadcastThinkingOutcome = true;
 
-    thinkingThread = new std::thread( &Engine::thinking, this );
+    thinkingBoard = new Board( gameContext->getFEN() );
+
+    thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard );
 
     LOG_TRACE << "Thread " << thinkingThread->get_id() << " running";
 }
@@ -674,9 +679,12 @@ void Engine::perftImpl( int depth, std::string& fen )
 
 // Internal methods
 
-void Engine::thinking( Engine* engine )
+void Engine::thinking( Engine* engine, Board* board )
 {
+    // Test this repeatedly for interuptions
     engine->continueThinking = true;
+
+    // OK, beging the thinking process
 
     int loop = 1;
     while ( engine->continueThinking && !engine->quitting )
@@ -691,6 +699,8 @@ void Engine::thinking( Engine* engine )
     if ( engine->broadcastThinkingOutcome )
     {
         LOG_TRACE << "Broadcasting best move";
+
+        // TODO don't hard code this
         engine->broadcaster.bestmove( "e2e4" );
     }
 

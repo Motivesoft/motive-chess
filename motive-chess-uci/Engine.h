@@ -50,8 +50,9 @@ private:
     volatile bool broadcastThinkingOutcome;
 
     std::thread* thinkingThread;
+    Board* thinkingBoard;
 
-    volatile GameContext* gameContext;
+    GameContext* gameContext;
 
     class UciLogger
     {
@@ -92,7 +93,7 @@ private:
         Logger::Level level;
     };
 
-    static void thinking( Engine* engine );
+    static void thinking( Engine* engine, Board* board );
 
     // Helper methods
     void listVisibleOptions();

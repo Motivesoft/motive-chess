@@ -99,7 +99,7 @@ public:
         // TODO
     };
 
-    Board( Fen& fen ) :
+    Board( const Fen& fen ) :
         pieces( fen.board ),
         activeColor( fen.activeColor ),
         castling { fen.castlingWK, fen.castlingWQ, fen.castlingBK, fen.castlingBQ },
