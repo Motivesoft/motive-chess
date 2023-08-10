@@ -7,6 +7,7 @@
 #include "Broadcaster.h"
 #include "CopyProtection.h"
 #include "Fen.h"
+#include "GameContext.h"
 #include "Logger.h"
 #include "Registration.h"
 #include "VersionInfo.h"
@@ -36,6 +37,8 @@ private:
     volatile bool benchmarking;
     volatile bool quitting;
     volatile DebugSwitch debugging;
+
+    volatile GameContext* gameContext;
 
     class UciLogger
     {
@@ -80,6 +83,14 @@ private:
 
     // Helper methods
     void listVisibleOptions();
+    void releaseGameContext()
+    {
+        if ( gameContext != nullptr )
+        {
+            delete gameContext;
+            gameContext = nullptr;
+        }
+    }
 
     // Implementation methods that do not broadcast notifications 
     void stopImpl();
@@ -88,7 +99,7 @@ private:
     void registerImpl();
     void registerImpl( std::string& name, std::string& code );
     void setoptionImpl( std::string& name, std::string& value );
-    void positionImpl( std::string& fen, std::vector<std::string> moves );
+    void positionImpl( const std::string& fen, std::vector<std::string> moves );
     void goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite );
     void perftImpl( int depth, std::string& fen );
 
@@ -120,7 +131,8 @@ public:
         quitting( false ),
         debugging( DebugSwitch::OFF ),
         ucinewgameExpected( true ),
-        ucinewgameReceived( false )
+        ucinewgameReceived( false ),
+        gameContext( nullptr )
     {
         VersionInfo* versionInfo = VersionInfo::getVersionInfo();
 
@@ -138,7 +150,9 @@ public:
 
     virtual ~Engine()
     {
-        stopCommand();
+        stopImpl();
+        releaseGameContext();
+
         initialized = false;
     }
 

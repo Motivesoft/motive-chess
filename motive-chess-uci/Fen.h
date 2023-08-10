@@ -39,6 +39,20 @@ public:
         return Fen( position );
     }
 
+    Fen( Fen& fen ) :
+        board( fen.board ),
+        activeColor( fen.activeColor ),
+        castlingWK( fen.castlingWK ),
+        castlingWQ( fen.castlingWQ ),
+        castlingBK( fen.castlingBK ),
+        castlingBQ( fen.castlingBQ ),
+        enPassantIndex( fen.enPassantIndex ),
+        halfmoveClock( fen.halfmoveClock ),
+        fullmoveNumber( fen.fullmoveNumber )
+    {
+
+    }
+
     virtual ~Fen()
     {
 

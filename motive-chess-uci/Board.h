@@ -15,9 +15,9 @@ private:
     unsigned short halfmoveClock;
     unsigned short fullmoveNumber;
 
+    // This is a precise equality check, not a "is this the same position" check
     bool positionMatch( const Board& board )
     {
-        // TODO keep this up to date with any additional state
         for ( int loop = 0; loop < 64; loop++ )
         {
             if ( pieces[ loop ] != board.pieces[ loop ] )
@@ -25,6 +25,35 @@ private:
                 return false;
             }
         }
+
+        if ( activeColor != board.activeColor )
+        {
+            return false;
+        }
+
+        for ( int loop = 0; loop < 4; loop++ )
+        {
+            if ( castling[ loop ] != board.castling[ loop ] )
+            {
+                return false;
+            }
+        }
+
+        if ( enPassantIndex != board.enPassantIndex )
+        {
+            return false;
+        }
+
+        if ( halfmoveClock != board.halfmoveClock )
+        {
+            return false;
+        }
+
+        if ( fullmoveNumber != board.fullmoveNumber )
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -96,6 +125,31 @@ public:
     {
         // TODO implement other attrs
         return !positionMatch( board );
+    }
+
+    // 
+
+    /// <summary>
+    /// Performs an "is this the same position" check, not a precise equality check
+    /// </summary>
+    /// <param name="board">the board to compare with</param>
+    /// <returns>true if the on-board position is the same</returns>
+    bool isSamePosition( const Board& board )
+    {
+        for ( int loop = 0; loop < 64; loop++ )
+        {
+            if ( pieces[ loop ] != board.pieces[ loop ] )
+            {
+                return false;
+            }
+        }
+
+        if ( activeColor != board.activeColor )
+        {
+            return false;
+        }
+
+        return true;
     }
 };
 

@@ -99,32 +99,32 @@ public:
         }
     }
 
+    /// <summary>
+    /// Return a lowercase letter representing the provided piece. Useful for 
+    /// generating a UCI moves list
+    /// </summary>
+    /// <param name="value">the piece letter, colored or not</param>
+    /// <returns>a single letter string for the piece, or empty string for no piece</returns>
     static std::string toMoveString( unsigned char value )
     {
-        switch ( value )
+        switch ( value & PIECE_MASK )
         {
-            case WKING:
-            case BKING:
+            case KING:
                 return "k";
 
-            case WQUEEN:
-            case BQUEEN:
+            case QUEEN:
                 return "q";
 
-            case WROOK:
-            case BROOK:
+            case ROOK:
                 return "r";
 
-            case WBISHOP:
-            case BBISHOP:
+            case BISHOP:
                 return "b";
 
-            case WKNIGHT:
-            case BKNIGHT:
+            case KNIGHT:
                 return "n";
 
-            case WPAWN:
-            case BPAWN:
+            case PAWN:
                 return "p";
 
             default:

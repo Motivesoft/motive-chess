@@ -1,8 +1,9 @@
-#include <chrono>
 #include <thread>
+#include <vector>
 
 #include "Board.h"
 #include "Engine.h"
+#include "GameContext.h"
 #include "Move.h"
 #include "Utilities.h"
 
@@ -199,7 +200,12 @@ void Engine::ucinewgameCommand()
     {
         ucinewgameReceived = true;
 
-        // TODO implement
+        // TODO anything else?
+        LOG_TRACE << "Stopping";
+        stopImpl();
+
+        LOG_TRACE << "Releasing game context";
+        releaseGameContext();
     }
     else
     {
@@ -214,6 +220,11 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
     if ( !ucinewgameReceived )
     {
         ucinewgameExpected = false;
+
+        // No ucinewgame, so we need to stop and reinitialise
+        LOG_TRACE << "Preparing for new game";
+        stopImpl();
+        releaseGameContext();
     }
 
     std::string fen;
@@ -271,6 +282,8 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
 
     if ( !fen.empty() )
     {
+        LOG_DEBUG << "Position with FEN [" << fen << "] and " << moves.size() << " moves";
+
         positionImpl( fen, moves );
     }
     else
@@ -589,43 +602,39 @@ void Engine::setoptionImpl( std::string& name, std::string& value )
     }
 }
 
-void Engine::positionImpl( std::string& fenString, std::vector<std::string> moves )
+void Engine::positionImpl( const std::string& fenString, std::vector<std::string> moves )
 {
-    LOG_INFO << "Position with FEN [" << fenString << "] and " << moves.size() << " moves";
+    LOG_DEBUG << "Processing FEN string " << fenString;
+    Fen fen = Fen::fromPosition( fenString );
 
-    // TODO implement
     LOG_DEBUG << "Moves:";
+    std::vector< Move > moveList;
     for ( std::string move : moves )
     {
-        Move* m = Move::fromString( move );
+        Move m = Move::fromString( move );
 
-        LOG_DEBUG << move;
-
-        LOG_DEBUG << Move::toString( m ) << " " << m->getFrom() << " " << m->getTo();
-
-        LOG_DEBUG << " From: " 
-            << (char)( 'a' + Utilities::indexToFile( m->getFrom() ) )
-            << (char)( '1' + Utilities::indexToRank( m->getFrom() ) );
-
-        LOG_DEBUG << " To:   " 
-            << (char)( 'a' + Utilities::indexToFile( m->getTo() ) )
-            << (char)( '1' + Utilities::indexToRank( m->getTo() ) );
-
-        unsigned char wk = Piece::WKNIGHT;
-        unsigned char bq = Piece::BQUEEN;
-
-        LOG_DEBUG << " Pieces: "
-            << Piece::toFENString( wk )
-            << Piece::toFENString( bq );
+        moveList.push_back( m );
+        LOG_DEBUG << Move::toString( m );
     }
 
-    LOG_DEBUG << "Applying FEN string " << fenString;
-    Fen fen = Fen::fromPosition( fenString );
+    // Set the new game context
+    gameContext = new GameContext( fen, moveList );
+
+    // Reset for next game
+    ucinewgameReceived = false;
 }
 
 void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite )
 {
     LOG_INFO << "Go";
+
+    stopImpl();
+
+    // If we get a go without a prior position, go with a default setup
+    if ( gameContext == nullptr )
+    {
+        positionImpl( Fen::startingPosition, std::vector<std::string>() );
+    }
 
     // TODO implement
     std::thread thinking( &Engine::thinking, this );
