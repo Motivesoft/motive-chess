@@ -49,15 +49,24 @@ public:
         return square.str();
     }
 
+    /// <summary>
+    /// Return a 1-based file for an index
+    /// </summary>
+    /// <param name="index">the square index</param>
+    /// <returns>1-8 indicating A through H</returns>
     inline static unsigned short indexToFile( unsigned short index )
     {
-        return index & 7;
+        return (index & 7) + 1;
     }
 
+    /// <summary>
+    /// Return a 1-based rank for an index
+    /// </summary>
+    /// <param name="index">the square index</param>
+    /// <returns>1-8 indicating the rank</returns>
     inline static unsigned short indexToRank( unsigned short index )
     {
-        return (index >> 3) & 7;
+        return ((index >> 3) & 7) + 1;
     }
-
 };
 

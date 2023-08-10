@@ -10,8 +10,8 @@ private:
     const unsigned short from;
     const unsigned short to;
 
+    // This may be colorless
     const unsigned char promotion;
-
 
 public:
     static Move fromString( std::string& moveString );
@@ -62,6 +62,11 @@ public:
     inline unsigned short getTo() const
     {
         return to;
+    }
+
+    inline unsigned char getPromotionPiece() const
+    {
+        return promotion;
     }
 
     inline bool isNullMove() const

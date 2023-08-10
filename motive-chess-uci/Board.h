@@ -9,6 +9,26 @@
 class Board
 {
 private:
+    // Square indices for the first and last ranks
+    inline static const unsigned short A1 = 0;
+    inline static const unsigned short B1 = 1;
+    inline static const unsigned short C1 = 2;
+    inline static const unsigned short D1 = 3;
+    inline static const unsigned short E1 = 4;
+    inline static const unsigned short F1 = 5;
+    inline static const unsigned short G1 = 6;
+    inline static const unsigned short H1 = 7;
+
+    inline static const unsigned short A8 = 56;
+    inline static const unsigned short B8 = 57;
+    inline static const unsigned short C8 = 58;
+    inline static const unsigned short D8 = 59;
+    inline static const unsigned short E8 = 60;
+    inline static const unsigned short F8 = 61;
+    inline static const unsigned short G8 = 62;
+    inline static const unsigned short H8 = 63;
+
+private:
     std::array<unsigned char, 64> pieces;
     unsigned char activeColor;
     bool castling[ 4 ]; // KQkq
@@ -153,44 +173,6 @@ public:
         return true;
     }
 
-    Board makeMove( const Move& move )
-    {
-        Board board( *this );
-
-        LOG_DEBUG << "Make move: " << Move::toString( move );
-
-        // TODO this doesn't yet deal with promotions, castling and en-passant
-        board.pieces[ move.getTo() ] = board.pieces[ move.getFrom() ];
-        board.pieces[ move.getFrom() ] = Piece::NOTHING;
-
-        // TODO it also needs to update the other state variables, e.g...
-        board.activeColor = activeColor == Piece::WHITE ? Piece::BLACK : Piece::WHITE;
-        if ( board.activeColor == Piece::WHITE )
-        {
-            board.fullmoveNumber++;
-        }
-
-        // TODO Tuning - does this call the copy constructor too often and should we move to pointers?
-
-        // TODO stick this in a utility class somewhere
-        LOG_DEBUG << "Board:";
-        LOG_DEBUG << "  ABCDEFGH";
-        for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
-        {
-            std::stringstream stream;
-            for ( unsigned short index = rankIndex; index < rankIndex + 8; index++ )
-            {
-                stream << ( board.pieces[ index ] == Piece::NOTHING ?
-                            ( ( index & 1 ) == 0 ? "." : " " ) :
-                            Piece::toFENString( board.pieces[ index ] ) );
-            }
-
-            LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
-        }
-        LOG_DEBUG << "  ABCDEFGH";
-
-
-        return board;
-    }
+    Board makeMove( const Move& move );
 };
 
