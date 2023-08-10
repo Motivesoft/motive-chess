@@ -65,7 +65,7 @@ public:
         castling { true, true, true, true },
         enPassantIndex( USHRT_MAX ),
         halfmoveClock( 0 ),
-        fullmoveNumber( 0 )
+        fullmoveNumber( 1 )
     {
         std::fill( pieces.begin(), pieces.end(), Piece::NOTHING );
     };
