@@ -15,7 +15,7 @@ private:
 
 public:
     static Move fromString( std::string& moveString );
-    static std::string toString( Move& move, bool lowercase = true );
+    static std::string toString( const Move& move, bool lowercase = true );
 
     Move( unsigned short from, unsigned short to, unsigned char promotion = Piece::NOTHING ) : 
         from( from ),
@@ -44,27 +44,27 @@ public:
 
     }
 
-    bool operator == ( const Move& move )
+    bool operator == ( const Move& move ) const
     {
         return ( move.from == from && move.to == to && move.promotion == promotion );
     }
 
-    bool operator != ( const Move& move )
+    bool operator != ( const Move& move ) const
     {
         return !( move.from == from && move.to == to && move.promotion == promotion );
     }
 
-    inline unsigned short getFrom()
+    inline unsigned short getFrom() const
     {
         return from;
     }
 
-    inline unsigned short getTo()
+    inline unsigned short getTo() const
     {
         return to;
     }
 
-    inline bool isNullMove()
+    inline bool isNullMove() const
     {
         return from == 0 && to == 0;
     }

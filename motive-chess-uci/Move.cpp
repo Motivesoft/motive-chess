@@ -17,7 +17,7 @@ Move Move::fromString( std::string& moveString )
                  Utilities::squareToIndex( moveString.substr( 2, 2 ) ) );
 }
 
-std::string Move::toString( Move& move, bool lowercase )
+std::string Move::toString( const Move& move, bool lowercase )
 {
     std::stringstream stream;
 

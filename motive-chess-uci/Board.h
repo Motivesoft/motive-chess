@@ -3,6 +3,7 @@
 #include <array>
 
 #include "Fen.h"
+#include "Move.h"
 #include "Piece.h"
 
 class Board
@@ -150,6 +151,46 @@ public:
         }
 
         return true;
+    }
+
+    Board makeMove( const Move& move )
+    {
+        Board board( *this );
+
+        LOG_DEBUG << "Make move: " << Move::toString( move );
+
+        // TODO this doesn't yet deal with promotions, castling and en-passant
+        board.pieces[ move.getTo() ] = board.pieces[ move.getFrom() ];
+        board.pieces[ move.getFrom() ] = Piece::NOTHING;
+
+        // TODO it also needs to update the other state variables, e.g...
+        board.activeColor = activeColor == Piece::WHITE ? Piece::BLACK : Piece::WHITE;
+        if ( board.activeColor == Piece::WHITE )
+        {
+            board.fullmoveNumber++;
+        }
+
+        // TODO Tuning - does this call the copy constructor too often and should we move to pointers?
+
+        // TODO stick this in a utility class somewhere
+        LOG_DEBUG << "Board:";
+        LOG_DEBUG << "  ABCDEFGH";
+        for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
+        {
+            std::stringstream stream;
+            for ( unsigned short index = rankIndex; index < rankIndex + 8; index++ )
+            {
+                stream << ( board.pieces[ index ] == Piece::NOTHING ?
+                            ( ( index & 1 ) == 0 ? "." : " " ) :
+                            Piece::toFENString( board.pieces[ index ] ) );
+            }
+
+            LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
+        }
+        LOG_DEBUG << "  ABCDEFGH";
+
+
+        return board;
     }
 };
 

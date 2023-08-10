@@ -149,7 +149,8 @@ public:
         ucinewgameExpected( true ),
         ucinewgameReceived( false ),
         gameContext( nullptr ),
-        thinkingThread( nullptr )
+        thinkingThread( nullptr ),
+        thinkingBoard( nullptr )
     {
         VersionInfo* versionInfo = VersionInfo::getVersionInfo();
 

@@ -661,8 +661,14 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
     // Report bestmove when thinking is done
     broadcastThinkingOutcome = true;
 
-    thinkingBoard = new Board( gameContext->getFEN() );
+    // Construct the position to think from
+    Board initialBoard( gameContext->getFEN() );
+    for ( std::vector<Move>::const_iterator it = gameContext->getMoves().begin(); it != gameContext->getMoves().end(); it++ )
+    {
+        initialBoard = initialBoard.makeMove( *it );
+    }
 
+    thinkingBoard = new Board( initialBoard );
     thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard );
 
     LOG_TRACE << "Thread " << thinkingThread->get_id() << " running";
