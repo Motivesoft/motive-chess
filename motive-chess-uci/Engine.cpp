@@ -467,7 +467,7 @@ void Engine::stopCommand()
 {
     UCI_DEBUG << "Received stop";
 
-    stopImpl();
+    stopImpl( ThinkingOutcome::BROADCAST );
 
     // TODO do something now we've stopped - bestmove and possibly ponder
     if ( !quitting )
@@ -552,24 +552,24 @@ void Engine::listVisibleOptions()
 // Silent implementations - do the work, but do not directly communicate over uci, allowing the 
 // methods to be called from elsewhere
 
-void Engine::stopImpl()
+void Engine::stopImpl( ThinkingOutcome thinkingOutcome )
 {
     if ( thinkingThread == nullptr )
     {
         return;
     }
 
-    LOG_TRACE << "Stop thinking";
+    LOG_TRACE << "Stopping thinking";
 
+    broadcastThinkingOutcome = ( thinkingOutcome == ThinkingOutcome::BROADCAST );
+    
     // Set this volatile switch and it will be detected by a thinking thread if one is active
     continueThinking = false;
 
-    // TODO I think we need a join in here
+    // Wait for the thread to stop
     thinkingThread->join();
 
     LOG_TRACE << "Thread stopped";
-
-    // TODO gather and make available any evidence (e.g. bestmove)
 
     // Housekeeping
     delete thinkingThread;
@@ -655,10 +655,12 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
         positionImpl( Fen::startingPosition, std::vector<std::string>() );
     }
 
-    // TODO implement
+    // Report bestmove when thinking is done
+    broadcastThinkingOutcome = true;
+
     thinkingThread = new std::thread( &Engine::thinking, this );
 
-    LOG_DEBUG << "Thread " << thinkingThread->get_id() << " detached and running";
+    LOG_TRACE << "Thread " << thinkingThread->get_id() << " running";
 }
 
 // Special perft command
@@ -684,6 +686,12 @@ void Engine::thinking( Engine* engine )
 
         if ( loop++ == 10 )
             break;
+    }
+
+    if ( engine->broadcastThinkingOutcome )
+    {
+        LOG_TRACE << "Broadcasting best move";
+        engine->broadcaster.bestmove( "e2e4" );
     }
 
     LOG_DEBUG << "Thinking thread terminating";

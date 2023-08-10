@@ -25,6 +25,13 @@ public:
 private:
     inline static const std::string OPTION_BENCH = "Benchmark";
 
+    // What to do with findings when thinking concludes
+    enum class ThinkingOutcome
+    {
+        BROADCAST,
+        DISCARD
+    };
+
     Broadcaster& broadcaster;
 
     CopyProtection copyProtection;
@@ -36,9 +43,11 @@ private:
     bool ucinewgameReceived;
 
     volatile bool benchmarking;
+    volatile DebugSwitch debugging;
+
     volatile bool quitting;
     volatile bool continueThinking;
-    volatile DebugSwitch debugging;
+    volatile bool broadcastThinkingOutcome;
 
     std::thread* thinkingThread;
 
@@ -97,7 +106,7 @@ private:
     }
 
     // Implementation methods that do not broadcast notifications 
-    void stopImpl();
+    void stopImpl( ThinkingOutcome thinkingOutcome = ThinkingOutcome::DISCARD );
     void isreadyImpl();
     void debugImpl( DebugSwitch flag );
     void registerImpl();
@@ -134,6 +143,7 @@ public:
         benchmarking( false ),
         quitting( false ),
         continueThinking( false ),
+        broadcastThinkingOutcome( false ),
         debugging( DebugSwitch::OFF ),
         ucinewgameExpected( true ),
         ucinewgameReceived( false ),
