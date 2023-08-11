@@ -455,7 +455,10 @@ void Engine::goCommand( std::vector<std::string>& arguments )
 
     if ( !parseError )
     {
-        goImpl( searchMoves, ponder, wtime, btime, winc, binc, movestogo, depth, nodes, mate, movetime, infinite );
+        // Be aware that this gets deleted elsewhere - TODO do something about this eventually?
+        GoContext* goContext = new GoContext( searchMoves, ponder, wtime, btime, winc, binc, movestogo, depth, nodes, mate, movetime, infinite );
+
+        goImpl( goContext );
     }
     else
     {
@@ -646,7 +649,7 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
     ucinewgameReceived = false;
 }
 
-void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite )
+void Engine::goImpl( GoContext* goContext )
 {
     LOG_INFO << "Go";
 
@@ -668,11 +671,9 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
         initialBoard = initialBoard.makeMove( *it );
     }
 
-    GoContext* context = new GoContext( searchMoves, ponder, wtime, btime, winc, binc, movestogo, depth, nodes, mate, movetime, infinite );
-
     // Use this as the board to work from
     thinkingBoard = new Board( initialBoard );
-    thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard, context );
+    thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard, goContext );
 
     LOG_TRACE << "Thread " << thinkingThread->get_id() << " running";
 }
