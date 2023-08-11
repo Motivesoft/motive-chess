@@ -169,11 +169,17 @@ void Board::applyMove( const Move& move )
     }
 
     // Halfmove increment? Only if not a capture or pawn move
-    if ( capturedPiece == Piece::NOTHING && !Piece::isPawn( movingPiece ) )
+    if ( Piece::isEmpty( capturedPiece ) && !Piece::isPawn( movingPiece ) )
     {
         halfmoveClock++;
         
         LOG_TRACE << "Adding one to halfmove clock. Now " << halfmoveClock;
+    }
+    else
+    {
+        halfmoveClock = 0;
+
+        LOG_TRACE << "Reset halfmove clock to zero";
     }
 
     // Increment move number
