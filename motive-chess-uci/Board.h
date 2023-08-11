@@ -96,6 +96,18 @@ private:
         return true;
     }
 
+    /// <summary>
+    /// Check whether this move refutes the move we're currently examining.
+    /// The general idea is to generate pseudo legal moves and for each, generate the possible responses.
+    /// Push the responses to this method to determine whether the psuedo legal move is indeed legal
+    /// </summary>
+    /// <param name="move">a move</param>
+    /// <returns>true if this move should not be possible, demonstrating that the move leading to this is invalid</returns>
+    bool isRefutation( const Move& move )
+    {
+        return Piece::isKing( pieces[ move.getTo() ] );
+    }
+
 public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
