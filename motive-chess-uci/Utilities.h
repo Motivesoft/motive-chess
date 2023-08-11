@@ -47,7 +47,7 @@ public:
 
     inline static std::string indexToSquare( const unsigned short index, const bool lowercase = true )
     {
-        if ( index == USHRT_MAX )
+        if ( Utilities::isOffboard( index ) )
         {
             // Deliberately off-board
             return "";
@@ -79,6 +79,16 @@ public:
     inline static unsigned short indexToRank( unsigned short index )
     {
         return (index >> 3) & 7;
+    }
+
+    inline static bool isOffboard( unsigned short index )
+    {
+        return index == USHRT_MAX;
+    }
+
+    inline static unsigned short getOffboardLocation()
+    {
+        return USHRT_MAX;
     }
 };
 

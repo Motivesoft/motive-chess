@@ -119,7 +119,7 @@ public:
         pieces( std::array< unsigned char, 64>() ),
         activeColor( Piece::getStartingColor() ),
         castling { true, true, true, true },
-        enPassantIndex( USHRT_MAX ),
+        enPassantIndex( Utilities::getOffboardLocation() ),
         halfmoveClock( 0 ),
         fullmoveNumber( 1 )
     {

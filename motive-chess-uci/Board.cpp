@@ -145,8 +145,8 @@ void Board::applyMove( const Move& move )
     activeColor = Piece::swapColor( activeColor );
     LOG_TRACE << "Active color now " << Piece::toColorString( activeColor );
 
-    // TODO Clear this but then determine whether this new move sets it again
-    enPassantIndex = USHRT_MAX;
+    // Clear this but then determine whether this new move sets it again
+    enPassantIndex = Utilities::getOffboardLocation();
 
     if ( Piece::isPawn( movingPiece ) )
     {
@@ -160,16 +160,12 @@ void Board::applyMove( const Move& move )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
         }
-        else
-        {
-            LOG_TRACE << "En-passant square set to nothing";
-        }
 
-        LOG_TRACE << "En-passant square set to " << Utilities::indexToSquare( enPassantIndex );
+        LOG_TRACE << "En-passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) );
     }
     else
     {
-        LOG_TRACE << "En-passant square set to nothing";
+        LOG_TRACE << "En-passant square cleared";
     }
 
     // Halfmove increment? Only if not a capture or pawn move

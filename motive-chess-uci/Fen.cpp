@@ -156,9 +156,9 @@ Fen::Fen( std::string position )
 
     std::string enPassantValue = nextWord( it, end );
 
-    enPassantIndex = enPassantValue == "-" ? USHRT_MAX : Utilities::squareToIndex( enPassantValue );
+    enPassantIndex = enPassantValue == "-" ? Utilities::getOffboardLocation() : Utilities::squareToIndex( enPassantValue );
 
-    LOG_DEBUG << "En passant square: " << ( enPassantIndex == USHRT_MAX ? "none" : Utilities::indexToSquare( enPassantIndex ) );
+    LOG_DEBUG << "En passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) );
 
     skipSpace( it, end );
 
