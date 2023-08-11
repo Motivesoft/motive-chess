@@ -11,7 +11,7 @@ Fen::Fen( std::string position )
 
     // Default setup before processing
 
-    std::fill( board.begin(), board.end(), Piece::emptyPiece() );
+    std::fill( pieces.begin(), pieces.end(), Piece::emptyPiece() );
 
     // Board contents - starts at eighth rank and first file, so the indexing here looks a little goofy
 
@@ -35,7 +35,7 @@ Fen::Fen( std::string position )
             case 'p':
             {
                 LOG_TRACE << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")";
-                board[ index++ ] = Piece::fromFENString( *it );
+                pieces[ index++ ] = Piece::fromFENString( *it );
                 break;
             }
 
@@ -83,21 +83,7 @@ Fen::Fen( std::string position )
         }
     }
 
-    LOG_DEBUG << "Board:";
-    LOG_DEBUG << "  ABCDEFGH";
-    for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
-    {
-        std::stringstream stream;
-        for ( index = rankIndex; index < rankIndex + 8; index++ )
-        {
-            stream << ( Piece::isEmpty( board[ index ] ) ?
-                        ( ( index & 1 ) == 0 ? "." : " " ) :
-                        Piece::toFENString( board[ index ] ) );
-        }
-
-        LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
-    }
-    LOG_DEBUG << "  ABCDEFGH";
+    Utilities::dumpBoard( pieces );
 
     skipSpace( it, end );
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <sstream>
 #include <string>
 
@@ -90,5 +91,7 @@ public:
     {
         return USHRT_MAX;
     }
+
+    static void dumpBoard( std::array< unsigned char, 64>& pieces );
 };
 

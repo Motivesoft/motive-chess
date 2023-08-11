@@ -11,7 +11,7 @@
 class Fen
 {
 private:
-    std::array< unsigned char, 64 > board;
+    std::array< unsigned char, 64 > pieces;
     unsigned char activeColor;
     CastlingRights castlingRights;
     unsigned short enPassantIndex;
@@ -38,7 +38,7 @@ public:
     }
 
     Fen( Fen& fen ) :
-        board( fen.board ),
+        pieces( fen.pieces ),
         activeColor( fen.activeColor ),
         castlingRights( fen.castlingRights ),
         enPassantIndex( fen.enPassantIndex ),

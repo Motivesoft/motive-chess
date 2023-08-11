@@ -198,7 +198,7 @@ public:
     };
 
     Board( const Fen& fen ) :
-        pieces( fen.board ),
+        pieces( fen.pieces ),
         activeColor( fen.activeColor ),
         castlingRights( fen.castlingRights ),
         enPassantIndex( fen.enPassantIndex ),
