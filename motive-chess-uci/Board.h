@@ -108,6 +108,12 @@ private:
         return Piece::isKing( pieces[ move.getTo() ] );
     }
 
+    /// <summary>
+    /// Applies move to this board
+    /// </summary>
+    /// <param name="move">the move</param>
+    void applyMove( const Move& move );
+
 public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
@@ -203,6 +209,11 @@ public:
         return true;
     }
 
+    /// <summary>
+    /// Returns a new board, based on the current board but with this move applied
+    /// </summary>
+    /// <param name="move">the move</param>
+    /// <returns>a new board</returns>
     Board makeMove( const Move& move );
 };
 

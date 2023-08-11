@@ -4,24 +4,31 @@ Board Board::makeMove( const Move& move )
 {
     Board board( *this );
 
-    LOG_DEBUG << "Make move: " << Move::toString( move );
+    board.applyMove( move );
+
+    return board;
+}
+
+void Board::applyMove( const Move& move )
+{
+    LOG_TRACE << "Apply move: " << Move::toString( move );
 
     if ( move.isNullMove() )
     {
         // To be honest, not sure what to do here - return an unchanged board, or an updated one with no move made
         // but other attributes updated as though a move had been made and it was now the other side's go
         LOG_TRACE << "Ignoring null move";
-        return board;
+        return;
     }
 
     // Store this for later tests
-    unsigned char movingPiece = board.pieces[ move.getFrom() ]; // Will not be Piece::NOTHING
-    unsigned char capturedPiece = board.pieces[ move.getTo() ]; // May be Piece::NOTHING
+    unsigned char movingPiece = pieces[ move.getFrom() ]; // Will not be Piece::NOTHING
+    unsigned char capturedPiece = pieces[ move.getTo() ]; // May be Piece::NOTHING
 
     // Make the main part of the move and then check for other actions
 
-    board.pieces[ move.getTo() ] = movingPiece;
-    board.pieces[ move.getFrom() ] = Piece::NOTHING;
+    pieces[ move.getTo() ] = movingPiece;
+    pieces[ move.getFrom() ] = Piece::NOTHING;
 
     // Handle castling - check the piece that has just moved and work it out from there
     if ( movingPiece == Piece::WKING )
@@ -30,23 +37,23 @@ Board Board::makeMove( const Move& move )
         {
             if ( move.getTo() == Board::C1 )
             {
-                board.pieces[ Board::D1 ] = board.pieces[ Board::A1 ];
-                board.pieces[ Board::A1 ] = Piece::NOTHING;
+                pieces[ Board::D1 ] = pieces[ Board::A1 ];
+                pieces[ Board::A1 ] = Piece::NOTHING;
 
                 LOG_TRACE << "White castling queen side";
             }
             else if ( move.getTo() == Board::G1 )
             {
-                board.pieces[ Board::F1 ] = board.pieces[ Board::H1 ];
-                board.pieces[ Board::H1 ] = Piece::NOTHING;
+                pieces[ Board::F1 ] = pieces[ Board::H1 ];
+                pieces[ Board::H1 ] = Piece::NOTHING;
 
                 LOG_TRACE << "White castling king side";
             }
         }
 
         // White king has moved - no more castling
-        board.castling[ 0 ] = false;
-        board.castling[ 1 ] = false;
+        castling[ 0 ] = false;
+        castling[ 1 ] = false;
     }
     else if ( movingPiece == Piece::BKING )
     {
@@ -54,34 +61,34 @@ Board Board::makeMove( const Move& move )
         {
             if ( move.getTo() == Board::C8 )
             {
-                board.pieces[ Board::D8 ] = board.pieces[ Board::A8 ];
-                board.pieces[ Board::A8 ] = Piece::NOTHING;
+                pieces[ Board::D8 ] = pieces[ Board::A8 ];
+                pieces[ Board::A8 ] = Piece::NOTHING;
 
                 LOG_TRACE << "Black castling queen side";
             }
             else if ( move.getTo() == Board::G8 )
             {
-                board.pieces[ Board::F8 ] = board.pieces[ Board::H8 ];
-                board.pieces[ Board::H8 ] = Piece::NOTHING;
+                pieces[ Board::F8 ] = pieces[ Board::H8 ];
+                pieces[ Board::H8 ] = Piece::NOTHING;
 
                 LOG_TRACE << "Black castling king side";
             }
         }
 
         // Black king has moved - no more castling
-        board.castling[ 2 ] = false;
-        board.castling[ 3 ] = false;
+        castling[ 2 ] = false;
+        castling[ 3 ] = false;
     }
     else if ( movingPiece == Piece::WROOK )
     {
         // A white rook has moved - work out which and disable its ability to castle
         if ( move.getFrom() == Board::H1 )
         {
-            board.castling[ 0 ] = false;
+            castling[ 0 ] = false;
         }
         else if ( move.getFrom() == Board::A1 )
         {
-            board.castling[ 1 ] = false;
+            castling[ 1 ] = false;
         }
     }
     else if ( movingPiece == Piece::BROOK )
@@ -89,19 +96,19 @@ Board Board::makeMove( const Move& move )
         // A black rook has moved - work out which and disable its ability to castle
         if ( move.getFrom() == Board::H8 )
         {
-            board.castling[ 2 ] = false;
+            castling[ 2 ] = false;
         }
         else if ( move.getFrom() == Board::A8 )
         {
-            board.castling[ 3 ] = false;
+            castling[ 3 ] = false;
         }
     }
 
     LOG_TRACE << "Castling set to " 
-        << ( board.castling[ 0 ] ? "K" : "" )
-        << ( board.castling[ 1 ] ? "Q" : "" )
-        << ( board.castling[ 2 ] ? "k" : "" )
-        << ( board.castling[ 3 ] ? "q" : "" );
+        << ( castling[ 0 ] ? "K" : "" )
+        << ( castling[ 1 ] ? "Q" : "" )
+        << ( castling[ 2 ] ? "k" : "" )
+        << ( castling[ 3 ] ? "q" : "" );
 
     // Promotions
 
@@ -109,13 +116,13 @@ Board Board::makeMove( const Move& move )
     {
         if ( Utilities::indexToRank( move.getTo() ) == RANK_8 )
         {
-            board.pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::WHITE );
+            pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::WHITE );
 
             LOG_TRACE << "Handling white promotion to " << Piece::toFENString( move.getPromotionPiece() );
         }
         else if ( Utilities::indexToRank( move.getTo() ) == RANK_1 )
         {
-            board.pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::BLACK );
+            pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::BLACK );
 
             LOG_TRACE << "Handling black promotion to " << Piece::toFENString( move.getPromotionPiece() );
         }
@@ -127,28 +134,28 @@ Board Board::makeMove( const Move& move )
     {
         if ( Piece::isPawn( movingPiece ) )
         {
-            LOG_TRACE << "Handling en-passant capture at " << Utilities::indexToSquare( board.enPassantIndex );
+            LOG_TRACE << "Handling en-passant capture at " << Utilities::indexToSquare( enPassantIndex );
 
             unsigned short file = Utilities::indexToFile( enPassantIndex );
 
             // An en-passant capture is happening. Remove the enemy pawn
             if ( Utilities::indexToRank( enPassantIndex ) == RANK_3 )
             {
-                board.pieces[ Utilities::squareToIndex( file, RANK_4 ) ] = Piece::NOTHING;
+                pieces[ Utilities::squareToIndex( file, RANK_4 ) ] = Piece::NOTHING;
             }
             else if( Utilities::indexToRank( enPassantIndex ) == RANK_6 )
             {
-                board.pieces[ Utilities::squareToIndex( file, RANK_5 ) ] = Piece::NOTHING;
+                pieces[ Utilities::squareToIndex( file, RANK_5 ) ] = Piece::NOTHING;
             }
         }
     }
 
     // Swap whose move it is
-    board.activeColor = activeColor == Piece::WHITE ? Piece::BLACK : Piece::WHITE;
-    LOG_TRACE << "Active color now " << ( board.activeColor == Piece::WHITE ? "White" : "Black" );
+    activeColor = activeColor == Piece::WHITE ? Piece::BLACK : Piece::WHITE;
+    LOG_TRACE << "Active color now " << ( activeColor == Piece::WHITE ? "White" : "Black" );
 
     // TODO Clear this but then determine whether this new move sets it again
-    board.enPassantIndex = USHRT_MAX;
+    enPassantIndex = USHRT_MAX;
 
     if ( Piece::isPawn( movingPiece ) )
     {
@@ -156,18 +163,18 @@ Board Board::makeMove( const Move& move )
 
         if ( Utilities::indexToRank( move.getFrom() ) == RANK_2 && Utilities::indexToRank( move.getTo() ) == RANK_4 )
         {
-            board.enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
+            enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
         }
         else if ( Utilities::indexToRank( move.getFrom() ) == RANK_7 && Utilities::indexToRank( move.getTo() ) == RANK_5 )
         {
-            board.enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
+            enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
         }
         else
         {
             LOG_TRACE << "En-passant square set to nothing";
         }
 
-        LOG_TRACE << "En-passant square set to " << Utilities::indexToSquare( board.enPassantIndex );
+        LOG_TRACE << "En-passant square set to " << Utilities::indexToSquare( enPassantIndex );
     }
     else
     {
@@ -177,17 +184,17 @@ Board Board::makeMove( const Move& move )
     // Halfmove increment? Only if not a capture or pawn move
     if ( capturedPiece == Piece::NOTHING && !Piece::isPawn( movingPiece ) )
     {
-        board.halfmoveClock++;
+        halfmoveClock++;
         
-        LOG_TRACE << "Adding one to halfmove clock. Now " << board.halfmoveClock;
+        LOG_TRACE << "Adding one to halfmove clock. Now " << halfmoveClock;
     }
 
     // Increment move number
-    if ( board.activeColor == Piece::WHITE )
+    if ( activeColor == Piece::WHITE )
     {
-        board.fullmoveNumber++;
+        fullmoveNumber++;
 
-        LOG_TRACE << "Full move incrementing to " << board.fullmoveNumber;
+        LOG_TRACE << "Full move incrementing to " << fullmoveNumber;
     }
 
     // TODO Tuning - does this call the copy constructor too often and should we move to pointers?
@@ -200,14 +207,12 @@ Board Board::makeMove( const Move& move )
         std::stringstream stream;
         for ( unsigned short index = rankIndex; index < rankIndex + 8; index++ )
         {
-            stream << ( board.pieces[ index ] == Piece::NOTHING ?
+            stream << ( pieces[ index ] == Piece::NOTHING ?
                         ( ( index & 1 ) == 0 ? "." : " " ) :
-                        Piece::toFENString( board.pieces[ index ] ) );
+                        Piece::toFENString( pieces[ index ] ) );
         }
 
         LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
     }
     LOG_DEBUG << "  ABCDEFGH";
-
-    return board;
 }
