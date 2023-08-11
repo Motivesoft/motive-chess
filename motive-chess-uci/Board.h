@@ -54,12 +54,71 @@ private:
     unsigned short halfmoveClock;
     unsigned short fullmoveNumber;
 
+    /// <summary>
+    /// Check whether this move refutes the move we're currently examining.
+    /// The general idea is to generate pseudo legal moves and for each, generate the possible responses.
+    /// Push the responses to this method to determine whether the psuedo legal move is indeed legal
+    /// </summary>
+    /// <param name="move">a move</param>
+    /// <returns>true if this move should not be possible, demonstrating that the move leading to this is invalid</returns>
+    bool isRefutation( const Move& move )
+    {
+        // TODO consider whether any other checks need to go in here
+        return Piece::isKing( pieceAt( move.getTo() ) );
+    }
+
+    inline void setPiece( unsigned short index, unsigned char piece )
+    {
+        pieces[ index ] = piece;
+    }
+
+    inline void setPiece( unsigned short file, unsigned short rank, unsigned char piece )
+    {
+        setPiece( Utilities::squareToIndex( file, rank ), piece );
+    }
+
+    inline void removePiece( unsigned short index )
+    {
+        setPiece( index, Piece::emptyPiece() );
+    }
+
+    inline void removePiece( unsigned short file, unsigned short rank )
+    {
+        removePiece( Utilities::squareToIndex( file, rank ) );
+    }
+
+    inline void movePiece( unsigned short indexFrom, unsigned short indexTo )
+    {
+        setPiece( indexTo, pieceAt( indexFrom ) );
+        removePiece( indexFrom );
+    }
+
+    inline bool isEmpty( unsigned short index ) const
+    {
+        return Piece::isEmpty( pieceAt( index ) );
+    }
+
+    inline bool isEmpty( unsigned short file, unsigned short rank ) const
+    {
+        return isEmpty( Utilities::squareToIndex( file, rank ) );
+    }
+
+    inline unsigned char pieceAt( unsigned short index ) const
+    {
+        return pieces[ index ];
+    }
+
+    inline unsigned char pieceAt( unsigned short file, unsigned short rank ) const
+    {
+        return pieceAt( Utilities::squareToIndex( file, rank ) );
+    }
+
     // This is a precise equality check, not a "is this the same position" check
     bool positionMatch( const Board& board )
     {
         for ( int loop = 0; loop < 64; loop++ )
         {
-            if ( pieces[ loop ] != board.pieces[ loop ] )
+            if ( pieceAt( loop ) != board.pieceAt( loop ) )
             {
                 return false;
             }
@@ -94,63 +153,10 @@ private:
     }
 
     /// <summary>
-    /// Check whether this move refutes the move we're currently examining.
-    /// The general idea is to generate pseudo legal moves and for each, generate the possible responses.
-    /// Push the responses to this method to determine whether the psuedo legal move is indeed legal
-    /// </summary>
-    /// <param name="move">a move</param>
-    /// <returns>true if this move should not be possible, demonstrating that the move leading to this is invalid</returns>
-    bool isRefutation( const Move& move )
-    {
-        // TODO consider whether any other checks need to go in here
-        return Piece::isKing( pieces[ move.getTo() ] );
-    }
-
-    /// <summary>
     /// Applies move to this board
     /// </summary>
     /// <param name="move">the move</param>
     void applyMove( const Move& move );
-
-    inline unsigned char setPiece( unsigned short index, unsigned char piece )
-    {
-        pieces[ index ] = piece;
-    }
-
-    inline unsigned char setPiece( unsigned short file, unsigned short rank, unsigned char piece )
-    {
-        setPiece( Utilities::squareToIndex( file, rank ), piece );
-    }
-
-    inline unsigned char removePiece( unsigned short index )
-    {
-        setPiece( index, Piece::NOTHING );
-    }
-
-    inline unsigned char removePiece( unsigned short file, unsigned short rank )
-    {
-        removePiece( Utilities::squareToIndex( file, rank ) );
-    }
-
-    inline bool isEmpty( unsigned short index )
-    {
-        return pieces[ index ] == Piece::NOTHING;
-    }
-
-    inline bool isEmpty( unsigned short file, unsigned short rank )
-    {
-        return isEmpty( Utilities::squareToIndex( file, rank ) );
-    }
-
-    inline unsigned char pieceAt( unsigned short index )
-    {
-        return pieces[ index ];
-    }
-
-    inline unsigned char pieceAt( unsigned short file, unsigned short rank )
-    {
-        return pieceAt( Utilities::squareToIndex( file, rank ) );
-    }
 
 public:
     Board() :
@@ -161,7 +167,7 @@ public:
         halfmoveClock( 0 ),
         fullmoveNumber( 1 )
     {
-        std::fill( pieces.begin(), pieces.end(), Piece::NOTHING );
+        std::fill( pieces.begin(), pieces.end(), Piece::emptyPiece() );
     };
 
     Board( std::array< unsigned char, 64 > pieces,
@@ -230,7 +236,7 @@ public:
     {
         for ( int loop = 0; loop < 64; loop++ )
         {
-            if ( pieces[ loop ] != board.pieces[ loop ] )
+            if ( pieceAt( loop ) != board.pieceAt( loop ) )
             {
                 return false;
             }

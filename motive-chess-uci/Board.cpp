@@ -22,13 +22,12 @@ void Board::applyMove( const Move& move )
     }
 
     // Store this for later tests
-    unsigned char movingPiece = pieces[ move.getFrom() ]; // Will not be Piece::NOTHING
-    unsigned char capturedPiece = pieces[ move.getTo() ]; // May be Piece::NOTHING
+    unsigned char movingPiece = pieceAt( move.getFrom() ); // Will not be Piece::NOTHING
+    unsigned char capturedPiece = pieceAt( move.getTo() ); // May be Piece::NOTHING
 
     // Make the main part of the move and then check for other actions
 
-    pieces[ move.getTo() ] = movingPiece;
-    pieces[ move.getFrom() ] = Piece::NOTHING;
+    movePiece( move.getFrom(), move.getTo() );
 
     // Handle castling - check the piece that has just moved and work it out from there
     if ( movingPiece == Piece::WKING )
@@ -37,15 +36,13 @@ void Board::applyMove( const Move& move )
         {
             if ( move.getTo() == Board::C1 )
             {
-                pieces[ Board::D1 ] = pieces[ Board::A1 ];
-                pieces[ Board::A1 ] = Piece::NOTHING;
+                movePiece( Board::A1, Board::D1 );
 
                 LOG_TRACE << "White castling queen side";
             }
             else if ( move.getTo() == Board::G1 )
             {
-                pieces[ Board::F1 ] = pieces[ Board::H1 ];
-                pieces[ Board::H1 ] = Piece::NOTHING;
+                movePiece( Board::H1, Board::F1 );
 
                 LOG_TRACE << "White castling king side";
             }
@@ -60,15 +57,13 @@ void Board::applyMove( const Move& move )
         {
             if ( move.getTo() == Board::C8 )
             {
-                pieces[ Board::D8 ] = pieces[ Board::A8 ];
-                pieces[ Board::A8 ] = Piece::NOTHING;
+                movePiece( Board::A8, Board::D8 );
 
                 LOG_TRACE << "Black castling queen side";
             }
             else if ( move.getTo() == Board::G8 )
             {
-                pieces[ Board::F8 ] = pieces[ Board::H8 ];
-                pieces[ Board::H8 ] = Piece::NOTHING;
+                movePiece( Board::H8, Board::F8 );
 
                 LOG_TRACE << "Black castling king side";
             }
@@ -106,9 +101,9 @@ void Board::applyMove( const Move& move )
 
     // Promotions
 
-    if ( move.getPromotionPiece() != Piece::NOTHING )
+    if ( move.isPromotion() )
     {
-        pieces[ move.getTo() ] = move.getPromotionPiece();
+        setPiece( move.getTo(), move.getPromotionPiece() );
 
         LOG_TRACE << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() );
     }
@@ -121,22 +116,24 @@ void Board::applyMove( const Move& move )
         {
             LOG_TRACE << "Handling en-passant capture at " << Utilities::indexToSquare( enPassantIndex );
 
-            unsigned short file = Utilities::indexToFile( enPassantIndex );
-
             // An en-passant capture is happening. Remove the enemy pawn
-            if ( Utilities::indexToRank( enPassantIndex ) == RANK_3 )
+
+            unsigned short file = Utilities::indexToFile( enPassantIndex );
+            unsigned short rank = Utilities::indexToRank( enPassantIndex );
+
+            if ( rank == RANK_3 )
             {
-                pieces[ Utilities::squareToIndex( file, RANK_4 ) ] = Piece::NOTHING;
+                removePiece( file, RANK_4 );
             }
-            else if( Utilities::indexToRank( enPassantIndex ) == RANK_6 )
+            else if( rank == RANK_6 )
             {
-                pieces[ Utilities::squareToIndex( file, RANK_5 ) ] = Piece::NOTHING;
+                removePiece( file, RANK_5 );
             }
         }
     }
 
     // Swap whose move it is
-    activeColor = Piece::swapColor( activeColor );
+    activeColor = Piece::oppositeColor( activeColor );
     LOG_TRACE << "Active color now " << Piece::toColorString( activeColor );
 
     // Clear this but then determine whether this new move sets it again
@@ -194,9 +191,9 @@ void Board::applyMove( const Move& move )
         std::stringstream stream;
         for ( unsigned short index = rankIndex; index < rankIndex + 8; index++ )
         {
-            stream << ( pieces[ index ] == Piece::NOTHING ?
+            stream << ( isEmpty( index ) ?
                         ( ( index & 1 ) == 0 ? "." : " " ) :
-                        Piece::toFENString( pieces[ index ] ) );
+                        Piece::toFENString( pieceAt( index ) ) );
         }
 
         LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;

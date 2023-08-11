@@ -17,7 +17,7 @@ public:
     static Move fromString( std::string& moveString );
     static std::string toString( const Move& move, bool lowercase = true );
 
-    Move( unsigned short from, unsigned short to, unsigned char promotion = Piece::NOTHING ) : 
+    Move( unsigned short from, unsigned short to, unsigned char promotion = Piece::emptyPiece() ) : 
         from( from ),
         to( to ),
         promotion( promotion )
@@ -67,6 +67,11 @@ public:
     inline unsigned char getPromotionPiece() const
     {
         return promotion;
+    }
+
+    inline bool isPromotion() const
+    {
+        return promotion != Piece::emptyPiece();
     }
 
     inline bool isNullMove() const

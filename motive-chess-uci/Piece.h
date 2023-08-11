@@ -39,8 +39,9 @@ private:
     static const unsigned char BLACK      = 0b00010000;
     static const unsigned char NOCOLOR    = 0b00000000;
 
-public:
     static const unsigned char NOTHING = 0b00000000; // NOCOLOR | NOPIECE
+
+public:
     static const unsigned char WKING   = 0b00001110; // WHITE   | KING  
     static const unsigned char WQUEEN  = 0b00001101; // WHITE   | QUEEN 
     static const unsigned char WROOK   = 0b00001100; // WHITE   | ROOK  
@@ -275,7 +276,12 @@ public:
         return (value & PAWN) == PAWN;
     }
 
-    inline static unsigned char swapColor( unsigned char color )
+    inline static unsigned char emptyPiece()
+    {
+        return Piece::NOTHING;
+    }
+
+    inline static unsigned char oppositeColor( unsigned char color )
     {
         if ( isWhite( color ) )
         {

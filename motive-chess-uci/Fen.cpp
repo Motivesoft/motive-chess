@@ -11,7 +11,7 @@ Fen::Fen( std::string position )
 
     // Default setup before processing
 
-    std::fill( board.begin(), board.end(), Piece::NOTHING );
+    std::fill( board.begin(), board.end(), Piece::emptyPiece() );
 
     // Board contents - starts at eighth rank and first file, so the indexing here looks a little goofy
 
@@ -90,7 +90,7 @@ Fen::Fen( std::string position )
         std::stringstream stream;
         for ( index = rankIndex; index < rankIndex + 8; index++ )
         {
-            stream << ( board[ index ] == Piece::NOTHING ?
+            stream << ( Piece::isEmpty( board[ index ] ) ?
                         ( ( index & 1 ) == 0 ? "." : " " ) :
                         Piece::toFENString( board[ index ] ) );
         }
