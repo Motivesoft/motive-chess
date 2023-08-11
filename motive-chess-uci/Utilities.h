@@ -35,14 +35,14 @@ public:
     }
 
     /// <summary>
-    /// Turns 1-based file and rank into an index
+    /// Turns 0-based file and rank into an index
     /// </summary>
-    /// <param name="file">1-8, representing A-H</param>
-    /// <param name="rank">1-8, representing rank</param>
+    /// <param name="file">0-7, representing A-H</param>
+    /// <param name="rank">0-7, representing rank</param>
     /// <returns></returns>
     inline static unsigned short squareToIndex( unsigned short file, unsigned short rank )
     {
-        return ( (rank-1) << 3 ) + ( (file-1) & 7 );
+        return ( rank << 3 ) + ( file & 7 );
     }
 
     inline static std::string indexToSquare( const unsigned short index, const bool lowercase = true )
@@ -62,23 +62,23 @@ public:
     }
 
     /// <summary>
-    /// Return a 1-based file for an index
+    /// Return a 0-based file for an index
     /// </summary>
     /// <param name="index">the square index</param>
-    /// <returns>1-8 indicating A through H</returns>
+    /// <returns>0-7 indicating A through H</returns>
     inline static unsigned short indexToFile( unsigned short index )
     {
-        return (index & 7) + 1;
+        return index & 7;
     }
 
     /// <summary>
-    /// Return a 1-based rank for an index
+    /// Return a 0-based rank for an index
     /// </summary>
     /// <param name="index">the square index</param>
-    /// <returns>1-8 indicating the rank</returns>
+    /// <returns>0-7 indicating the rank</returns>
     inline static unsigned short indexToRank( unsigned short index )
     {
-        return ((index >> 3) & 7) + 1;
+        return (index >> 3) & 7;
     }
 };
 

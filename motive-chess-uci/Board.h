@@ -28,6 +28,24 @@ private:
     inline static const unsigned short G8 = 62;
     inline static const unsigned short H8 = 63;
 
+    inline static const unsigned short FILE_A = 0;
+    inline static const unsigned short FILE_B = 1;
+    inline static const unsigned short FILE_C = 2;
+    inline static const unsigned short FILE_D = 3;
+    inline static const unsigned short FILE_E = 4;
+    inline static const unsigned short FILE_F = 5;
+    inline static const unsigned short FILE_G = 6;
+    inline static const unsigned short FILE_H = 7;
+
+    inline static const unsigned short RANK_1 = 0;
+    inline static const unsigned short RANK_2 = 1;
+    inline static const unsigned short RANK_3 = 2;
+    inline static const unsigned short RANK_4 = 3;
+    inline static const unsigned short RANK_5 = 4;
+    inline static const unsigned short RANK_6 = 5;
+    inline static const unsigned short RANK_7 = 6;
+    inline static const unsigned short RANK_8 = 7;
+
 private:
     std::array<unsigned char, 64> pieces;
     unsigned char activeColor;

@@ -107,13 +107,13 @@ Board Board::makeMove( const Move& move )
 
     if ( move.getPromotionPiece() != Piece::NOTHING )
     {
-        if ( Utilities::indexToRank( move.getTo() ) == 8 )
+        if ( Utilities::indexToRank( move.getTo() ) == RANK_8 )
         {
             board.pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::WHITE );
 
             LOG_TRACE << "Handling white promotion to " << Piece::toFENString( move.getPromotionPiece() );
         }
-        else if ( Utilities::indexToRank( move.getTo() ) == 1 )
+        else if ( Utilities::indexToRank( move.getTo() ) == RANK_1 )
         {
             board.pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::BLACK );
 
@@ -129,16 +129,16 @@ Board Board::makeMove( const Move& move )
         {
             LOG_TRACE << "Handling en-passant capture at " << Utilities::indexToSquare( board.enPassantIndex );
 
-            unsigned short enPassantFile = Utilities::indexToFile( enPassantIndex );
+            unsigned short file = Utilities::indexToFile( enPassantIndex );
 
             // An en-passant capture is happening. Remove the enemy pawn
-            if ( Utilities::indexToRank( enPassantIndex ) == 3 )
+            if ( Utilities::indexToRank( enPassantIndex ) == RANK_3 )
             {
-                board.pieces[ Utilities::squareToIndex( enPassantFile, 4 ) ] = Piece::NOTHING;
+                board.pieces[ Utilities::squareToIndex( file, RANK_4 ) ] = Piece::NOTHING;
             }
-            else if( Utilities::indexToRank( enPassantIndex ) == 6 )
+            else if( Utilities::indexToRank( enPassantIndex ) == RANK_6 )
             {
-                board.pieces[ Utilities::squareToIndex( enPassantFile, 5 ) ] = Piece::NOTHING;
+                board.pieces[ Utilities::squareToIndex( file, RANK_5 ) ] = Piece::NOTHING;
             }
         }
     }
@@ -154,13 +154,13 @@ Board Board::makeMove( const Move& move )
     {
         unsigned short file = Utilities::indexToFile( move.getFrom() );
 
-        if ( Utilities::indexToRank( move.getFrom() ) == 2 && Utilities::indexToRank( move.getTo() ) == 4 )
+        if ( Utilities::indexToRank( move.getFrom() ) == RANK_2 && Utilities::indexToRank( move.getTo() ) == RANK_4 )
         {
-            board.enPassantIndex = Utilities::squareToIndex( file, 3 );
+            board.enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
         }
-        else if ( Utilities::indexToRank( move.getFrom() ) == 7 && Utilities::indexToRank( move.getTo() ) == 5 )
+        else if ( Utilities::indexToRank( move.getFrom() ) == RANK_7 && Utilities::indexToRank( move.getTo() ) == RANK_5 )
         {
-            board.enPassantIndex = Utilities::squareToIndex( file, 6 );
+            board.enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
         }
         else
         {
