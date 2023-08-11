@@ -32,11 +32,15 @@ Board Board::makeMove( const Move& move )
             {
                 board.pieces[ Board::D1 ] = board.pieces[ Board::A1 ];
                 board.pieces[ Board::A1 ] = Piece::NOTHING;
+
+                LOG_TRACE << "White castling queen side";
             }
             else if ( move.getTo() == Board::G1 )
             {
                 board.pieces[ Board::F1 ] = board.pieces[ Board::H1 ];
                 board.pieces[ Board::H1 ] = Piece::NOTHING;
+
+                LOG_TRACE << "White castling king side";
             }
         }
 
@@ -52,11 +56,15 @@ Board Board::makeMove( const Move& move )
             {
                 board.pieces[ Board::D8 ] = board.pieces[ Board::A8 ];
                 board.pieces[ Board::A8 ] = Piece::NOTHING;
+
+                LOG_TRACE << "Black castling queen side";
             }
             else if ( move.getTo() == Board::G8 )
             {
                 board.pieces[ Board::F8 ] = board.pieces[ Board::H8 ];
                 board.pieces[ Board::H8 ] = Piece::NOTHING;
+
+                LOG_TRACE << "Black castling king side";
             }
         }
 
