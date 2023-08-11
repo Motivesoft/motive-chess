@@ -6,12 +6,17 @@ Board Board::makeMove( const Move& move )
 
     LOG_DEBUG << "Make move: " << Move::toString( move );
 
-    // TODO this doesn't yet deal with promotions, castling and en-passant
-    board.pieces[ move.getTo() ] = board.pieces[ move.getFrom() ];
+    // Store this for later tests
+    unsigned char movingPiece = board.pieces[ move.getFrom() ]; // Will not be Piece::NOTHING
+    unsigned char capturedPiece = board.pieces[ move.getTo() ]; // May be Piece::NOTHING
+
+    // Make the main part of the move and then check for other actions
+
+    board.pieces[ move.getTo() ] = movingPiece;
     board.pieces[ move.getFrom() ] = Piece::NOTHING;
 
     // Handle castling - check the piece that has just moved and work it out from there
-    if ( board.pieces[ move.getTo() ] == Piece::WKING )
+    if ( movingPiece == Piece::WKING )
     {
         if ( move.getFrom() == Board::E1 )
         {
@@ -28,10 +33,10 @@ Board Board::makeMove( const Move& move )
         }
 
         // White king has moved - no more castling
-        castling[ 0 ] = false;
-        castling[ 1 ] = false;
+        board.castling[ 0 ] = false;
+        board.castling[ 1 ] = false;
     }
-    else if ( board.pieces[ move.getTo() ] == Piece::BKING )
+    else if ( movingPiece == Piece::BKING )
     {
         if ( move.getFrom() == Board::E8 )
         {
@@ -48,33 +53,39 @@ Board Board::makeMove( const Move& move )
         }
 
         // Black king has moved - no more castling
-        castling[ 2 ] = false;
-        castling[ 3 ] = false;
+        board.castling[ 2 ] = false;
+        board.castling[ 3 ] = false;
     }
-    else if ( board.pieces[ move.getTo() ] == Piece::WROOK )
+    else if ( movingPiece == Piece::WROOK )
     {
         // A white rook has moved - work out which and disable its ability to castle
         if ( move.getFrom() == Board::H1 )
         {
-            castling[ 0 ] = false;
+            board.castling[ 0 ] = false;
         }
         else if ( move.getFrom() == Board::A1 )
         {
-            castling[ 1 ] = false;
+            board.castling[ 1 ] = false;
         }
     }
-    else if ( board.pieces[ move.getTo() ] == Piece::BROOK )
+    else if ( movingPiece == Piece::BROOK )
     {
         // A black rook has moved - work out which and disable its ability to castle
         if ( move.getFrom() == Board::H8 )
         {
-            castling[ 2 ] = false;
+            board.castling[ 2 ] = false;
         }
         else if ( move.getFrom() == Board::A8 )
         {
-            castling[ 3 ] = false;
+            board.castling[ 3 ] = false;
         }
     }
+
+    LOG_TRACE << "Castling set to " 
+        << ( board.castling[ 0 ] ? "K" : "" )
+        << ( board.castling[ 1 ] ? "Q" : "" )
+        << ( board.castling[ 2 ] ? "k" : "" )
+        << ( board.castling[ 3 ] ? "q" : "" );
 
     // Promotions
 
@@ -83,32 +94,78 @@ Board Board::makeMove( const Move& move )
         if ( Utilities::indexToRank( move.getTo() ) == 8 )
         {
             board.pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::WHITE );
+
+            LOG_TRACE << "Handling white promotion to " << Piece::toFENString( move.getPromotionPiece() );
         }
         else if ( Utilities::indexToRank( move.getTo() ) == 1 )
         {
             board.pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::BLACK );
+
+            LOG_TRACE << "Handling black promotion to " << Piece::toFENString( move.getPromotionPiece() );
         }
     }
 
     // En-passant
 
-    // TODO it also needs to update the other state variables, e.g...
+    if ( move.getTo() == enPassantIndex )
+    {
+        if ( Piece::isPawn( movingPiece ) )
+        {
+            LOG_TRACE << "Handling en-passant capture at " << Utilities::indexToSquare( board.enPassantIndex );
+
+            unsigned short enPassantFile = Utilities::indexToFile( enPassantIndex );
+
+            // An en-passant capture is happening. Remove the enemy pawn
+            if ( Utilities::indexToRank( enPassantIndex ) == 3 )
+            {
+                board.pieces[ Utilities::squareToIndex( enPassantFile, 4 ) ] = Piece::NOTHING;
+            }
+            else if( Utilities::indexToRank( enPassantIndex ) == 6 )
+            {
+                board.pieces[ Utilities::squareToIndex( enPassantFile, 5 ) ] = Piece::NOTHING;
+            }
+        }
+    }
 
     // Swap whose move it is
     board.activeColor = activeColor == Piece::WHITE ? Piece::BLACK : Piece::WHITE;
+    LOG_TRACE << "Active color now " << ( board.activeColor == Piece::WHITE ? "White" : "Black" );
+
+    // TODO Clear this but then determine whether this new move sets it again
+    board.enPassantIndex = USHRT_MAX;
+
+    if ( Piece::isPawn( movingPiece ) )
+    {
+        unsigned short file = Utilities::indexToFile( move.getFrom() );
+
+        if ( Utilities::indexToRank( move.getFrom() ) == 2 && Utilities::indexToRank( move.getTo() ) == 4 )
+        {
+            board.enPassantIndex = Utilities::squareToIndex( file, 3 );
+        }
+        else if ( Utilities::indexToRank( move.getFrom() ) == 7 && Utilities::indexToRank( move.getTo() ) == 5 )
+        {
+            board.enPassantIndex = Utilities::squareToIndex( file, 6 );
+        }
+
+        LOG_TRACE << "En-passant square set to " << Utilities::indexToSquare( board.enPassantIndex );
+    }
+
+    // Halfmove increment? Only if not a capture or pawn move
+    if ( capturedPiece == Piece::NOTHING && !Piece::isPawn( movingPiece ) )
+    {
+        board.halfmoveClock++;
+        
+        LOG_TRACE << "Adding one to halfmove clock. Now " << board.halfmoveClock;
+    }
 
     // Increment move number
     if ( board.activeColor == Piece::WHITE )
     {
         board.fullmoveNumber++;
+
+        LOG_TRACE << "Full move incrementing to " << board.fullmoveNumber;
     }
 
-    /*
-    castling { board.castling[ 0 ], board.castling[ 1 ], board.castling[ 2 ], board.castling[ 3 ] },
-    enPassantIndex( board.enPassantIndex ),
-    halfmoveClock( board.halfmoveClock ),
-    fullmoveNumber( board.fullmoveNumber )
-     */
     // TODO Tuning - does this call the copy constructor too often and should we move to pointers?
 
     // TODO stick this in a utility class somewhere
@@ -127,7 +184,6 @@ Board Board::makeMove( const Move& move )
         LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
     }
     LOG_DEBUG << "  ABCDEFGH";
-
 
     return board;
 }

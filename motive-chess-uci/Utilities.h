@@ -34,13 +34,25 @@ public:
         return ( rank << 3 ) + ( file & 7 );
     }
 
+    /// <summary>
+    /// Turns 1-based file and rank into an index
+    /// </summary>
+    /// <param name="file">1-8, representing A-H</param>
+    /// <param name="rank">1-8, representing rank</param>
+    /// <returns></returns>
     inline static unsigned short squareToIndex( unsigned short file, unsigned short rank )
     {
-        return ( rank << 3 ) + ( file & 7 );
+        return ( (rank-1) << 3 ) + ( (file-1) & 7 );
     }
 
     inline static std::string indexToSquare( const unsigned short index, const bool lowercase = true )
     {
+        if ( index == USHRT_MAX )
+        {
+            // Deliberately off-board
+            return "";
+        }
+
         std::stringstream square;
 
         square << (char)( ( index & 7 ) + ( lowercase ? 'a' : 'A' ) )
