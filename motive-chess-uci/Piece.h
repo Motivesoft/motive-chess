@@ -35,11 +35,11 @@ private:
     static const unsigned char KNIGHT    = 0b00000010;
     static const unsigned char PAWN      = 0b00000001;
 
-public:
     static const unsigned char WHITE      = 0b00001000;
     static const unsigned char BLACK      = 0b00010000;
     static const unsigned char NOCOLOR    = 0b00000000;
 
+public:
     static const unsigned char NOTHING = 0b00000000; // NOCOLOR | NOPIECE
     static const unsigned char WKING   = 0b00001110; // WHITE   | KING  
     static const unsigned char WQUEEN  = 0b00001101; // WHITE   | QUEEN 
@@ -275,27 +275,75 @@ public:
         return (value & PAWN) == PAWN;
     }
 
-    /// <summary>
-    /// Takes a non-colored piece, such as a promotion piece from a UCI 'moves' list, and apply a color to it
-    /// </summary>
-    /// <param name="piece">the piece</param>
-    /// <param name="color">the color to apply</param>
-    /// <returns>the colorised piece</returns>
-    inline static unsigned char toColor( unsigned char piece, unsigned char color )
+    inline static unsigned char swapColor( unsigned char color )
     {
-        // This looks like we could condense to a single line, but the compiler insists
-        // we have a logical/bitwise issue however we code it, so go with this version
-        switch ( color & COLOR_MASK )
+        if ( isWhite( color ) )
         {
-            case WHITE:
-                return ( piece & INVERSE_COLOR_MASK ) + WHITE;
-
-            case BLACK:
-                return ( piece & INVERSE_COLOR_MASK ) | BLACK;
-
-            default:
-                // Unexpected, and nothing obvious to do here, so just strip the color
-                return ( piece & INVERSE_COLOR_MASK ); 
+            return Piece::BLACK;
         }
+        if ( isBlack( color ) )
+        {
+            return Piece::WHITE;
+        }
+
+        LOG_TRACE << "Failed to swap color for " << color;
+        return Piece::NOCOLOR;
+    }
+
+    static std::string toColorString( unsigned char color )
+    {
+        if ( isWhite( color ) )
+        {
+            return "white";
+        }
+        else if ( isBlack( color ) )
+        {
+            return "black";
+        }
+
+        LOG_TRACE << "Failed to get color name for " << color;
+        return "";
+    }
+
+    static std::string toColorLetter( unsigned char color )
+    {
+        if ( isWhite( color ) )
+        {
+            return "w";
+        }
+        else if ( isBlack( color ) )
+        {
+            return "b";
+        }
+
+        LOG_TRACE << "Failed to get color name for " << color;
+        return "";
+    }
+
+    static unsigned char colorFrom( std::string color )
+    {
+        return colorFrom( color[ 0 ] );
+    }
+
+    static unsigned char colorFrom( unsigned char color )
+    {
+        switch ( color )
+        {
+            case 'w':
+            case 'W':
+                return Piece::WHITE;
+
+            case 'b':
+            case 'B':
+                return Piece::BLACK;
+        }
+
+        LOG_TRACE << "Failed to get color from " << color;
+        return Piece::NOCOLOR;
+    }
+
+    inline static unsigned char getStartingColor()
+    {
+        return Piece::WHITE;
     }
 };

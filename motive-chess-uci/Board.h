@@ -117,7 +117,7 @@ private:
 public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
-        activeColor( Piece::WHITE ),
+        activeColor( Piece::getStartingColor() ),
         castling { true, true, true, true },
         enPassantIndex( USHRT_MAX ),
         halfmoveClock( 0 ),

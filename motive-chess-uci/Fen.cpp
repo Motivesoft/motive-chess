@@ -108,9 +108,9 @@ Fen::Fen( std::string position )
 
     // Active color
 
-    activeColor = *it++ == 'w' ? Piece::WHITE : Piece::BLACK;
+    activeColor = Piece::colorFrom( *it++ );
 
-    LOG_DEBUG << "Active color: " << ( activeColor == Piece::WHITE ? "White" : "Black" );
+    LOG_DEBUG << "Active color: " << Piece::toColorString( activeColor );
 
     skipSpace( it, end );
 

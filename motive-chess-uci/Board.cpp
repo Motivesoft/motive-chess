@@ -114,18 +114,9 @@ void Board::applyMove( const Move& move )
 
     if ( move.getPromotionPiece() != Piece::NOTHING )
     {
-        if ( Utilities::indexToRank( move.getTo() ) == RANK_8 )
-        {
-            pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::WHITE );
+        pieces[ move.getTo() ] = move.getPromotionPiece();
 
-            LOG_TRACE << "Handling white promotion to " << Piece::toFENString( move.getPromotionPiece() );
-        }
-        else if ( Utilities::indexToRank( move.getTo() ) == RANK_1 )
-        {
-            pieces[ move.getTo() ] = Piece::toColor( move.getPromotionPiece(), Piece::BLACK );
-
-            LOG_TRACE << "Handling black promotion to " << Piece::toFENString( move.getPromotionPiece() );
-        }
+        LOG_TRACE << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() );
     }
 
     // En-passant
@@ -151,8 +142,8 @@ void Board::applyMove( const Move& move )
     }
 
     // Swap whose move it is
-    activeColor = activeColor == Piece::WHITE ? Piece::BLACK : Piece::WHITE;
-    LOG_TRACE << "Active color now " << ( activeColor == Piece::WHITE ? "White" : "Black" );
+    activeColor = Piece::swapColor( activeColor );
+    LOG_TRACE << "Active color now " << Piece::toColorString( activeColor );
 
     // TODO Clear this but then determine whether this new move sets it again
     enPassantIndex = USHRT_MAX;
@@ -190,7 +181,7 @@ void Board::applyMove( const Move& move )
     }
 
     // Increment move number
-    if ( activeColor == Piece::WHITE )
+    if ( Piece::isWhite( activeColor ) )
     {
         fullmoveNumber++;
 
