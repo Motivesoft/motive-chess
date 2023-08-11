@@ -9,6 +9,7 @@
 #include "CopyProtection.h"
 #include "Fen.h"
 #include "GameContext.h"
+#include "GoContext.h"
 #include "Logger.h"
 #include "Registration.h"
 #include "VersionInfo.h"
@@ -93,7 +94,7 @@ private:
         Logger::Level level;
     };
 
-    static void thinking( Engine* engine, Board* board );
+    static void thinking( Engine* engine, Board* board, GoContext* context );
 
     // Helper methods
     void listVisibleOptions();

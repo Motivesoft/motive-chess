@@ -63,6 +63,9 @@
     <ClCompile Include="CastlingRights.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GoContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -111,6 +114,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CastlingRights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GoContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

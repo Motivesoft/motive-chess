@@ -668,8 +668,11 @@ void Engine::goImpl( std::vector<std::string> searchMoves, bool ponder, int wtim
         initialBoard = initialBoard.makeMove( *it );
     }
 
+    GoContext* context = new GoContext( searchMoves, ponder, wtime, btime, winc, binc, movestogo, depth, nodes, mate, movetime, infinite );
+
+    // Use this as the board to work from
     thinkingBoard = new Board( initialBoard );
-    thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard );
+    thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard, context );
 
     LOG_TRACE << "Thread " << thinkingThread->get_id() << " running";
 }
@@ -685,8 +688,11 @@ void Engine::perftImpl( int depth, std::string& fen )
 
 // Internal methods
 
-void Engine::thinking( Engine* engine, Board* board )
+void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 {
+    GoContext goContext( *context );
+    delete context;
+
     // Test this repeatedly for interuptions
     engine->continueThinking = true;
 
