@@ -162,8 +162,16 @@ Board Board::makeMove( const Move& move )
         {
             board.enPassantIndex = Utilities::squareToIndex( file, 6 );
         }
+        else
+        {
+            LOG_TRACE << "En-passant square set to nothing";
+        }
 
         LOG_TRACE << "En-passant square set to " << Utilities::indexToSquare( board.enPassantIndex );
+    }
+    else
+    {
+        LOG_TRACE << "En-passant square set to nothing";
     }
 
     // Halfmove increment? Only if not a capture or pawn move
