@@ -21,6 +21,12 @@ std::string Move::toString( const Move& move, bool lowercase )
 {
     std::stringstream stream;
 
+    if ( move.isNullMove() )
+    {
+        // Special case for UCI
+        return "0000";
+    }
+
     stream << Utilities::indexToSquare( move.from, lowercase )
            << Utilities::indexToSquare( move.to, lowercase )
            << Piece::toMoveString( move.promotion );

@@ -6,6 +6,14 @@ Board Board::makeMove( const Move& move )
 
     LOG_DEBUG << "Make move: " << Move::toString( move );
 
+    if ( move.isNullMove() )
+    {
+        // To be honest, not sure what to do here - return an unchanged board, or an updated one with no move made
+        // but other attributes updated as though a move had been made and it was now the other side's go
+        LOG_TRACE << "Ignoring null move";
+        return board;
+    }
+
     // Store this for later tests
     unsigned char movingPiece = board.pieces[ move.getFrom() ]; // Will not be Piece::NOTHING
     unsigned char capturedPiece = board.pieces[ move.getTo() ]; // May be Piece::NOTHING
