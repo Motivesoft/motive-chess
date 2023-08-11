@@ -20,17 +20,13 @@
 /// </summary>
 class Piece
 {
-public:
+private:
     static const unsigned char COLOR_MASK         = 0b00011000;
     static const unsigned char INVERSE_COLOR_MASK = 0b11100111;
     static const unsigned char PIECE_MASK         = 0b00000111; // Mask
     static const unsigned char INVERSE_PIECE_MASK = 0b11111000; // Mask
 
-    static const unsigned char WHITE      = 0b00001000;
-    static const unsigned char BLACK      = 0b00010000;
-    static const unsigned char NOCOLOR    = 0b00000000;
-
-    // Note that these are the non-colored (color unknow) versions
+    // Note that these are the non-colored (color unknown) versions
     static const unsigned char NOPIECE   = 0b00000000;
     static const unsigned char KING      = 0b00000110;
     static const unsigned char QUEEN     = 0b00000101;
@@ -38,6 +34,11 @@ public:
     static const unsigned char BISHOP    = 0b00000011;
     static const unsigned char KNIGHT    = 0b00000010;
     static const unsigned char PAWN      = 0b00000001;
+
+public:
+    static const unsigned char WHITE      = 0b00001000;
+    static const unsigned char BLACK      = 0b00010000;
+    static const unsigned char NOCOLOR    = 0b00000000;
 
     static const unsigned char NOTHING = 0b00000000; // NOCOLOR | NOPIECE
     static const unsigned char WKING   = 0b00001110; // WHITE   | KING  
@@ -183,47 +184,49 @@ public:
         }
     }
 
-    static unsigned char fromMoveString( std::string value )
-    {
-        return fromMoveString( value[ 0 ] );
-    }
-
     /// <summary>
-    /// Return a piece from a letter value, but don't infer any color info as UCI 'moves' lists do not use case
-    /// for color in pawn promotions such as e7e8q
+    /// Takes a 5 letter move string and returns the promotion piece
     /// </summary>
-    /// <param name="value">a piece letter</param>
-    /// <returns>a piece</returns>
-    static unsigned char fromMoveString( char value )
+    /// <param name="value">a promotion move, such as a7a8q</param>
+    /// <returns>The promotion piece, e.g. Piece::WQUEEN</returns>
+    static unsigned char promotionPieceFromMoveString( std::string value )
     {
-        switch ( value )
+        LOG_TRACE << "Getting promotion piece from " << value;
+        if ( value.length() < 5 )
+        {
+            return Piece::NOTHING;
+        }
+
+        unsigned char color = value[ 3 ] == '8' ? Piece::WHITE : Piece::BLACK;
+
+        switch ( value[ 4 ] )
         {
             case 'k':
             case 'K':
-                return Piece::KING;
+                return color == Piece::WHITE ? Piece::WKING : Piece::BKING;
 
             case 'q':
             case 'Q':
-                return Piece::QUEEN;
+                return color == Piece::WHITE ? Piece::WQUEEN : Piece::BQUEEN;
 
             case 'r':
             case 'R':
-                return Piece::ROOK;
+                return color == Piece::WHITE ? Piece::WROOK : Piece::BROOK;
 
             case 'b':
             case 'B':
-                return Piece::BISHOP;
+                return color == Piece::WHITE ? Piece::WBISHOP : Piece::BBISHOP;
 
             case 'n':
             case 'N':
-                return Piece::KNIGHT;
+                return color == Piece::WHITE ? Piece::WKNIGHT : Piece::BKNIGHT;
 
             case 'p':
             case 'P':
-                return Piece::PAWN;
+                return color == Piece::WHITE ? Piece::WPAWN : Piece::BPAWN;
         }
 
-        LOG_WARN << "Unexpected letter in move string: " << value;
+        LOG_WARN << "Unexpected letter '" << value[ 4 ] << "' in move string : " << value;
         return Piece::NOTHING;
     }
 

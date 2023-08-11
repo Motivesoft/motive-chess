@@ -10,7 +10,7 @@ Move Move::fromString( std::string& moveString )
     {
         return Move( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
                      Utilities::squareToIndex( moveString.substr( 2, 2 ) ),
-                     Piece::fromMoveString( moveString[ 4 ] ) );
+                     Piece::promotionPieceFromMoveString( moveString ) );
     }
 
     return Move( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
