@@ -47,7 +47,6 @@ private:
     inline static const unsigned short RANK_7 = 6;
     inline static const unsigned short RANK_8 = 7;
 
-private:
     std::array<unsigned char, 64> pieces;
     unsigned char activeColor;
     CastlingRights castlingRights;
@@ -103,6 +102,7 @@ private:
     /// <returns>true if this move should not be possible, demonstrating that the move leading to this is invalid</returns>
     bool isRefutation( const Move& move )
     {
+        // TODO consider whether any other checks need to go in here
         return Piece::isKing( pieces[ move.getTo() ] );
     }
 
@@ -111,6 +111,46 @@ private:
     /// </summary>
     /// <param name="move">the move</param>
     void applyMove( const Move& move );
+
+    inline unsigned char setPiece( unsigned short index, unsigned char piece )
+    {
+        pieces[ index ] = piece;
+    }
+
+    inline unsigned char setPiece( unsigned short file, unsigned short rank, unsigned char piece )
+    {
+        setPiece( Utilities::squareToIndex( file, rank ), piece );
+    }
+
+    inline unsigned char removePiece( unsigned short index )
+    {
+        setPiece( index, Piece::NOTHING );
+    }
+
+    inline unsigned char removePiece( unsigned short file, unsigned short rank )
+    {
+        removePiece( Utilities::squareToIndex( file, rank ) );
+    }
+
+    inline bool isEmpty( unsigned short index )
+    {
+        return pieces[ index ] == Piece::NOTHING;
+    }
+
+    inline bool isEmpty( unsigned short file, unsigned short rank )
+    {
+        return isEmpty( Utilities::squareToIndex( file, rank ) );
+    }
+
+    inline unsigned char pieceAt( unsigned short index )
+    {
+        return pieces[ index ];
+    }
+
+    inline unsigned char pieceAt( unsigned short file, unsigned short rank )
+    {
+        return pieceAt( Utilities::squareToIndex( file, rank ) );
+    }
 
 public:
     Board() :
