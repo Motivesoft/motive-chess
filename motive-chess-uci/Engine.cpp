@@ -698,16 +698,22 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     // Test this repeatedly for interuptions
     engine->continueThinking = true;
 
-    // OK, beging the thinking process
+    // OK, beging the thinking process - we have to test flags, but make sure we have a candidate move
+    // before being interrupted - unless we are quitting
 
     unsigned int loop = 0;
-    while ( loop <= goContext.getDepth() && engine->continueThinking && !engine->quitting )
+    while ( !engine->quitting )
     {
-        LOG_DEBUG << "Thinking (" << loop << ")";
-        std::this_thread::sleep_for( std::chrono::milliseconds( 2000 ) );
+        do
+        {
+            // TODO do work here
 
-        if ( loop++ == 10 )
-            break;
+            if ( loop >= context->getDepth() )
+            {
+
+            }
+        }
+        while ( engine->continueThinking );
     }
 
     if ( engine->broadcastThinkingOutcome )
