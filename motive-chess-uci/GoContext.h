@@ -8,15 +8,15 @@ class GoContext
 private:
     std::vector<std::string> searchMoves;
     bool ponder;
-    int wtime;
-    int btime;
-    int winc;
-    int binc;
-    int movestogo;
-    int depth;
-    int nodes;
-    int mate;
-    int movetime;
+    unsigned int wtime;
+    unsigned int btime;
+    unsigned int winc;
+    unsigned int binc;
+    unsigned int movestogo;
+    unsigned int depth;
+    unsigned int nodes;
+    unsigned int mate;
+    unsigned int movetime;
     bool infinite;
 
 public:
@@ -57,6 +57,11 @@ public:
     virtual ~GoContext()
     {
 
+    }
+
+    inline unsigned int getDepth()
+    {
+        return depth;
     }
 };
 

@@ -299,15 +299,15 @@ void Engine::goCommand( std::vector<std::string>& arguments )
     // TODO implement
     std::vector<std::string> searchMoves;
     bool ponder = false;
-    int wtime = 0;
-    int btime = 0;
-    int winc = 0;
-    int binc = 0;
-    int movestogo = 0;
-    int depth = 0;
-    int nodes = 0;
-    int mate = 0;
-    int movetime = 0;
+    unsigned int wtime = 0;
+    unsigned int btime = 0;
+    unsigned int winc = 0;
+    unsigned int binc = 0;
+    unsigned int movestogo = 0;
+    unsigned int depth = 0;
+    unsigned int nodes = 0;
+    unsigned int mate = 0;
+    unsigned int movetime = 0;
     bool infinite = false;
 
     bool parseError = false;
@@ -691,6 +691,7 @@ void Engine::perftImpl( int depth, std::string& fen )
 
 void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 {
+    // TODO this is clunky. Do something about it
     GoContext goContext( *context );
     delete context;
 
@@ -699,8 +700,8 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
     // OK, beging the thinking process
 
-    int loop = 1;
-    while ( engine->continueThinking && !engine->quitting )
+    unsigned int loop = 0;
+    while ( loop <= goContext.getDepth() && engine->continueThinking && !engine->quitting )
     {
         LOG_DEBUG << "Thinking (" << loop << ")";
         std::this_thread::sleep_for( std::chrono::milliseconds( 2000 ) );
