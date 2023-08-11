@@ -13,11 +13,6 @@ Fen::Fen( std::string position )
 
     std::fill( board.begin(), board.end(), Piece::NOTHING );
 
-    castlingWK = false;
-    castlingWQ = false;
-    castlingBK = false;
-    castlingBQ = false;
-
     // Board contents - starts at eighth rank and first file, so the indexing here looks a little goofy
 
     short index = 56;
@@ -116,38 +111,24 @@ Fen::Fen( std::string position )
 
     // Castling rights (whichever still available are presented from KQkq with '-' for none)
 
+    std::stringstream castling;
+
     while ( *it != ' ' )
     {
-        if ( *it == 'K' )
-        {
-            castlingWK = true;
+        castling << *it++;
+    }
 
-            LOG_DEBUG << "King-side castling available for White";
-        }
-        else if ( *it == 'Q' )
-        {
-            castlingWQ = true;
+    if ( castling.str() == "-" )
+    {
+        castlingRights = CastlingRights( false );
 
-            LOG_DEBUG << "Queen-side castling available for White";
-        }
-        else if ( *it == 'k' )
-        {
-            castlingBK = true;
+        LOG_DEBUG << "No castling rights";
+    }
+    else
+    {
+        castlingRights = CastlingRights::fromFENString( castling.str() );
 
-            LOG_DEBUG << "King-side castling available for Black";
-        }
-        else if ( *it == 'q' )
-        {
-            castlingBQ = true;
-
-            LOG_DEBUG << "Queen-side castling available for Black";
-        }
-        else if ( *it != '-' )
-        {
-            LOG_ERROR << "Unexpected entry in castling section of FEN string " << *it;
-        }
-
-        it++;
+        LOG_DEBUG << "Castling rights for " << castling.str() << " are " << castlingRights.toString();
     }
 
     skipSpace( it, end );

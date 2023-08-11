@@ -3,6 +3,7 @@
 #include <array>
 #include <string>
 
+#include "CastlingRights.h"
 #include "Logger.h"
 #include "Piece.h"
 #include "Utilities.h"
@@ -12,10 +13,7 @@ class Fen
 private:
     std::array< unsigned char, 64 > board;
     unsigned char activeColor;
-    bool castlingWK;
-    bool castlingWQ;
-    bool castlingBK;
-    bool castlingBQ;
+    CastlingRights castlingRights;
     unsigned short enPassantIndex;
     unsigned short halfmoveClock;
     unsigned short fullmoveNumber;
@@ -42,10 +40,7 @@ public:
     Fen( Fen& fen ) :
         board( fen.board ),
         activeColor( fen.activeColor ),
-        castlingWK( fen.castlingWK ),
-        castlingWQ( fen.castlingWQ ),
-        castlingBK( fen.castlingBK ),
-        castlingBQ( fen.castlingBQ ),
+        castlingRights( fen.castlingRights ),
         enPassantIndex( fen.enPassantIndex ),
         halfmoveClock( fen.halfmoveClock ),
         fullmoveNumber( fen.fullmoveNumber )

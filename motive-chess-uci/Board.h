@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "CastlingRights.h"
 #include "Fen.h"
 #include "Move.h"
 #include "Piece.h"
@@ -49,7 +50,7 @@ private:
 private:
     std::array<unsigned char, 64> pieces;
     unsigned char activeColor;
-    bool castling[ 4 ]; // KQkq
+    CastlingRights castlingRights;
     unsigned short enPassantIndex;
     unsigned short halfmoveClock;
     unsigned short fullmoveNumber;
@@ -70,12 +71,9 @@ private:
             return false;
         }
 
-        for ( int loop = 0; loop < 4; loop++ )
+        if ( castlingRights != board.castlingRights )
         {
-            if ( castling[ loop ] != board.castling[ loop ] )
-            {
-                return false;
-            }
+            return false;
         }
 
         if ( enPassantIndex != board.enPassantIndex )
@@ -118,7 +116,7 @@ public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
         activeColor( Piece::getStartingColor() ),
-        castling { true, true, true, true },
+        castlingRights( CastlingRights( true ) ),
         enPassantIndex( Utilities::getOffboardLocation() ),
         halfmoveClock( 0 ),
         fullmoveNumber( 1 )
@@ -128,16 +126,13 @@ public:
 
     Board( std::array< unsigned char, 64 > pieces,
            unsigned char activeColor,
-           bool castlingWK,
-           bool castlingWQ,
-           bool castlingBK,
-           bool castlingBQ,
+           CastlingRights castlingRights,
            unsigned short enPassantIndex,
            unsigned short halfmoveClock,
            unsigned short fullmoveNumber ) :
         pieces( pieces ),
         activeColor( activeColor ),
-        castling { castlingWK, castlingWQ, castlingBK, castlingBQ },
+        castlingRights( castlingRights ),
         enPassantIndex( enPassantIndex ),
         halfmoveClock( halfmoveClock ),
         fullmoveNumber( fullmoveNumber )
@@ -148,7 +143,7 @@ public:
     Board( Board& board ) :
         pieces( board.pieces ),
         activeColor( board.activeColor ),
-        castling { board.castling[ 0 ], board.castling[ 1 ], board.castling[ 2 ], board.castling[ 3 ] },
+        castlingRights( board.castlingRights ),
         enPassantIndex( board.enPassantIndex ),
         halfmoveClock( board.halfmoveClock ),
         fullmoveNumber( board.fullmoveNumber )
@@ -159,7 +154,7 @@ public:
     Board( const Fen& fen ) :
         pieces( fen.board ),
         activeColor( fen.activeColor ),
-        castling { fen.castlingWK, fen.castlingWQ, fen.castlingBK, fen.castlingBQ },
+        castlingRights( fen.castlingRights ),
         enPassantIndex( fen.enPassantIndex ),
         halfmoveClock( fen.halfmoveClock ),
         fullmoveNumber( fen.fullmoveNumber )

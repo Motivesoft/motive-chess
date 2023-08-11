@@ -52,8 +52,7 @@ void Board::applyMove( const Move& move )
         }
 
         // White king has moved - no more castling
-        castling[ 0 ] = false;
-        castling[ 1 ] = false;
+        castlingRights.removeWhiteCastlingRights();
     }
     else if ( movingPiece == Piece::BKING )
     {
@@ -76,19 +75,18 @@ void Board::applyMove( const Move& move )
         }
 
         // Black king has moved - no more castling
-        castling[ 2 ] = false;
-        castling[ 3 ] = false;
+        castlingRights.removeBlackCastlingRights();
     }
     else if ( movingPiece == Piece::WROOK )
     {
         // A white rook has moved - work out which and disable its ability to castle
         if ( move.getFrom() == Board::H1 )
         {
-            castling[ 0 ] = false;
+            castlingRights.removeWhiteKingsideCastlingRights();
         }
         else if ( move.getFrom() == Board::A1 )
         {
-            castling[ 1 ] = false;
+            castlingRights.removeWhiteQueensideCastlingRights();
         }
     }
     else if ( movingPiece == Piece::BROOK )
@@ -96,19 +94,15 @@ void Board::applyMove( const Move& move )
         // A black rook has moved - work out which and disable its ability to castle
         if ( move.getFrom() == Board::H8 )
         {
-            castling[ 2 ] = false;
+            castlingRights.removeBlackKingsideCastlingRights();
         }
         else if ( move.getFrom() == Board::A8 )
         {
-            castling[ 3 ] = false;
+            castlingRights.removeBlackQueensideCastlingRights();
         }
     }
 
-    LOG_TRACE << "Castling set to " 
-        << ( castling[ 0 ] ? "K" : "" )
-        << ( castling[ 1 ] ? "Q" : "" )
-        << ( castling[ 2 ] ? "k" : "" )
-        << ( castling[ 3 ] ? "q" : "" );
+    LOG_TRACE << "Castling set to " << castlingRights.toString();
 
     // Promotions
 
