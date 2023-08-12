@@ -93,5 +93,6 @@ public:
     }
 
     static void dumpBoard( std::array< unsigned char, 64>& pieces );
+    static void dumpBitboard( unsigned long long pieces );
 };
 
