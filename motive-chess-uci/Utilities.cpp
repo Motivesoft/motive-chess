@@ -43,3 +43,16 @@ void Utilities::dumpBitboard( unsigned long long pieces )
 
     LOG_DEBUG << "  ABCDEFGH";
 }
+
+void Utilities::dumpBitmask( unsigned long long bits )
+{
+    std::stringstream stream;
+
+    unsigned long long mask = 1;
+    for ( int index = 63; index >= 0; index-- )
+    {
+        stream << (( bits & (mask << index) ) ? "1" : "0");
+    }
+
+    LOG_DEBUG << stream.str() << " : " << bits;
+}

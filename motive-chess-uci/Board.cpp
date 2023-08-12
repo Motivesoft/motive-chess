@@ -275,10 +275,77 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
     unsigned long long whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
     unsigned long long blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
+    unsigned long long emptySquares = ~( whitePieces | blackPieces );
 
     Utilities::dumpBitboard( whitePieces | blackPieces );
 
-    moves.push_back( Move::fromString( "e2e4" ) );
+    unsigned long long mask = 1;
+
+    unsigned long long pawnMoves[ 64 ];
+    for ( int loop = 8; loop < 56; loop++ )
+    {
+        pawnMoves[ loop ] = mask << (loop + 8);
+    }
+
+    // There must be a better way to do this - rotation maybe?
+    if ( Piece::isWhite( activeColor ) )
+    {
+        // Generate possible white moves
+        // Do it in a hamfisted way first and then optimize
+        unsigned long long normalPawnMove = 1 << 8;
+        unsigned long long capturePawnMove = 1 << 7 | 1 << 9;
+        unsigned long long startingPawnMove = 1 << 16;
+
+        for ( int loop = 0; loop < 64; loop++ )
+        {
+            // Find a pawn
+            if ( whitePawns & ( mask << loop ) )
+            {
+                unsigned long long possibleMoves = pawnMoves[ loop ];
+                possibleMoves &= emptySquares;
+
+                Utilities::dumpBitmask( pawnMoves[ loop ] );
+                Utilities::dumpBitmask( emptySquares );
+                Utilities::dumpBitmask( possibleMoves );
+
+                while ( possibleMoves > 0 )
+                {
+                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
+                    
+                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
+                    moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
+                    possibleMoves &= ~msb;
+                }
+                //unsigned long long n = mask << loop;
+                //LOG_TRACE << "loop: " << loop;
+                //LOG_TRACE << "mask<<loop: " << n;
+                //LOG_TRACE << "loop: " << log2( n );
+            }
+        }
+        //for ( int loop = 0; loop < 64; loop++ )
+        //{
+        //    if ( whitePawns & ( mask << loop ) )
+        //    {
+        //        unsigned long long adjustedPawnMove = normalPawnMove + loop;
+        //        if ( isEmpty( adjustedPawnMove ) )
+        //        {
+        //            moves.push_back( Move( loop, adjustedPawnMove ) );
+        //        }
+        //    }
+        //}
+    }
+    else
+    {
+
+    }
+
+    LOG_DEBUG << "Moves:";
+    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+    {
+        LOG_DEBUG << (*it).toString();
+    }
+
+//    moves.push_back( Move::fromString( "e2e4" ) );
 
     return moves;
 }

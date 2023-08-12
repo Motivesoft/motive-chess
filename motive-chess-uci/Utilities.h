@@ -94,5 +94,6 @@ public:
 
     static void dumpBoard( std::array< unsigned char, 64>& pieces );
     static void dumpBitboard( unsigned long long pieces );
+    static void dumpBitmask( unsigned long long bits );
 };
 

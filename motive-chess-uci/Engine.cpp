@@ -777,6 +777,8 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             // TODO this probably wants to be a better check
             if ( loop++ >= context->getDepth() )
             {
+                LOG_DEBUG << "Reached search depth";
+                readyToMove = true;
                 break;
             }
         }
