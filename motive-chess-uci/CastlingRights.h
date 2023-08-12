@@ -38,12 +38,12 @@ public:
 
     }
 
-    bool operator == ( const CastlingRights& other )
+    bool operator == ( const CastlingRights& other ) const
     {
         return rights == other.rights;
     }
 
-    bool operator != ( const CastlingRights& other )
+    bool operator != ( const CastlingRights& other ) const
     {
         return rights != other.rights;
     }

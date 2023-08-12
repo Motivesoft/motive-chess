@@ -3,7 +3,9 @@
 #include "Move.h"
 #include "Utilities.h"
 
-Move Move::fromString( std::string& moveString )
+const Move Move::nullMove( 0, 0 );
+
+Move Move::fromString( const std::string& moveString )
 {
     // Contains a promotion?
     if ( moveString.length() > 4 )
@@ -17,19 +19,19 @@ Move Move::fromString( std::string& moveString )
                  Utilities::squareToIndex( moveString.substr( 2, 2 ) ) );
 }
 
-std::string Move::toString( const Move& move, bool lowercase )
+std::string Move::toString() const
 {
     std::stringstream stream;
 
-    if ( move.isNullMove() )
+    if ( isNullMove() )
     {
         // Special case for UCI
         return "0000";
     }
 
-    stream << Utilities::indexToSquare( move.from, lowercase )
-           << Utilities::indexToSquare( move.to, lowercase )
-           << Piece::toMoveString( move.promotion );
+    stream << Utilities::indexToSquare( from )
+           << Utilities::indexToSquare( to )
+           << Piece::toMoveString( promotion );
 
     return stream.str();
 }

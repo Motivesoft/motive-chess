@@ -639,7 +639,7 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
         Move m = Move::fromString( move );
 
         moveList.push_back( m );
-        LOG_DEBUG << Move::toString( m );
+        LOG_DEBUG << m.toString();
     }
 
     // Set the new game context
@@ -689,40 +689,114 @@ void Engine::perftImpl( int depth, std::string& fen )
 
 // Internal methods
 
+class Thoughts
+{
+private:
+    Move bestMove;
+    Move ponderMove;
+public:
+    Thoughts( Move bestMove = Move::nullMove, Move ponderMove = Move::nullMove ) :
+        bestMove( bestMove ),
+        ponderMove( ponderMove )
+    {
+
+    }
+
+    Move getBestMove()
+    {
+        return bestMove;
+    }
+
+    Move getPonderMove()
+    {
+        return bestMove;
+    }
+};
+
 void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 {
-    // TODO this is clunky. Do something about it
-    GoContext goContext( *context );
-    delete context;
-
     // Test this repeatedly for interuptions
     engine->continueThinking = true;
 
     // OK, beging the thinking process - we have to test flags, but make sure we have a candidate move
     // before being interrupted - unless we are quitting
 
+    Thoughts thoughts;
+
     unsigned int loop = 0;
-    while ( !engine->quitting )
+    bool readyToMove = false;
+    while ( !readyToMove && !engine->quitting )
     {
         do
         {
+            std::vector<Move> candidateMoves = board->getPseudoLegalMoves();
+            if ( candidateMoves.empty() )
+            {
+                break;
+            }
+
+            for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); it++ )
+            {
+                LOG_DEBUG << "PseudoLegal move " << ( *it ).toString();
+
+                Board tBoard = board->makeMove( *it );
+                std::vector<Move> tMoves = tBoard.getPseudoLegalMoves();
+
+                bool refuted = false;
+                for ( std::vector<Move>::iterator tIt = tMoves.begin(); tIt != tMoves.end(); tIt++ )
+                {
+                    if ( tBoard.isRefutation( *tIt ) )
+                    {
+                        refuted = true;
+                        break;
+                    }
+                }
+
+                if ( refuted )
+                {
+                    LOG_DEBUG << "Move refuted: " << ( *it ).toString();
+                    candidateMoves.erase( it++ );
+                }
+            }
+
+            if ( thoughts.getBestMove().isNullMove() )
+            {
+                thoughts = Thoughts( candidateMoves[ 0 ] );
+
+                if ( candidateMoves.size() == 1 )
+                {
+                    // Don't waste clock time analysing a forced move situation
+                    LOG_DEBUG << "Only one move available";
+                    readyToMove = true;
+                    break;
+                }
+            }
+
             // TODO do work here
 
-            if ( loop >= context->getDepth() )
+            // TODO this probably wants to be a better check
+            if ( loop++ >= context->getDepth() )
             {
-
+                break;
             }
         }
-        while ( engine->continueThinking );
+        while ( engine->continueThinking && !engine->quitting );
     }
 
     if ( engine->broadcastThinkingOutcome )
     {
         LOG_TRACE << "Broadcasting best move";
 
-        // TODO don't hard code this
-        engine->broadcaster.bestmove( "e2e4" );
+        if ( thoughts.getPonderMove().isNullMove() )
+        {
+            engine->broadcaster.bestmove( thoughts.getBestMove().toString() );
+        }
+        else
+        {
+            engine->broadcaster.bestmove( thoughts.getBestMove().toString(), thoughts.getPonderMove().toString() );
+        }
     }
 
     LOG_DEBUG << "Thinking thread terminating";
+    delete context;
 }

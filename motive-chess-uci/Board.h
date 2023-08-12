@@ -54,19 +54,6 @@ private:
     unsigned short halfmoveClock;
     unsigned short fullmoveNumber;
 
-    /// <summary>
-    /// Check whether this move refutes the move we're currently examining.
-    /// The general idea is to generate pseudo legal moves and for each, generate the possible responses.
-    /// Push the responses to this method to determine whether the psuedo legal move is indeed legal
-    /// </summary>
-    /// <param name="move">a move</param>
-    /// <returns>true if this move should not be possible, demonstrating that the move leading to this is invalid</returns>
-    bool isRefutation( const Move& move )
-    {
-        // TODO consider whether any other checks need to go in here
-        return Piece::isKing( pieceAt( move.getTo() ) );
-    }
-
     inline void setPiece( unsigned short index, unsigned char piece )
     {
         pieces[ index ] = piece;
@@ -114,43 +101,7 @@ private:
     }
 
     // This is a precise equality check, not a "is this the same position" check
-    bool positionMatch( const Board& board )
-    {
-        for ( int loop = 0; loop < 64; loop++ )
-        {
-            if ( pieceAt( loop ) != board.pieceAt( loop ) )
-            {
-                return false;
-            }
-        }
-
-        if ( activeColor != board.activeColor )
-        {
-            return false;
-        }
-
-        if ( castlingRights != board.castlingRights )
-        {
-            return false;
-        }
-
-        if ( enPassantIndex != board.enPassantIndex )
-        {
-            return false;
-        }
-
-        if ( halfmoveClock != board.halfmoveClock )
-        {
-            return false;
-        }
-
-        if ( fullmoveNumber != board.fullmoveNumber )
-        {
-            return false;
-        }
-
-        return true;
-    }
+    bool positionMatch( const Board& board ) const;
 
     /// <summary>
     /// Applies move to this board
@@ -225,30 +176,21 @@ public:
         return !positionMatch( board );
     }
 
-    // 
-
     /// <summary>
     /// Performs an "is this the same position" check, not a precise equality check
     /// </summary>
     /// <param name="board">the board to compare with</param>
     /// <returns>true if the on-board position is the same</returns>
-    bool isSamePosition( const Board& board )
-    {
-        for ( int loop = 0; loop < 64; loop++ )
-        {
-            if ( pieceAt( loop ) != board.pieceAt( loop ) )
-            {
-                return false;
-            }
-        }
+    bool isSamePosition( const Board& board ) const;
 
-        if ( activeColor != board.activeColor )
-        {
-            return false;
-        }
-
-        return true;
-    }
+    /// <summary>
+    /// Check whether this move refutes the move we're currently examining.
+    /// The general idea is to generate pseudo legal moves and for each, generate the possible responses.
+    /// Push the responses to this method to determine whether the psuedo legal move is indeed legal
+    /// </summary>
+    /// <param name="move">a move</param>
+    /// <returns>true if this move should not be possible, demonstrating that the move leading to this is invalid</returns>
+    bool isRefutation( const Move& move ) const;
 
     /// <summary>
     /// Returns a new board, based on the current board but with this move applied
@@ -256,5 +198,7 @@ public:
     /// <param name="move">the move</param>
     /// <returns>a new board</returns>
     Board makeMove( const Move& move );
+
+    std::vector<Move> getPseudoLegalMoves();
 };
 

@@ -11,7 +11,7 @@ Board Board::makeMove( const Move& move )
 
 void Board::applyMove( const Move& move )
 {
-    LOG_TRACE << "Apply move: " << Move::toString( move );
+    LOG_TRACE << "Apply move: " << move.toString();
 
     if ( move.isNullMove() )
     {
@@ -184,4 +184,80 @@ void Board::applyMove( const Move& move )
     // TODO Tuning - does this call the copy constructor too often and should we move to pointers?
 
     Utilities::dumpBoard( pieces );
+}
+
+bool Board::positionMatch( const Board& board ) const
+{
+    for ( int loop = 0; loop < 64; loop++ )
+    {
+        if ( pieceAt( loop ) != board.pieceAt( loop ) )
+        {
+            return false;
+        }
+    }
+
+    if ( activeColor != board.activeColor )
+    {
+        return false;
+    }
+
+    if ( castlingRights != board.castlingRights )
+    {
+        return false;
+    }
+
+    if ( enPassantIndex != board.enPassantIndex )
+    {
+        return false;
+    }
+
+    if ( halfmoveClock != board.halfmoveClock )
+    {
+        return false;
+    }
+
+    if ( fullmoveNumber != board.fullmoveNumber )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool Board::isSamePosition( const Board& board ) const
+{
+    for ( int loop = 0; loop < 64; loop++ )
+    {
+        if ( pieceAt( loop ) != board.pieceAt( loop ) )
+        {
+            return false;
+        }
+    }
+
+    if ( activeColor != board.activeColor )
+    {
+        return false;
+    }
+
+    if ( castlingRights != board.castlingRights )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool Board::isRefutation( const Move& move ) const
+{
+    // TODO consider whether any other checks need to go in here
+    return Piece::isKing( pieceAt( move.getTo() ) );
+}
+
+std::vector<Move> Board::getPseudoLegalMoves()
+{
+    std::vector<Move> moves;
+
+    moves.push_back( Move::fromString( "e2e4" ) );
+
+    return moves;
 }

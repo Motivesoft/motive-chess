@@ -7,15 +7,12 @@
 class Move
 {
 private:
-    const unsigned short from;
-    const unsigned short to;
-
-    // This may be colorless
-    const unsigned char promotion;
+    unsigned short from;
+    unsigned short to;
+    unsigned char promotion;
 
 public:
-    static Move fromString( std::string& moveString );
-    static std::string toString( const Move& move, bool lowercase = true );
+    static Move fromString( const std::string& moveString );
 
     Move( unsigned short from, unsigned short to, unsigned char promotion = Piece::emptyPiece() ) : 
         from( from ),
@@ -78,5 +75,9 @@ public:
     {
         return from == 0 && to == 0;
     }
+
+    std::string toString() const;
+
+    static const Move nullMove;
 };
 
