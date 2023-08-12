@@ -257,7 +257,44 @@ std::vector<Move> Board::getPseudoLegalMoves()
 {
     std::vector<Move> moves;
 
+    // Right then. Now how do we do this...
+
+    // Let's make some bitboards
+    unsigned long long whitePawns = makePieceBitboard( Piece::WPAWN );
+    unsigned long long whiteKnights = makePieceBitboard( Piece::WKNIGHT );
+    unsigned long long whiteBishops = makePieceBitboard( Piece::WBISHOP );
+    unsigned long long whiteRooks = makePieceBitboard( Piece::WROOK );
+    unsigned long long whiteQueens = makePieceBitboard( Piece::WQUEEN );
+    unsigned long long whiteKing = makePieceBitboard( Piece::WKING );
+    unsigned long long blackPawns = makePieceBitboard( Piece::BPAWN );
+    unsigned long long blackKnights = makePieceBitboard( Piece::BKNIGHT );
+    unsigned long long blackBishops = makePieceBitboard( Piece::BBISHOP );
+    unsigned long long blackRooks = makePieceBitboard( Piece::BROOK );
+    unsigned long long blackQueens = makePieceBitboard( Piece::BQUEEN );
+    unsigned long long blackKing = makePieceBitboard( Piece::BKING );
+
+    unsigned long long whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
+    unsigned long long blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
+
+    Utilities::dumpBitboard( whitePieces | blackPieces );
+
     moves.push_back( Move::fromString( "e2e4" ) );
 
     return moves;
+}
+
+unsigned long long Board::makePieceBitboard( unsigned char piece )
+{
+    unsigned long long bitboard = 0;
+
+    unsigned long long bit = 0b0000000000000000000000000000000000000000000000000000000000000001;
+    for ( int loop = 0; loop < 64; loop++, bit <<= 1 )
+    {
+        if ( pieceAt( loop ) == piece )
+        {
+            bitboard |= bit;
+        }
+    }
+
+    return bitboard;
 }

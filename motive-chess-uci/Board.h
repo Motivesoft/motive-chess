@@ -200,5 +200,7 @@ public:
     Board makeMove( const Move& move );
 
     std::vector<Move> getPseudoLegalMoves();
+
+    unsigned long long makePieceBitboard( unsigned char piece );
 };
 
