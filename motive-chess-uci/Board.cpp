@@ -1,5 +1,7 @@
 #include "Board.h"
 
+#include "Bitboard.h"
+
 Board Board::makeMove( const Move& move )
 {
     Board board( *this );
@@ -281,11 +283,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
     unsigned long long mask = 1;
 
-    unsigned long long pawnMoves[ 64 ];
-    for ( int loop = 8; loop < 56; loop++ )
-    {
-        pawnMoves[ loop ] = mask << (loop + 8);
-    }
 
     // There must be a better way to do this - rotation maybe?
     if ( Piece::isWhite( activeColor ) )
@@ -301,12 +298,8 @@ std::vector<Move> Board::getPseudoLegalMoves()
             // Find a pawn
             if ( whitePawns & ( mask << loop ) )
             {
-                unsigned long long possibleMoves = pawnMoves[ loop ];
+                unsigned long long possibleMoves = Bitboards.getPawnMoves( loop );
                 possibleMoves &= emptySquares;
-
-                Utilities::dumpBitmask( pawnMoves[ loop ] );
-                Utilities::dumpBitmask( emptySquares );
-                Utilities::dumpBitmask( possibleMoves );
 
                 while ( possibleMoves > 0 )
                 {
@@ -316,23 +309,8 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
                     possibleMoves &= ~msb;
                 }
-                //unsigned long long n = mask << loop;
-                //LOG_TRACE << "loop: " << loop;
-                //LOG_TRACE << "mask<<loop: " << n;
-                //LOG_TRACE << "loop: " << log2( n );
             }
         }
-        //for ( int loop = 0; loop < 64; loop++ )
-        //{
-        //    if ( whitePawns & ( mask << loop ) )
-        //    {
-        //        unsigned long long adjustedPawnMove = normalPawnMove + loop;
-        //        if ( isEmpty( adjustedPawnMove ) )
-        //        {
-        //            moves.push_back( Move( loop, adjustedPawnMove ) );
-        //        }
-        //    }
-        //}
     }
     else
     {
@@ -344,8 +322,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
     {
         LOG_DEBUG << (*it).toString();
     }
-
-//    moves.push_back( Move::fromString( "e2e4" ) );
 
     return moves;
 }
