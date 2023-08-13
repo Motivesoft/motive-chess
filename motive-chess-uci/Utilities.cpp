@@ -56,3 +56,34 @@ void Utilities::dumpBitmask( unsigned long long bits )
 
     LOG_DEBUG << stream.str() << " : " << bits;
 }
+
+/// <summary>
+/// Dump an 0x88 board, which is effectively two 8x8 boards side by side
+/// </summary>
+/// <param name="bits">the board</param>
+void Utilities::dump0x88( std::bitset<128> bits )
+{
+    LOG_DEBUG << "  01234567 01234567";
+    LOG_DEBUG << "  -------- --------";
+    for ( unsigned short rank = 8; rank > 0; rank-- )
+    {
+        unsigned short line = rank - 1;
+
+        std::stringstream stream;
+
+        stream << line << "|";
+        for ( unsigned short file = 16; file > 0; file-- )
+        {
+            unsigned short column = file - 1;
+
+            stream << ( bits[ (line<<4) + column ] ? "*" : " " );
+            if ( file == 8 )
+            {
+                stream << "|";
+            }
+        }
+        LOG_DEBUG << stream.str() << "|" << line;
+    }
+    LOG_DEBUG << "  -------- --------";
+    LOG_DEBUG << "  01234567 01234567";
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <bitset>
 #include <sstream>
 #include <string>
 
@@ -94,6 +95,7 @@ public:
 
     static void dumpBoard( std::array< unsigned char, 64>& pieces );
     static void dumpBitboard( unsigned long long pieces );
+    static void dump0x88( std::bitset<128> bits );
     static void dumpBitmask( unsigned long long bits );
 };
 

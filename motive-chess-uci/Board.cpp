@@ -298,7 +298,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
             // Find a pawn
             if ( whitePawns & ( mask << loop ) )
             {
-                unsigned long long possibleMoves = Bitboards.getPawnMoves( loop );
+                unsigned long long possibleMoves = Bitboards->getPawnMoves( loop );
                 possibleMoves &= emptySquares;
 
                 while ( possibleMoves > 0 )
