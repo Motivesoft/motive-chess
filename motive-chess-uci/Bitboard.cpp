@@ -51,21 +51,21 @@ void Bitboard::buildBitboards()
         knightMoves[ loop ] = 0;
     }
 
-    std::bitset<128> x88;
-    std::bitset<128> knightSquares { 1 };
-    knightSquares |= 0b01010000;
+    std::bitset<128> x88 { 1 };
+    std::bitset<128> knightSquares;
+    knightSquares |= 0b01010000 << 8;
     knightSquares <<= 16;
 
-    knightSquares |= 0b10001000;
+    knightSquares |= 0b10001000 << 8;
     knightSquares <<= 16;
 
-    knightSquares |= 0b00000000;
+    knightSquares |= 0b00000000 << 8;
     knightSquares <<= 16;
 
-    knightSquares |= 0b10001000;
+    knightSquares |= 0b10001000 << 8;
     knightSquares <<= 16;
 
-    knightSquares |= 0b01010000;
+    knightSquares |= 0b01010000 << 8;
 
         /*
         ( 0b01010000 << 8 ) |
