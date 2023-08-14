@@ -1,0 +1,5 @@
+uci
+position startpos moves b1a3 d7d5 g1f3 e7e6
+go
+stop
+quit

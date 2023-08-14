@@ -1,5 +1,7 @@
 #include "Board.h"
 
+#include <algorithm>
+
 #include "Bitboard.h"
 
 Board Board::makeMove( const Move& move )
@@ -255,6 +257,19 @@ bool Board::isRefutation( const Move& move ) const
     return Piece::isKing( pieceAt( move.getTo() ) );
 }
 
+unsigned long long makeMask1( unsigned short from, unsigned short to )
+{
+    unsigned long long result = 0;
+    unsigned long long mask = 1ull << from;
+
+    for ( unsigned short loop = from; loop <= to; loop++, mask <<= 1 )
+    {
+        result |= mask;
+    }
+
+    return result;
+}
+
 std::vector<Move> Board::getPseudoLegalMoves()
 {
     std::vector<Move> moves;
@@ -326,6 +341,45 @@ std::vector<Move> Board::getPseudoLegalMoves()
             else if ( whiteKing & mask )
             {
                 unsigned long long possibleMoves = Bitboards->getKingMoves( loop );
+                possibleMoves &= blackOrEmpty;
+
+                while ( possibleMoves > 0 )
+                {
+                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
+
+                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
+                    moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
+                    possibleMoves &= ~msb;
+                }
+            }
+            else if ( whiteQueens & mask )
+            {
+                unsigned long long possibleMoves = Bitboards->getQueenMoves( loop );
+                unsigned long long rankMask = makeMask1( Utilities::squareToIndex( 0, Utilities::indexToRank( loop ) ),
+                                                         Utilities::squareToIndex( 7, Utilities::indexToRank( loop ) ) );
+                unsigned long long rankMoves = possibleMoves & rankMask;
+
+                unsigned long long top = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
+                unsigned long long bot = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
+
+                unsigned long long topBlocks = top & rankMoves & whitePieces;
+                unsigned long long botBlocks = bot & rankMoves & whitePieces;
+
+                unsigned long lsb;
+                _BitScanForward64( &lsb, topBlocks );
+
+                unsigned long msb;
+                _BitScanReverse64( &msb, botBlocks );
+
+                // TODO -1 and +1 here, but edge safe
+                unsigned long long mask = makeMask1( msb, lsb );
+                Utilities::dumpBitmask( mask );
+                // Rank
+
+                rankMoves &= mask;
+                Utilities::dumpBitmask( rankMoves );
+
+
                 possibleMoves &= blackOrEmpty;
 
                 while ( possibleMoves > 0 )

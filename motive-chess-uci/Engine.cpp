@@ -787,14 +787,16 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
     if ( engine->broadcastThinkingOutcome )
     {
-        LOG_TRACE << "Broadcasting best move";
-
         if ( thoughts.getPonderMove().isNullMove() )
         {
+            LOG_DEBUG << "Broadcasting best move: " << thoughts.getBestMove().toString();
+
             engine->broadcaster.bestmove( thoughts.getBestMove().toString() );
         }
         else
         {
+            LOG_DEBUG << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString();
+
             engine->broadcaster.bestmove( thoughts.getBestMove().toString(), thoughts.getPonderMove().toString() );
         }
     }

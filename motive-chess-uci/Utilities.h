@@ -2,6 +2,7 @@
 
 #include <array>
 #include <bitset>
+#include <source_location>
 #include <sstream>
 #include <string>
 
@@ -93,8 +94,8 @@ public:
         return USHRT_MAX;
     }
 
-    static void dumpBoard( std::array< unsigned char, 64>& pieces );
-    static void dumpBitboard( unsigned long long pieces );
+    static void dumpBoard( std::array< unsigned char, 64>& pieces, const std::source_location location = std::source_location::current() );
+    static void dumpBitboard( unsigned long long pieces, const std::source_location location = std::source_location::current() );
     static void dump0x88( std::bitset<128> bits );
     static void dumpBitmask( unsigned long long bits );
 };

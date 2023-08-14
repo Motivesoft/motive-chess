@@ -3,10 +3,10 @@
 #include "Logger.h"
 #include "Piece.h"
 
-void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces )
+void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, const std::source_location location )
 {
-    LOG_DEBUG << "Board:";
-    LOG_DEBUG << "  ABCDEFGH";
+    LOG_DEBUG_LOC << "Board:";
+    LOG_DEBUG_LOC << "  ABCDEFGH";
 
     for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
     {
@@ -18,16 +18,16 @@ void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces )
                         Piece::toFENString( pieces[ index ] ) );
         }
 
-        LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
+        LOG_DEBUG_LOC << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
     }
 
-    LOG_DEBUG << "  ABCDEFGH";
+    LOG_DEBUG_LOC << "  ABCDEFGH";
 }
 
-void Utilities::dumpBitboard( unsigned long long pieces )
+void Utilities::dumpBitboard( unsigned long long pieces, const std::source_location location )
 {
-    LOG_DEBUG << "Board:";
-    LOG_DEBUG << "  ABCDEFGH";
+    LOG_DEBUG_LOC << "Board:";
+    LOG_DEBUG_LOC << "  ABCDEFGH";
 
     unsigned long long mask = 1;
     for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
@@ -38,10 +38,10 @@ void Utilities::dumpBitboard( unsigned long long pieces )
             stream << ( ( pieces & (mask << index) ) ? "." : " " );
         }
 
-        LOG_DEBUG << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
+        LOG_DEBUG_LOC << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
     }
 
-    LOG_DEBUG << "  ABCDEFGH";
+    LOG_DEBUG_LOC << "  ABCDEFGH";
 }
 
 void Utilities::dumpBitmask( unsigned long long bits )

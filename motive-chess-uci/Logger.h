@@ -18,6 +18,13 @@
 #define LOG_WARN Logger( Logger::Level::WARN ).log()
 #define LOG_ERROR Logger( Logger::Level::ERROR ).log()
 
+// Assumes the caller has a 'std::source_location location' to hand
+#define LOG_TRACE_LOC Logger( Logger::Level::TRACE ).log( location )
+#define LOG_DEBUG_LOC Logger( Logger::Level::DEBUG ).log( location )
+#define LOG_INFO_LOC Logger( Logger::Level::INFO ).log( location )
+#define LOG_WARN_LOC Logger( Logger::Level::WARN ).log( location )
+#define LOG_ERROR_LOC Logger( Logger::Level::ERROR ).log( location )
+
 class Logger
 {
 public:
