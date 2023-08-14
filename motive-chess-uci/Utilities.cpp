@@ -72,9 +72,9 @@ void Utilities::dump0x88( std::bitset<128> bits )
         std::stringstream stream;
 
         stream << line << "|";
-        for ( unsigned short file = 16; file > 0; file-- )
+        for ( unsigned short file = 0; file < 16; file++ )
         {
-            unsigned short column = file - 1;
+            unsigned short column = file;
 
             stream << ( bits[ (line<<4) + column ] ? "*" : " " );
             if ( file == 8 )
@@ -85,5 +85,5 @@ void Utilities::dump0x88( std::bitset<128> bits )
         LOG_DEBUG << stream.str() << "|" << line;
     }
     LOG_DEBUG << "  -------- --------";
-    LOG_DEBUG << "  01234567 01234567";
+    LOG_DEBUG << "  01234567 89ABCDEF";
 }

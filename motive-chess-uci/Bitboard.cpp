@@ -12,6 +12,29 @@ unsigned long long Bitboard::pawnCaptures[ 64 ];
 unsigned long long Bitboard::pawnDoubleMoves[ 64 ];
 unsigned long long Bitboard::knightMoves[ 64 ];
 
+unsigned long long bitboardFrom0x88( std::bitset<128>& bits )
+{
+    unsigned long long result = 0;
+
+    // For each line of the 0x88 board
+    unsigned long long mask = 1;
+    for ( unsigned short rank = 0; rank < 8; rank++ )
+    {
+        // Next set of bits (rank on the bitboard)
+        for ( unsigned short file = 0; file < 8; file++ )
+        {
+            if ( bits.test( (rank << 4) + file ) )
+            {
+                result |= mask;
+            }
+
+            mask <<= 1;
+        }
+    }
+
+    return result;
+}
+
 void Bitboard::buildBitboards()
 {
     unsigned long long mask = 1;
@@ -44,46 +67,55 @@ void Bitboard::buildBitboards()
     }
 
     // Knights
+    std::bitset<128> x88;
+    std::bitset<128> knightSquares;
 
-    for ( int loop = 8; loop < 56; loop++ )
+    // Represent all knight moves from a central location and then encode that into a 0x88 space
+    // 01010
+    // 10001
+    // 00*00
+    // 10001
+    // 01010
+    knightSquares |= 0b00001010;
+    knightSquares <<= 16;
+
+    knightSquares |= 0b00010001;
+    knightSquares <<= 16;
+
+    knightSquares |= 0b00000000; // The central location being here 0b00000*00
+    knightSquares <<= 16;
+
+    knightSquares |= 0b00010001;
+    knightSquares <<= 16;
+
+    knightSquares |= 0b00001010;
+
+    // In this layout, centre square is 2,2 and the '1's in the mask are move destinations from there
+    for ( unsigned short index = 0; index < 64; index++ )
     {
-        // TODO for now...
-        knightMoves[ loop ] = 0;
+        // Need to move -2,-2 to get mask to 0,0
+        short fileOffset = -2;
+        short rankOffset = -2;
+
+        // And then this amount to move to 'index' on a normal board
+        rankOffset += ( index >> 3 );
+        fileOffset += ( index & 7 );
+
+        // Convrted to a movement into the 128-bit structure 
+        int offset = ( rankOffset << 4 ) + fileOffset;
+
+        // Shift left or right, accordingly
+        x88 = offset < 0 ? knightSquares >> -offset : knightSquares << offset;
+
+        knightMoves[ index ] = bitboardFrom0x88( x88 );
+        LOG_DEBUG << Utilities::indexToSquare( index );
+        Utilities::dumpBitboard( knightMoves[ index ] );
     }
 
-    std::bitset<128> x88 { 1 };
-    std::bitset<128> knightSquares;
-    knightSquares |= 0b01010000 << 8;
-    knightSquares <<= 16;
-
-    knightSquares |= 0b10001000 << 8;
-    knightSquares <<= 16;
-
-    knightSquares |= 0b00000000 << 8;
-    knightSquares <<= 16;
-
-    knightSquares |= 0b10001000 << 8;
-    knightSquares <<= 16;
-
-    knightSquares |= 0b01010000 << 8;
-
-        /*
-        ( 0b01010000 << 8 ) |
-        ( 0b10001000 << 8 ) << 16 |
-        ( 0b00000000 << 8 ) << 32 | // the piece position is in the middle of the pattern
-        ( 0b10001000 << 8 ) << 48 |
-        ( 0b01010000 << 8 ) << 64;
-        */
-    LOG_DEBUG << "Empty";
-    Utilities::dump0x88( x88 );
-    LOG_DEBUG << "and knight squares";
-    Utilities::dump0x88( x88 | knightSquares );
-    LOG_DEBUG << "only knight squares";
-    Utilities::dump0x88( knightSquares );
-    LOG_DEBUG << "only knight squares shifted";
-    Utilities::dump0x88( knightSquares << 8 );
-    LOG_DEBUG << "Shifted to a1";
-    Utilities::dump0x88( knightSquares >> 35 ); // Where 35 is 2*16 for the rows and 3 for the square
+    // Bishops
+    // Rooks
+    // Queens
+    // King
 
     LOG_DEBUG << "Done creating bitboards";
 }

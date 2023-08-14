@@ -37,4 +37,9 @@ public:
     {
         return pawnMoves[ index ];
     }
+
+    inline unsigned long long getKnightMoves( unsigned short index )
+    {
+        return knightMoves[ index ];
+    }
 };

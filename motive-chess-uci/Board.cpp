@@ -283,7 +283,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
     unsigned long long mask = 1;
 
-
     // There must be a better way to do this - rotation maybe?
     if ( Piece::isWhite( activeColor ) )
     {
@@ -293,10 +292,12 @@ std::vector<Move> Board::getPseudoLegalMoves()
         unsigned long long capturePawnMove = 1 << 7 | 1 << 9;
         unsigned long long startingPawnMove = 1 << 16;
 
-        for ( int loop = 0; loop < 64; loop++ )
+        for ( int loop = 0; loop < 64; loop++, mask <<= 1 )
         {
+            unsigned long long loopMask = mask;// << loop;
+
             // Find a pawn
-            if ( whitePawns & ( mask << loop ) )
+            if ( whitePawns & loopMask )
             {
                 unsigned long long possibleMoves = Bitboards->getPawnMoves( loop );
                 possibleMoves &= emptySquares;
@@ -309,6 +310,12 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
                     possibleMoves &= ~msb;
                 }
+
+                // TODO also captures and double moves
+            }
+            else if ( whiteKnights & loopMask )
+            {
+
             }
         }
     }
