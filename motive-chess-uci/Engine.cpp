@@ -709,7 +709,7 @@ public:
 
     Move getPonderMove()
     {
-        return bestMove;
+        return ponderMove;
     }
 };
 

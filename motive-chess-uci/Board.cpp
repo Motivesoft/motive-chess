@@ -278,6 +278,8 @@ std::vector<Move> Board::getPseudoLegalMoves()
     unsigned long long whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
     unsigned long long blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
     unsigned long long emptySquares = ~( whitePieces | blackPieces );
+    unsigned long long whiteOrEmpty = whitePieces | emptySquares;
+    unsigned long long blackOrEmpty = blackPieces | emptySquares;
 
     Utilities::dumpBitboard( whitePieces | blackPieces );
 
@@ -294,10 +296,8 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
         for ( int loop = 0; loop < 64; loop++, mask <<= 1 )
         {
-            unsigned long long loopMask = mask;// << loop;
-
             // Find a pawn
-            if ( whitePawns & loopMask )
+            if ( whitePawns & mask )
             {
                 unsigned long long possibleMoves = Bitboards->getPawnMoves( loop );
                 possibleMoves &= emptySquares;
@@ -313,9 +313,19 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
                 // TODO also captures and double moves
             }
-            else if ( whiteKnights & loopMask )
+            else if ( whiteKnights & mask)
             {
+                unsigned long long possibleMoves = Bitboards->getKnightMoves( loop );
+                possibleMoves &= blackOrEmpty;
 
+                while ( possibleMoves > 0 )
+                {
+                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
+
+                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
+                    moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
+                    possibleMoves &= ~msb;
+                }
             }
         }
     }
