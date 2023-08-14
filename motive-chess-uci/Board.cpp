@@ -289,10 +289,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
     if ( Piece::isWhite( activeColor ) )
     {
         // Generate possible white moves
-        // Do it in a hamfisted way first and then optimize
-        unsigned long long normalPawnMove = 1 << 8;
-        unsigned long long capturePawnMove = 1 << 7 | 1 << 9;
-        unsigned long long startingPawnMove = 1 << 16;
 
         for ( int loop = 0; loop < 64; loop++, mask <<= 1 )
         {
@@ -314,6 +310,20 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 // TODO also captures and double moves
             }
             else if ( whiteKnights & mask)
+            {
+                unsigned long long possibleMoves = Bitboards->getKnightMoves( loop );
+                possibleMoves &= blackOrEmpty;
+
+                while ( possibleMoves > 0 )
+                {
+                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
+
+                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
+                    moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
+                    possibleMoves &= ~msb;
+                }
+            }
+            else if ( whiteKing & mask )
             {
                 unsigned long long possibleMoves = Bitboards->getKnightMoves( loop );
                 possibleMoves &= blackOrEmpty;

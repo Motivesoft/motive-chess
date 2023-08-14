@@ -12,8 +12,11 @@ private:
 
     static unsigned long long pawnMoves[ 64 ];
     static unsigned long long pawnCaptures[ 64 ]; // Can include ep by checking the EP square
-    static unsigned long long pawnDoubleMoves[ 64 ]; // NB valid only if pawnMoves for same square would also be valid
     static unsigned long long knightMoves[ 64 ];
+    static unsigned long long bishopMoves[ 64 ];
+    static unsigned long long rookMoves[ 64 ];
+    static unsigned long long queenMoves[ 64 ];
+    static unsigned long long kingMoves[ 64 ];
 
     static void buildBitboards();
 
@@ -41,5 +44,10 @@ public:
     inline unsigned long long getKnightMoves( unsigned short index )
     {
         return knightMoves[ index ];
+    }
+
+    inline unsigned long long getKingMoves( unsigned short index )
+    {
+        return kingMoves[ index ];
     }
 };
