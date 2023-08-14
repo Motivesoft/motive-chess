@@ -44,6 +44,7 @@ void Bitboard::buildBitboards()
     std::bitset<128> pieceSquares;
 
     unsigned long long mask = 1;
+    unsigned short path;
 
     LOG_DEBUG << "Creating movement bitboards";
 
@@ -116,10 +117,9 @@ void Bitboard::buildBitboards()
         knightMoves[ index ] = bitboardFrom0x88( x88 );
     }
 
-    // Bishops
+    // Bishop and Queens
     pieceSquares = 0;
 
-    unsigned short path;
     for ( unsigned short index = 0; index < 64; index++ )
     {
         path = index;
@@ -128,6 +128,7 @@ void Bitboard::buildBitboards()
             path -= 9;
           
             bishopMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
         }
 
         path = index;
@@ -136,6 +137,7 @@ void Bitboard::buildBitboards()
             path += 7;
 
             bishopMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
         }
 
         path = index;
@@ -144,6 +146,7 @@ void Bitboard::buildBitboards()
             path -= 7;
 
             bishopMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
         }
 
         path = index;
@@ -152,30 +155,63 @@ void Bitboard::buildBitboards()
             path += 9;
 
             bishopMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
         }
-
-        LOG_DEBUG << "Index: " << Utilities::indexToSquare( index );
-        Utilities::dumpBitboard( bishopMoves[ index ] );
     }
 
-    // Rooks
+    // Rooks and Queens
     pieceSquares = 0;
 
+    for ( unsigned short index = 0; index < 64; index++ )
+    {
+        path = index;
+        while ( Utilities::indexToRank( path ) != 0 )
+        {
+            path -= 8;
 
-    // Queens
-    pieceSquares = 0;
+            rookMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
+        }
+
+        path = index;
+        while ( Utilities::indexToRank( path ) != 7 )
+        {
+            path += 8;
+
+            rookMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
+        }
+
+        path = index;
+        while ( Utilities::indexToFile( path ) != 0 )
+        {
+            path --;
+
+            rookMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
+        }
+
+        path = index;
+        while ( Utilities::indexToFile( path ) != 7 )
+        {
+            path ++;
+
+            rookMoves[ index ] |= mask << path;
+            queenMoves[ index ] |= mask << path;
+        }
+    }
 
     // King
-    pieceSquares |= 0b000000111;
+    pieceSquares = 0;
 
     // Represent all king moves from a central location and then encode that into a 0x88 space
     // 111
     // 1*1
     // 111
-    pieceSquares = 0;
+    pieceSquares |= 0b000000111;
     pieceSquares <<= 16;
 
-    pieceSquares |= 0b000000101; // The central location being here 0b00000*00
+    pieceSquares |= 0b000000101; // The central location being here 0b000000*0
     pieceSquares <<= 16;
 
     pieceSquares |= 0b000000111;
