@@ -1,7 +1,5 @@
 #include "Bitboard.h"
 
-#include <bitset>
-
 #include "Logger.h"
 #include "Utilities.h"
 
@@ -14,29 +12,6 @@ unsigned long long Bitboard::bishopMoves[ 64 ];
 unsigned long long Bitboard::rookMoves[ 64 ];
 unsigned long long Bitboard::queenMoves[ 64 ];
 unsigned long long Bitboard::kingMoves[ 64 ];
-
-unsigned long long bitboardFrom0x88( std::bitset<128>& bits )
-{
-    unsigned long long result = 0;
-
-    // For each line of the 0x88 board
-    unsigned long long mask = 1;
-    for ( unsigned short rank = 0; rank < 8; rank++ )
-    {
-        // Next set of bits (rank on the bitboard)
-        for ( unsigned short file = 0; file < 8; file++ )
-        {
-            if ( bits.test( (rank << 4) + file ) )
-            {
-                result |= mask;
-            }
-
-            mask <<= 1;
-        }
-    }
-
-    return result;
-}
 
 void Bitboard::buildBitboards()
 {
@@ -237,4 +212,53 @@ void Bitboard::buildBitboards()
     }
 
     LOG_DEBUG << "Done creating bitboards";
+
+    Utilities::dumpBitboard( queenMoves[ 31 ] );
+    Utilities::dumpBitboard( rotate180( queenMoves[ 31 ] ) );
+}
+
+unsigned long long Bitboard::bitboardFrom0x88( std::bitset<128>& bits )
+{
+    unsigned long long result = 0;
+
+    // For each line of the 0x88 board
+    unsigned long long mask = 1;
+    for ( unsigned short rank = 0; rank < 8; rank++ )
+    {
+        // Next set of bits (rank on the bitboard)
+        for ( unsigned short file = 0; file < 8; file++ )
+        {
+            if ( bits.test( ( rank << 4 ) + file ) )
+            {
+                result |= mask;
+            }
+
+            mask <<= 1;
+        }
+    }
+
+    return result;
+}
+
+/// <summary>
+/// Rotate a bitboard by 180 degrees. 
+/// Square a1 is mapped to h8, and a8 is mapped to h1.
+/// https://www.chessprogramming.org/Flipping_Mirroring_and_Rotating 
+/// </summary>
+/// <param name="x">a bitboard</param>
+/// <returns>the rotated bitboard</returns>
+unsigned long long Bitboard::rotate180( unsigned long long x )
+{
+    const unsigned long long h1 = 0x5555555555555555;
+    const unsigned long long h2 = 0x3333333333333333;
+    const unsigned long long h4 = 0x0F0F0F0F0F0F0F0F;
+    const unsigned long long v1 = 0x00FF00FF00FF00FF;
+    const unsigned long long v2 = 0x0000FFFF0000FFFF;
+    x = ( ( x >> 1 ) & h1 ) | ( ( x & h1 ) << 1 );
+    x = ( ( x >> 2 ) & h2 ) | ( ( x & h2 ) << 2 );
+    x = ( ( x >> 4 ) & h4 ) | ( ( x & h4 ) << 4 );
+    x = ( ( x >> 8 ) & v1 ) | ( ( x & v1 ) << 8 );
+    x = ( ( x >> 16 ) & v2 ) | ( ( x & v2 ) << 16 );
+    x = ( x >> 32 ) | ( x << 32 );
+    return x;
 }

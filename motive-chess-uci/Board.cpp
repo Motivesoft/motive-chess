@@ -307,7 +307,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     possibleMoves &= ~msb;
                 }
 
-                // TODO also captures and double moves
+                // TODO also captures and the sliding piece double moves
             }
             else if ( whiteKnights & mask)
             {
@@ -325,7 +325,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
             }
             else if ( whiteKing & mask )
             {
-                unsigned long long possibleMoves = Bitboards->getKnightMoves( loop );
+                unsigned long long possibleMoves = Bitboards->getKingMoves( loop );
                 possibleMoves &= blackOrEmpty;
 
                 while ( possibleMoves > 0 )

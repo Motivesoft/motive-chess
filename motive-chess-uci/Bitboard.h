@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bitset>
 #include <memory>
 #include <mutex>
 
@@ -21,6 +22,9 @@ private:
     static void buildBitboards();
 
     inline static std::mutex creationMutex;
+
+    static unsigned long long bitboardFrom0x88( std::bitset<128>& bits );
+    static unsigned long long rotate180( unsigned long long x );
 
 public:
     static Bitboard* getInstance()
