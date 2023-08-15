@@ -59,4 +59,22 @@ public:
     {
         return kingMoves[ index ];
     }
+
+    unsigned long long getRankMask( unsigned short rank )
+    {
+        unsigned long long value = 0xff;
+
+        value <<= (rank * 8);
+
+        return value;
+    }
+
+    unsigned long long getFileMask( unsigned short file )
+    {
+        unsigned long long value = 0x0101010101010101;
+
+        value <<= file;
+
+        return value;
+    }
 };

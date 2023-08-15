@@ -304,6 +304,9 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         }
 
         // As we're looking at friendly pieces here, exclude the actual found squares
+        // The effect of the '& ownPieces' should be only to remove upper or lower bits 
+        // of the mask if they contain friendly pieces, where if they contain enemies
+        // we should keep those bits set
         unsigned long long mask = makeMask1( msb, lsb ) & ~ownPieces;
 
         // Limit this to moves possible when surrounded by friendly pieces
@@ -429,16 +432,22 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
                 unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
 
-                // Mask for a specific direction of travel
-                unsigned long long rankMask = makeMask1( Utilities::squareToIndex( 0, Utilities::indexToRank( loop ) ),
-                                                         Utilities::squareToIndex( 7, Utilities::indexToRank( loop ) ) );
+                for ( int x = 0; x < 8; x++ )
+                {
+                    LOG_DEBUG << x;
+                    Utilities::dumpBitboard( Bitboards->getRankMask( x ) );
+                    Utilities::dumpBitboard( Bitboards->getFileMask( x ) );
+                }
 
-                setOfMoves = movesInARay( possibleMoves,
-                                          rankMask,
-                                          whitePieces, 
-                                          blackPieces, 
-                                          aboveMask,
-                                          belowMask );
+
+                // Masks for specific directions of travel
+                unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
+
+//                setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
+
+                unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
+
+                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
 
                 while ( setOfMoves != 0 )
                 {
