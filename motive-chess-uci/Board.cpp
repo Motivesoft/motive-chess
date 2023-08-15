@@ -432,7 +432,44 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
                 unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
 
+                std::vector<std::string> xx;
+                for ( int xxx = 0; xxx < 8; xxx++ )
+                {
+                    for ( int xxy = 0; xxy < 8; xxy++ )
+                    {
+                        std::stringstream xxm;
+                        xxm << (char) ( 'a' + xxx ) << (char) ( '1' + xxy );
+                        xx.push_back( xxm.str());
+                    }
+                }
+                for ( std::vector<std::string>::iterator it = xx.begin(); it != xx.end(); it++ )
+                {
+                    LOG_DEBUG << "Move " << ( *it );
+                    int i = Utilities::squareToIndex( *it );
+                    int f = Utilities::indexToFile( i );
+                    int r = Utilities::indexToRank( i );
 
+                    unsigned long long m = Bitboards->getFileMask( f );
+                    if ( ( m & ( 1ull << i ) ) == 0 )
+                    {
+                        LOG_ERROR << "  file mask failed";
+                    }
+                    unsigned long long n = Bitboards->getRankMask( r );
+                    if ( ( n & ( 1ull << i ) ) == 0 )
+                    {
+                        LOG_ERROR << "  rank mask failed";
+                    }
+                    unsigned long long o = Bitboards->getDiagonalMask( f, r );
+                    if ( ( o & ( 1ull << i ) ) == 0 )
+                    {
+                        LOG_ERROR << "  diagonal mask failed";
+                    }
+                    unsigned long long p = Bitboards->getAntiDiagonalMask( f, r );
+                    if ( ( p & ( 1ull << i ) ) == 0 )
+                    {
+                        LOG_ERROR << "  anti-diagonal failed";
+                    }
+                }
 
                 // Masks for specific directions of travel
                 unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
@@ -441,7 +478,17 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
                 unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
 
-                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
+//                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
+
+                unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( loop ),
+                                                                          Utilities::indexToRank( loop ) );
+
+//               setOfMoves |= movesInARay( possibleMoves, diagMask, whitePieces, blackPieces, aboveMask, belowMask );
+
+                unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( loop ),
+                                                                              Utilities::indexToRank( loop ) );
+
+                setOfMoves |= movesInARay( possibleMoves, antiMask, whitePieces, blackPieces, aboveMask, belowMask );
 
                 while ( setOfMoves != 0 )
                 {

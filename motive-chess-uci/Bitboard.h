@@ -4,6 +4,8 @@
 #include <memory>
 #include <mutex>
 
+#include "Logger.h"
+
 #define Bitboards Bitboard::getInstance()
 
 class Bitboard
@@ -85,25 +87,60 @@ public:
         unsigned short forigin = ( file == rank ) ? 0 : ( file < rank ) ? 0 : file-rank;
         unsigned short rorigin = ( file == rank ) ? 0 : ( file < rank ) ? rank-file : 0;
 
-        for ( int rloop = forigin; rloop < 7; rloop++ )
+        for ( ; forigin < 8 && rorigin < 8; forigin++, rorigin++ )
         {
-            for ( int floop = rorigin; floop < 7; floop++ )
-            {
-                value |= 1ull << ((rloop<<3)+floop);
-            }
+            value |= 1ull << ((rorigin<<3)+forigin);
         }
-
-
 
         return value;
     }
 
     unsigned long long getAntiDiagonalMask( unsigned short file, unsigned short rank )
     {
-        unsigned long long value = 0x0101010101010101;
+        unsigned long long value = 0;
 
-        value <<= file;
+        // Use short here, not unsigned short, as we need to check for wandering over the left-hand edge
 
+        short rorigin = rank == ( 7 - file ) ? 0 : rank > ( 7 - file ) ? rank - ( 7 - file ) : 0;
+        short forigin = rank == ( 7 - file ) ? 7 : rank > ( 7 - file ) ? 7 : file + rank;
+        for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
+        {
+            value |= 1ull << ( ( rorigin << 3 ) + forigin );
+        }
+        /*
+        if ( rank == ( 7 - file ) )
+        {
+            LOG_DEBUG << "PATH1";
+            // Use signed here so we can check for going over the left-hand edge
+            short rorigin = 0;
+            short forigin = 7; // (effectively, 7-0)
+            for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
+            {
+                value |= 1ull << ( ( rorigin << 3 ) + forigin );
+            }
+        }
+        else if ( rank > ( 7 - file ) )
+        {
+            LOG_DEBUG << "PATH2";
+            // Use signed here so we can check for going over the left-hand edge
+            short rorigin = rank - ( 7 - file );
+            short forigin = 7; // (effectively, 7-0)
+            for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
+            {
+                value |= 1ull << ( ( rorigin << 3 ) + forigin );
+            }
+        }
+        else if ( rank < ( 7 - file ) )
+        {
+            LOG_DEBUG << "PATH3";
+            short rorigin = 0;
+            short forigin = file + rank;
+            for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
+            {
+                value |= 1ull << ( ( rorigin << 3 ) + forigin );
+            }
+        }
+        */
         return value;
     }
 };
