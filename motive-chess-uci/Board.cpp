@@ -432,12 +432,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
                 unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
 
-                for ( int x = 0; x < 8; x++ )
-                {
-                    LOG_DEBUG << x;
-                    Utilities::dumpBitboard( Bitboards->getRankMask( x ) );
-                    Utilities::dumpBitboard( Bitboards->getFileMask( x ) );
-                }
 
 
                 // Masks for specific directions of travel

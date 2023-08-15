@@ -60,6 +60,15 @@ public:
         return kingMoves[ index ];
     }
 
+    unsigned long long getFileMask( unsigned short file )
+    {
+        unsigned long long value = 0x0101010101010101;
+
+        value <<= file;
+
+        return value;
+    }
+
     unsigned long long getRankMask( unsigned short rank )
     {
         unsigned long long value = 0xff;
@@ -69,7 +78,27 @@ public:
         return value;
     }
 
-    unsigned long long getFileMask( unsigned short file )
+    unsigned long long getDiagonalMask( unsigned short file, unsigned short rank )
+    {
+        unsigned long long value = 0;
+
+        unsigned short forigin = ( file == rank ) ? 0 : ( file < rank ) ? 0 : file-rank;
+        unsigned short rorigin = ( file == rank ) ? 0 : ( file < rank ) ? rank-file : 0;
+
+        for ( int rloop = forigin; rloop < 7; rloop++ )
+        {
+            for ( int floop = rorigin; floop < 7; floop++ )
+            {
+                value |= 1ull << ((rloop<<3)+floop);
+            }
+        }
+
+
+
+        return value;
+    }
+
+    unsigned long long getAntiDiagonalMask( unsigned short file, unsigned short rank )
     {
         unsigned long long value = 0x0101010101010101;
 
