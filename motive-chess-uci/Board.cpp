@@ -275,6 +275,75 @@ unsigned long long makeMask1( unsigned long from, unsigned long to )
     return result;
 }
 
+
+unsigned long long movesInARay( unsigned long long possibleMoves,
+                                unsigned long long rayMask,
+                                unsigned long long ownPieces,
+                                unsigned long long enemyPieces,
+                                unsigned long long aboveMask,
+                                unsigned long long belowMask )
+{
+    unsigned long long moves = 0;
+    unsigned long long rayMoves = possibleMoves & rayMask;
+
+    // Possible moves available despite friendly pieces getting in the way
+    {
+        unsigned long long topBlocks = aboveMask & rayMoves & ownPieces;
+        unsigned long long botBlocks = belowMask & rayMoves & ownPieces;
+
+        if ( topBlocks == 0 )
+        {
+            topBlocks = aboveMask & rayMoves;
+        }
+        if ( botBlocks == 0 )
+        {
+            botBlocks = belowMask & rayMoves;
+        }
+
+        unsigned long lsb;
+        _BitScanForward64( &lsb, topBlocks );
+
+        unsigned long msb;
+        _BitScanReverse64( &msb, botBlocks );
+
+        // As we're looking at friendly pieces here, exclude the actual found squares
+        unsigned long long mask = makeMask1( msb + 1, lsb - 1 );
+
+        // Limit this to moves possible when surrounded by friendly pieces
+        rayMoves &= mask;
+    }
+
+    // Actual moves available including captures of the closest enemy piece
+    {
+        // NB at this point, rayMoves has already been constrained by friendly pieces
+        unsigned long long topBlocks = aboveMask & rayMoves & enemyPieces;
+        unsigned long long botBlocks = belowMask & rayMoves & enemyPieces;
+
+        if ( topBlocks == 0 )
+        {
+            topBlocks = aboveMask & rayMoves;
+        }
+        if ( botBlocks == 0 )
+        {
+            botBlocks = belowMask & rayMoves;
+        }
+
+        unsigned long lsb;
+        _BitScanForward64( &lsb, topBlocks );
+
+        unsigned long msb;
+        _BitScanReverse64( &msb, botBlocks );
+
+        // As we're looking at enemy pieces here, the mask covers everything we need
+        unsigned long long mask = makeMask1( msb, lsb );
+
+        moves |= (rayMoves & mask);
+    }
+
+    return moves;
+}
+
+
 std::vector<Move> Board::getPseudoLegalMoves()
 {
     std::vector<Move> moves;
@@ -363,66 +432,35 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
                 unsigned long long possibleMoves = Bitboards->getQueenMoves( loop );
 
+                unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
+                unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
+
                 // Mask for a specific direction of travel
                 unsigned long long rankMask = makeMask1( Utilities::squareToIndex( 0, Utilities::indexToRank( loop ) ),
                                                          Utilities::squareToIndex( 7, Utilities::indexToRank( loop ) ) );
-                unsigned long long rankMoves = possibleMoves & rankMask;
 
-                unsigned long long top = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
-                unsigned long long bot = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
+                setOfMoves = movesInARay( possibleMoves,
+                                          rankMask,
+                                          whitePieces, 
+                                          blackPieces, 
+                                          aboveMask,
+                                          belowMask );
 
-                // Moves available despite friendly pieces getting in the way
+                while ( setOfMoves != 0 )
                 {
-                    unsigned long long topBlocks = top & rankMoves & whitePieces;
-                    unsigned long long botBlocks = bot & rankMoves & whitePieces;
+                    unsigned long destination;
+                    
+                    if ( _BitScanForward64( &destination, setOfMoves ) )
+                    {
+                        setOfMoves &= ~( 1ull << destination );
 
-                    unsigned long lsb;
-                    _BitScanForward64( &lsb, topBlocks );
-
-                    unsigned long msb;
-                    _BitScanReverse64( &msb, botBlocks );
-
-                    // As we're looking at friendly pieces here, exclude the actual found squares
-                    unsigned long long mask = makeMask1( msb+1, lsb-1 );
-
-                    // Rank
-                    rankMoves &= mask;
-
-                    setOfMoves |= rankMoves;
-                }
-
-                // Moves available including captures of the closest enemy piece
-                {
-                unsigned long long topBlocks = top & rankMoves & blackPieces;
-                unsigned long long botBlocks = bot & rankMoves & blackPieces;
-
-                unsigned long lsb;
-                _BitScanForward64( &lsb, topBlocks );
-
-                unsigned long msb;
-                _BitScanReverse64( &msb, botBlocks );
-
-                // As we're looking at enemy pieces here, the mask covers everything we need
-                unsigned long long mask = makeMask1( msb, lsb );
-
-                // Rank
-                rankMoves &= mask;
-
-                setOfMoves |= rankMoves;
-                }
-
-
-
-                possibleMoves = setOfMoves;
-                //possibleMoves &= blackOrEmpty;
-
-                while ( possibleMoves > 0 )
-                {
-                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
-
-                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
-                    moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
-                    possibleMoves &= ~msb;
+                        // Destination will not be damaged by cast to short
+                        moves.push_back( Move( loop, (unsigned short) destination ) );
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }
