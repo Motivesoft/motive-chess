@@ -257,12 +257,17 @@ bool Board::isRefutation( const Move& move ) const
     return Piece::isKing( pieceAt( move.getTo() ) );
 }
 
-unsigned long long makeMask1( unsigned short from, unsigned short to )
+unsigned long long makeMask1( unsigned long from, unsigned long to )
 {
     unsigned long long result = 0;
     unsigned long long mask = 1ull << from;
 
-    for ( unsigned short loop = from; loop <= to; loop++, mask <<= 1 )
+    if ( to < from )
+    {
+        return makeMask1( to, from );
+    }
+
+    for ( unsigned long loop = from; loop <= to; loop++, mask <<= 1 )
     {
         result |= mask;
     }
@@ -354,7 +359,11 @@ std::vector<Move> Board::getPseudoLegalMoves()
             }
             else if ( whiteQueens & mask )
             {
+                unsigned long long setOfMoves = 0;
+
                 unsigned long long possibleMoves = Bitboards->getQueenMoves( loop );
+
+                // Mask for a specific direction of travel
                 unsigned long long rankMask = makeMask1( Utilities::squareToIndex( 0, Utilities::indexToRank( loop ) ),
                                                          Utilities::squareToIndex( 7, Utilities::indexToRank( loop ) ) );
                 unsigned long long rankMoves = possibleMoves & rankMask;
@@ -362,8 +371,30 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long long top = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
                 unsigned long long bot = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
 
-                unsigned long long topBlocks = top & rankMoves & whitePieces;
-                unsigned long long botBlocks = bot & rankMoves & whitePieces;
+                // Moves available despite friendly pieces getting in the way
+                {
+                    unsigned long long topBlocks = top & rankMoves & whitePieces;
+                    unsigned long long botBlocks = bot & rankMoves & whitePieces;
+
+                    unsigned long lsb;
+                    _BitScanForward64( &lsb, topBlocks );
+
+                    unsigned long msb;
+                    _BitScanReverse64( &msb, botBlocks );
+
+                    // As we're looking at friendly pieces here, exclude the actual found squares
+                    unsigned long long mask = makeMask1( msb+1, lsb-1 );
+
+                    // Rank
+                    rankMoves &= mask;
+
+                    setOfMoves |= rankMoves;
+                }
+
+                // Moves available including captures of the closest enemy piece
+                {
+                unsigned long long topBlocks = top & rankMoves & blackPieces;
+                unsigned long long botBlocks = bot & rankMoves & blackPieces;
 
                 unsigned long lsb;
                 _BitScanForward64( &lsb, topBlocks );
@@ -371,16 +402,19 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long msb;
                 _BitScanReverse64( &msb, botBlocks );
 
-                // TODO -1 and +1 here, but edge safe
+                // As we're looking at enemy pieces here, the mask covers everything we need
                 unsigned long long mask = makeMask1( msb, lsb );
-                Utilities::dumpBitmask( mask );
+
                 // Rank
-
                 rankMoves &= mask;
-                Utilities::dumpBitmask( rankMoves );
+
+                setOfMoves |= rankMoves;
+                }
 
 
-                possibleMoves &= blackOrEmpty;
+
+                possibleMoves = setOfMoves;
+                //possibleMoves &= blackOrEmpty;
 
                 while ( possibleMoves > 0 )
                 {
