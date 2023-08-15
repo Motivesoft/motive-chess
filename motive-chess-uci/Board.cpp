@@ -294,17 +294,17 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         unsigned long lsb;
         if ( !_BitScanForward64( &lsb, topBlocks ) )
         {
-            _BitScanForward64( &lsb, aboveMask & rayMoves );
+            _BitScanReverse64( &lsb, aboveMask & rayMoves );
         }
 
         unsigned long msb;
         if ( !_BitScanReverse64( &msb, botBlocks ) )
         {
-            _BitScanReverse64( &msb, aboveMask & rayMoves );
+            _BitScanForward64( &msb, belowMask & rayMoves );
         }
 
         // As we're looking at friendly pieces here, exclude the actual found squares
-        unsigned long long mask = makeMask1( msb + 1, lsb - 1 );
+        unsigned long long mask = makeMask1( msb, lsb ) & ~ownPieces;
 
         // Limit this to moves possible when surrounded by friendly pieces
         rayMoves &= mask;
@@ -319,13 +319,13 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         unsigned long lsb;
         if ( !_BitScanForward64( &lsb, topBlocks ) )
         {
-            _BitScanForward64( &lsb, aboveMask & rayMoves );
+            _BitScanReverse64( &lsb, aboveMask & rayMoves );
         }
 
         unsigned long msb;
         if ( !_BitScanReverse64( &msb, botBlocks ) )
         {
-            _BitScanReverse64( &msb, aboveMask & rayMoves );
+            _BitScanForward64( &msb, belowMask & rayMoves );
         }
 
         // As we're looking at enemy pieces here, the mask covers everything we need
