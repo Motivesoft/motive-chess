@@ -410,19 +410,21 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     {
                         setOfMoves &= ~( 1ull << destination );
 
+                        unsigned short destinationShort = static_cast<unsigned short>( destination );
+
                         // Promotions lead to extra moves
-                        if ( Utilities::indexToRank( destination ) == 7 )
+                        if ( Utilities::indexToRank( destinationShort ) == 7 )
                         {
                             // Promote to...
-                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WQUEEN ) );
-                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WROOK ) );
-                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WBISHOP ) );
-                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WKNIGHT ) );
+                            moves.push_back( Move( loop, destinationShort, Piece::WQUEEN ) );
+                            moves.push_back( Move( loop, destinationShort, Piece::WROOK ) );
+                            moves.push_back( Move( loop, destinationShort, Piece::WBISHOP ) );
+                            moves.push_back( Move( loop, destinationShort, Piece::WKNIGHT ) );
                         }
                         else
                         {
                             // Destination will not be damaged by cast to short
-                            moves.push_back( Move( loop, (unsigned short) destination ) );
+                            moves.push_back( Move( loop, destinationShort ) );
                         }
                     }
                     else
