@@ -31,6 +31,7 @@ void Bitboard::buildBitboards()
         pawnMoves[ loop ] = mask << ( loop + 8 );
     }
 
+    // TODO this is for double-moves, but the logic for this needs putting in, or these need doing differently
     for ( int loop = 8; loop < 16; loop++ )
     {
         pawnMoves[ loop ] |= mask << ( loop + 16 );

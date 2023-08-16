@@ -52,6 +52,16 @@ public:
         return knightMoves[ index ];
     }
 
+    inline unsigned long long getBishopMoves( unsigned short index )
+    {
+        return bishopMoves[ index ];
+    }
+
+    inline unsigned long long getRookMoves( unsigned short index )
+    {
+        return rookMoves[ index ];
+    }
+
     inline unsigned long long getQueenMoves( unsigned short index )
     {
         return queenMoves[ index ];
