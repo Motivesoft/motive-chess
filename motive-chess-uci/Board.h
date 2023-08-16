@@ -100,6 +100,25 @@ private:
         return pieceAt( Utilities::squareToIndex( file, rank ) );
     }
 
+    /// <summary>
+    /// Return true if any of the squares in the supplied mask are attacked
+    /// </summary>
+    /// <param name="squareMask">a mask of one or more bits</param>
+    /// <returns>true if any of the represented squares are currently attacked</returns>
+    bool isAttacked( unsigned long long squareMask )
+    {
+        // TODO make this work for either color
+        unsigned long lsb;
+        while ( _BitScanForward64( &lsb, squareMask ) )
+        {
+            squareMask &= ~( 1ull << lsb );
+
+            // Is this square
+        }
+
+        return false;
+    }
+
     // This is a precise equality check, not a "is this the same position" check
     bool positionMatch( const Board& board ) const;
 

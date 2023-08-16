@@ -87,6 +87,11 @@ public:
         return 0b01000000;
     }
 
+    inline unsigned long long getKingsideCastlingJourney()
+    {
+        return 0b01110000;
+    }
+
     inline unsigned long long getQueensideCastlingMask()
     {
         return 0b00001110;
@@ -95,6 +100,11 @@ public:
     inline unsigned long long getQueensideCastlingTo()
     {
         return 0b00000100;
+    }
+
+    inline unsigned long long getQueensideCastlingJourney()
+    {
+        return 0b00011100;
     }
 
     unsigned long long getFileMask( unsigned short file )

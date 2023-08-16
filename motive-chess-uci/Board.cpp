@@ -320,12 +320,14 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         unsigned long long topBlocks = aboveMask & rayMoves & enemyPieces;
         unsigned long long botBlocks = belowMask & rayMoves & enemyPieces;
 
+        // TODO check that we couldn't/shouldn't just set the value inside the if to a fixed/known value
         unsigned long lsb;
         if ( !_BitScanForward64( &lsb, topBlocks ) )
         {
             _BitScanReverse64( &lsb, aboveMask & rayMoves );
         }
 
+        // TODO check that we couldn't/shouldn't just set the value inside the if to a fixed/known value
         unsigned long msb;
         if ( !_BitScanReverse64( &msb, botBlocks ) )
         {
@@ -344,7 +346,6 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
 
     return moves;
 }
-
 
 std::vector<Move> Board::getPseudoLegalMoves()
 {
@@ -569,12 +570,15 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long long possibleMoves = Bitboards->getKingMoves( loop );
                 possibleMoves &= blackOrEmpty;
 
-                // TODO Make sure castling is not through check
                 if ( castlingRights.canWhiteCastleKingside() )
                 {
                     if ( ( Bitboards->getKingsideCastlingMask() & emptySquares ) == Bitboards->getKingsideCastlingMask() )
                     {
-                        possibleMoves |= Bitboards->getKingsideCastlingTo();
+                        // TODO moving out of, or through check check
+                        if ( !isAttacked( Bitboards->getKingsideCastlingJourney() ) )
+                        {
+                            possibleMoves |= Bitboards->getKingsideCastlingTo();
+                        }
                     }
                 }
 
@@ -582,7 +586,11 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 {
                     if ( ( Bitboards->getQueensideCastlingMask() & emptySquares ) == Bitboards->getQueensideCastlingMask() )
                     {
-                        possibleMoves |= Bitboards->getQueensideCastlingTo();
+                        // TODO moving out of, or through check check
+                        if ( !isAttacked( Bitboards->getQueensideCastlingJourney() ) )
+                        {
+                            possibleMoves |= Bitboards->getQueensideCastlingTo();
+                        }
                     }
                 }
 
