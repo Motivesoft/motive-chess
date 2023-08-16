@@ -77,6 +77,26 @@ public:
         return kingMoves[ index ];
     }
 
+    inline unsigned long long getKingsideCastlingMask()
+    {
+        return 0b01100000;
+    }
+
+    inline unsigned long long getKingsideCastlingTo()
+    {
+        return 0b01000000;
+    }
+
+    inline unsigned long long getQueensideCastlingMask()
+    {
+        return 0b00001110;
+    }
+
+    inline unsigned long long getQueensideCastlingTo()
+    {
+        return 0b00000100;
+    }
+
     unsigned long long getFileMask( unsigned short file )
     {
         unsigned long long value = 0x0101010101010101;

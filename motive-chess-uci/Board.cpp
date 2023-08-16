@@ -486,88 +486,105 @@ std::vector<Move> Board::getPseudoLegalMoves()
             }
             else if ( whiteRooks & mask )
             {
-                unsigned long long setOfMoves = 0;
+            unsigned long long setOfMoves = 0;
 
-                unsigned long long possibleMoves = Bitboards->getRookMoves( loop );
+            unsigned long long possibleMoves = Bitboards->getRookMoves( loop );
 
-                unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
-                unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
+            unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
+            unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
 
-                // Masks for specific directions of travel
-                unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
+            // Masks for specific directions of travel
+            unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
 
-                setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
+            setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
 
-                unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
+            unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
 
-                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
+            setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
 
-                while ( setOfMoves != 0 )
+            while ( setOfMoves != 0 )
+            {
+                unsigned long destination;
+
+                if ( _BitScanForward64( &destination, setOfMoves ) )
                 {
-                    unsigned long destination;
+                    setOfMoves &= ~( 1ull << destination );
 
-                    if ( _BitScanForward64( &destination, setOfMoves ) )
-                    {
-                        setOfMoves &= ~( 1ull << destination );
-
-                        // Destination will not be damaged by cast to short
-                        moves.push_back( Move( loop, (unsigned short) destination ) );
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    // Destination will not be damaged by cast to short
+                    moves.push_back( Move( loop, (unsigned short) destination ) );
                 }
+                else
+                {
+                    break;
+                }
+            }
             }
             else if ( whiteQueens & mask )
             {
-                unsigned long long setOfMoves = 0;
+            unsigned long long setOfMoves = 0;
 
-                unsigned long long possibleMoves = Bitboards->getQueenMoves( loop );
+            unsigned long long possibleMoves = Bitboards->getQueenMoves( loop );
 
-                unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
-                unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
+            unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
+            unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
 
-                // Masks for specific directions of travel
-                unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
+            // Masks for specific directions of travel
+            unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
 
-                setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
+            setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
 
-                unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
+            unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
 
-                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
+            setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
 
-                unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( loop ),
+            unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( loop ),
+                                                                      Utilities::indexToRank( loop ) );
+
+            setOfMoves |= movesInARay( possibleMoves, diagMask, whitePieces, blackPieces, aboveMask, belowMask );
+
+            unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( loop ),
                                                                           Utilities::indexToRank( loop ) );
 
-                setOfMoves |= movesInARay( possibleMoves, diagMask, whitePieces, blackPieces, aboveMask, belowMask );
+            setOfMoves |= movesInARay( possibleMoves, antiMask, whitePieces, blackPieces, aboveMask, belowMask );
 
-                unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( loop ),
-                                                                              Utilities::indexToRank( loop ) );
+            while ( setOfMoves != 0 )
+            {
+                unsigned long destination;
 
-                setOfMoves |= movesInARay( possibleMoves, antiMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-                while ( setOfMoves != 0 )
+                if ( _BitScanForward64( &destination, setOfMoves ) )
                 {
-                    unsigned long destination;
+                    setOfMoves &= ~( 1ull << destination );
 
-                    if ( _BitScanForward64( &destination, setOfMoves ) )
-                    {
-                        setOfMoves &= ~( 1ull << destination );
-
-                        // Destination will not be damaged by cast to short
-                        moves.push_back( Move( loop, (unsigned short) destination ) );
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    // Destination will not be damaged by cast to short
+                    moves.push_back( Move( loop, (unsigned short) destination ) );
                 }
+                else
+                {
+                    break;
+                }
+            }
             }
             else if ( whiteKing & mask )
             {
                 unsigned long long possibleMoves = Bitboards->getKingMoves( loop );
                 possibleMoves &= blackOrEmpty;
+
+                // TODO Make sure castling is not through check
+                if ( castlingRights.canWhiteCastleKingside() )
+                {
+                    if ( ( Bitboards->getKingsideCastlingMask() & emptySquares ) == Bitboards->getKingsideCastlingMask() )
+                    {
+                        possibleMoves |= Bitboards->getKingsideCastlingTo();
+                    }
+                }
+
+                if ( castlingRights.canWhiteCastleQueenside() )
+                {
+                    if ( ( Bitboards->getQueensideCastlingMask() & emptySquares ) == Bitboards->getQueensideCastlingMask() )
+                    {
+                        possibleMoves |= Bitboards->getQueensideCastlingTo();
+                    }
+                }
 
                 while ( possibleMoves > 0 )
                 {
@@ -577,8 +594,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
                     possibleMoves &= ~msb;
                 }
-
-                // TODO also castling, but not through check
             }
         }
     }
