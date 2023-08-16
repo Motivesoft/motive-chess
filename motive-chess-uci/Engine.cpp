@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <ctime>
 #include <thread>
 #include <vector>
 
@@ -629,17 +631,21 @@ void Engine::setoptionImpl( std::string& name, std::string& value )
 
 void Engine::positionImpl( const std::string& fenString, std::vector<std::string> moves )
 {
-    LOG_DEBUG << "Processing FEN string " << fenString;
+    LOG_INFO << "Processing FEN string " << fenString;
     Fen fen = Fen::fromPosition( fenString );
 
-    LOG_DEBUG << "Moves:";
     std::vector< Move > moveList;
-    for ( std::string move : moves )
+    if ( moves.size() > 0 )
     {
-        Move m = Move::fromString( move );
+        LOG_DEBUG << "Initial moves:";
 
-        moveList.push_back( m );
-        LOG_DEBUG << m.toString();
+        for ( std::string move : moves )
+        {
+            Move m = Move::fromString( move );
+
+            moveList.push_back( m );
+            LOG_DEBUG << m.toString();
+        }
     }
 
     // Set the new game context
@@ -685,6 +691,7 @@ void Engine::perftImpl( int depth, std::string& fen )
     LOG_INFO << "Perft at depth " << depth << " with FEN " << fen;
 
     // TODO Implement
+
 }
 
 // Internal methods
@@ -715,6 +722,9 @@ public:
 
 void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 {
+    // TODO remove this when no longer required
+    std::srand( static_cast<unsigned int>( std::time( nullptr ) ) );
+
     // Test this repeatedly for interuptions
     engine->continueThinking = true;
 
@@ -761,7 +771,11 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
             if ( thoughts.getBestMove().isNullMove() )
             {
-                thoughts = Thoughts( candidateMoves[ 0 ] );
+                // TODO don't select target move randomly!
+                int random = std::rand();
+                int randomMove = random % candidateMoves.size();
+                LOG_ERROR << random;
+                thoughts = Thoughts( candidateMoves[ randomMove ] );
 
                 if ( candidateMoves.size() == 1 )
                 {

@@ -43,7 +43,7 @@ int main( int argc, char** argv )
         {
             input.clear();
 
-            LOG_DEBUG << "Raw input: [" << line << "]";
+            LOG_TRACE << "Raw input: [" << line << "]";
 
             // Tokenize the input into a list of strings
             std::replace( line.begin(), line.end(), '\n', ' ' );
@@ -148,7 +148,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
 {
     // Set initial defaults
     
-    Logger::Level logLevel = Logger::Level::TRACE; // TODO set this to INFO
+    Logger::Level logLevel = Logger::Level::INFO; // TODO set this to INFO
     
     *benchmarking = false;
 
@@ -240,10 +240,10 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     // Informational stuff
 
     // Dump the command line args for posterity.
-    LOG_DEBUG << arguments.size() << " command line argument(s)";
+    LOG_TRACE << arguments.size() << " command line argument(s)";
     for ( it = arguments.begin(); it != arguments.end(); it++ )
     {
-        LOG_DEBUG << "  " << *it;
+        LOG_TRACE << "  " << *it;
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-help" );
@@ -297,7 +297,7 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     std::string command = input[ 0 ];
     input.erase( input.begin() );
 
-    LOG_DEBUG << "Processing " << command;
+    LOG_TRACE << "Processing " << command;
 
     if ( command == "uci" )
     {
@@ -349,7 +349,7 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
         engine.perftCommand( input );
     }
 
-    LOG_DEBUG << "Quit state is " << quit;
+    LOG_TRACE << "Quit state is " << quit;
 
     return !quit;
 }

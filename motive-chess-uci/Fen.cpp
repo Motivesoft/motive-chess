@@ -4,7 +4,7 @@
 
 Fen::Fen( std::string position )
 {
-    LOG_DEBUG << "Processing FEN string " << position;
+    LOG_TRACE << "Processing FEN string " << position;
 
     std::string::iterator it;
     std::string::iterator end = position.end();
@@ -91,7 +91,7 @@ Fen::Fen( std::string position )
 
     activeColor = Piece::colorFrom( *it++ );
 
-    LOG_DEBUG << "Active color: " << Piece::toColorString( activeColor );
+    LOG_TRACE << "Active color: " << Piece::toColorString( activeColor );
 
     skipSpace( it, end );
 
@@ -108,13 +108,13 @@ Fen::Fen( std::string position )
     {
         castlingRights = CastlingRights( false );
 
-        LOG_DEBUG << "No castling rights";
+        LOG_TRACE << "No castling rights";
     }
     else
     {
         castlingRights = CastlingRights::fromFENString( castling.str() );
 
-        LOG_DEBUG << "Castling rights for " << castling.str() << " are " << castlingRights.toString();
+        LOG_TRACE << "Castling rights for " << castling.str() << " are " << castlingRights.toString();
     }
 
     skipSpace( it, end );
@@ -125,7 +125,7 @@ Fen::Fen( std::string position )
 
     enPassantIndex = enPassantValue == "-" ? Utilities::getOffboardLocation() : Utilities::squareToIndex( enPassantValue );
 
-    LOG_DEBUG << "En passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) );
+    LOG_TRACE << "En passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) );
 
     skipSpace( it, end );
 
@@ -135,7 +135,7 @@ Fen::Fen( std::string position )
 
     halfmoveClock = atoi( halfmoveClockValue.c_str() );
 
-    LOG_DEBUG << "Halfmove clock " << halfmoveClock;
+    LOG_TRACE << "Halfmove clock " << halfmoveClock;
 
     skipSpace( it, end );
 
@@ -145,7 +145,7 @@ Fen::Fen( std::string position )
 
     fullmoveNumber = atoi( fullmoveValue.c_str() );
 
-    LOG_DEBUG << "Fullmove number " << fullmoveNumber;
+    LOG_TRACE << "Fullmove number " << fullmoveNumber;
 
     // Should be at end now
 

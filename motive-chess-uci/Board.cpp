@@ -184,10 +184,6 @@ void Board::applyMove( const Move& move )
 
         LOG_TRACE << "Full move incrementing to " << fullmoveNumber;
     }
-
-    // TODO Tuning - does this call the copy constructor too often and should we move to pointers?
-
-    Utilities::dumpBoard( pieces );
 }
 
 bool Board::positionMatch( const Board& board ) const
@@ -376,8 +372,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
     unsigned long long whiteOrEmpty = whitePieces | emptySquares;
     unsigned long long blackOrEmpty = blackPieces | emptySquares;
 
-    Utilities::dumpBitboard( whitePieces | blackPieces );
-
     unsigned long long mask = 1;
 
     // There must be a better way to do this - rotation maybe?
@@ -404,9 +398,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
                 // Include captures, include en passant
                 unsigned long long possibleCaptures = Bitboards->getPawnCaptures( loop );
-                Utilities::dumpBitboard( possibleCaptures );
-                Utilities::dumpBitboard( blackPieces );
-                Utilities::dumpBitboard( possibleCaptures & blackPieces );
                 possibleCaptures &= (Utilities::isOffboard( enPassantIndex ) ? blackPieces : ( blackPieces | 1ull << enPassantIndex ) );
 
                 setOfMoves |= possibleCaptures;
@@ -418,8 +409,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     if ( _BitScanForward64( &destination, setOfMoves ) )
                     {
                         setOfMoves &= ~( 1ull << destination );
-
-                        LOG_DEBUG << Move( loop, (unsigned short) destination ).toString();
 
                         // Destination will not be damaged by cast to short
                         moves.push_back( Move( loop, (unsigned short) destination ) );
