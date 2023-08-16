@@ -307,11 +307,11 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
             _BitScanForward64( &msb, belowMask & rayMoves );
         }
 
-        // As we're looking at friendly pieces here, exclude the actual found squares
-        // The effect of the '& ownPieces' should be only to remove upper or lower bits 
-        // of the mask if they contain friendly pieces, where if they contain enemies
-        // we should keep those bits set
-        unsigned long long mask = makeMask1( msb, lsb ) & ~ownPieces;
+        // As we're looking at blocking pieces here, exclude the actual found squares
+        // The effect of the '&' should be only to remove upper or lower bits 
+        // of the mask if they contain blocking pieces, where if they contain capturable
+        // enemies we should keep those bits set
+        unsigned long long mask = makeMask1( msb, lsb ) & ~absoluteBlockers;
 
         // Limit this to moves possible when surrounded by friendly pieces
         rayMoves &= mask;
@@ -398,13 +398,18 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
 
                 // Masks for specific directions of travel
-                unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
-
-                setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
-
                 unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
 
-                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
+                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask, false );
+
+                // Include captures, include en passant
+                unsigned long long possibleCaptures = Bitboards->getPawnCaptures( loop );
+                Utilities::dumpBitboard( possibleCaptures );
+                Utilities::dumpBitboard( blackPieces );
+                Utilities::dumpBitboard( possibleCaptures & blackPieces );
+                possibleCaptures &= (Utilities::isOffboard( enPassantIndex ) ? blackPieces : ( blackPieces | 1ull << enPassantIndex ) );
+
+                setOfMoves |= possibleCaptures;
 
                 while ( setOfMoves != 0 )
                 {
@@ -413,6 +418,8 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     if ( _BitScanForward64( &destination, setOfMoves ) )
                     {
                         setOfMoves &= ~( 1ull << destination );
+
+                        LOG_DEBUG << Move( loop, (unsigned short) destination ).toString();
 
                         // Destination will not be damaged by cast to short
                         moves.push_back( Move( loop, (unsigned short) destination ) );
@@ -423,7 +430,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     }
                 }
 
-                // TODO also captures (include ep)
+                // TODO also captures (include ep) and promotion
             }
             else if ( whiteKnights & mask )
             {

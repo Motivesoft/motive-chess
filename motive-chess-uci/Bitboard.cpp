@@ -23,42 +23,54 @@ void Bitboard::buildBitboards()
 
     LOG_DEBUG << "Creating movement bitboards";
 
-    // Pawns
-    pieceSquares = 0;
+    // Initialise
+    for ( int loop = 0; loop < 64; loop++ )
+    {
+        pawnMoves[ loop ] = 0;
+        pawnCaptures[ loop ] = 0;
+        knightMoves[ loop ] = 0;
+        bishopMoves[ loop ] = 0;
+        rookMoves[ loop ] = 0;
+        queenMoves[ loop ] = 0;
+        kingMoves[ loop ] = 0;
+    }
 
+    // Pawns
+    // Single square advance
     for ( int loop = 8; loop < 56; loop++ )
     {
         pawnMoves[ loop ] = mask << ( loop + 8 );
     }
 
-    // TODO this is for double-moves, but the logic for this needs putting in, or these need doing differently
+    // Add double-square advance to elligible squares
     for ( int loop = 8; loop < 16; loop++ )
     {
         pawnMoves[ loop ] |= mask << ( loop + 16 );
     }
 
+    // Captures (be wary of the edge of the board)
     for ( int loop = 8; loop < 56; loop++ )
     {
-        // Edge detection
+        // Set, but with edge detection
         if ( Utilities::indexToFile( loop ) > 0 )
         {
-            pawnCaptures[ loop ] = mask << ( loop + 7 );
+            pawnCaptures[ loop ] |= mask << ( loop + 7 );
         }
         if ( Utilities::indexToFile( loop ) < 7 )
         {
-            pawnCaptures[ loop ] = mask << ( loop + 9 );
+            pawnCaptures[ loop ] |= mask << ( loop + 9 );
         }
     }
 
     // Knights
-    pieceSquares = 0;
-
     // Represent all knight moves from a central location and then encode that into a 0x88 space
     // 01010
     // 10001
     // 00*00
     // 10001
     // 01010
+    pieceSquares = 0;
+
     pieceSquares |= 0b00001010;
     pieceSquares <<= 16;
 
@@ -94,8 +106,6 @@ void Bitboard::buildBitboards()
     }
 
     // Bishop and Queens
-    pieceSquares = 0;
-
     for ( unsigned short index = 0; index < 64; index++ )
     {
         path = index;
@@ -136,8 +146,6 @@ void Bitboard::buildBitboards()
     }
 
     // Rooks and Queens
-    pieceSquares = 0;
-
     for ( unsigned short index = 0; index < 64; index++ )
     {
         path = index;
@@ -178,12 +186,12 @@ void Bitboard::buildBitboards()
     }
 
     // King
-    pieceSquares = 0;
-
     // Represent all king moves from a central location and then encode that into a 0x88 space
     // 111
     // 1*1
     // 111
+    pieceSquares = 0;
+
     pieceSquares |= 0b000000111;
     pieceSquares <<= 16;
 
@@ -213,9 +221,6 @@ void Bitboard::buildBitboards()
     }
 
     LOG_DEBUG << "Done creating bitboards";
-
-    Utilities::dumpBitboard( queenMoves[ 31 ] );
-    Utilities::dumpBitboard( rotate180( queenMoves[ 31 ] ) );
 }
 
 unsigned long long Bitboard::bitboardFrom0x88( std::bitset<128>& bits )
