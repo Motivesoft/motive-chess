@@ -631,7 +631,7 @@ void Engine::setoptionImpl( std::string& name, std::string& value )
 
 void Engine::positionImpl( const std::string& fenString, std::vector<std::string> moves )
 {
-    LOG_INFO << "Processing FEN string " << fenString;
+    LOG_INFO << "Processing FEN string " << fenString << " and " << moves.size() << " moves";
     Fen fen = Fen::fromPosition( fenString );
 
     std::vector< Move > moveList;
@@ -657,7 +657,7 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
 
 void Engine::goImpl( GoContext* goContext )
 {
-    LOG_INFO << "Go";
+    LOG_INFO << "Go: depth=" << goContext->getDepth();
 
     stopImpl();
 
@@ -774,7 +774,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 // TODO don't select target move randomly!
                 int random = std::rand();
                 int randomMove = random % candidateMoves.size();
-                LOG_ERROR << random;
                 thoughts = Thoughts( candidateMoves[ randomMove ] );
 
                 if ( candidateMoves.size() == 1 )

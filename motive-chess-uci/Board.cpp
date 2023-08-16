@@ -410,16 +410,26 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     {
                         setOfMoves &= ~( 1ull << destination );
 
-                        // Destination will not be damaged by cast to short
-                        moves.push_back( Move( loop, (unsigned short) destination ) );
+                        // Promotions lead to extra moves
+                        if ( Utilities::indexToRank( destination ) == 7 )
+                        {
+                            // Promote to...
+                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WQUEEN ) );
+                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WROOK ) );
+                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WBISHOP ) );
+                            moves.push_back( Move( loop, (unsigned short) destination, Piece::WKNIGHT ) );
+                        }
+                        else
+                        {
+                            // Destination will not be damaged by cast to short
+                            moves.push_back( Move( loop, (unsigned short) destination ) );
+                        }
                     }
                     else
                     {
                         break;
                     }
                 }
-
-                // TODO also captures (include ep) and promotion
             }
             else if ( whiteKnights & mask )
             {
