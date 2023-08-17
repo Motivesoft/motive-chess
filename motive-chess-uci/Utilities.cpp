@@ -5,9 +5,8 @@
 
 void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, const std::source_location location )
 {
-    LOG_DEBUG_LOC << "Board:";
     LOG_DEBUG_LOC << "  ABCDEFGH";
-
+    LOG_DEBUG_LOC << "  --------";
     for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
     {
         std::stringstream stream;
@@ -18,15 +17,14 @@ void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, const std::so
                         Piece::toFENString( pieces[ index ] ) );
         }
 
-        LOG_DEBUG_LOC << 1 + rankIndex / 8 << " " << stream.str() << " " << 1 + rankIndex / 8;
+        LOG_DEBUG_LOC << 1 + rankIndex / 8 << "|" << stream.str() << "|" << 1 + rankIndex / 8;
     }
-
+    LOG_DEBUG_LOC << "  --------";
     LOG_DEBUG_LOC << "  ABCDEFGH";
 }
 
 void Utilities::dumpBitboard( unsigned long long pieces, const std::source_location location )
 {
-    LOG_DEBUG_LOC << "Board:";
     LOG_DEBUG_LOC << "  ABCDEFGH";
     LOG_DEBUG_LOC << "  --------";
 
@@ -46,7 +44,7 @@ void Utilities::dumpBitboard( unsigned long long pieces, const std::source_locat
     LOG_DEBUG_LOC << "  ABCDEFGH";
 }
 
-void Utilities::dumpBitmask( unsigned long long bits )
+void Utilities::dumpBitmask( unsigned long long bits, const std::source_location location )
 {
     std::stringstream stream;
 
@@ -56,17 +54,17 @@ void Utilities::dumpBitmask( unsigned long long bits )
         stream << (( bits & (mask << index) ) ? "1" : "0");
     }
 
-    LOG_DEBUG << stream.str() << " : " << bits;
+    LOG_DEBUG_LOC << stream.str() << " : " << bits;
 }
 
 /// <summary>
 /// Dump an 0x88 board, which is effectively two 8x8 boards side by side
 /// </summary>
 /// <param name="bits">the board</param>
-void Utilities::dump0x88( std::bitset<128> bits )
+void Utilities::dump0x88( std::bitset<128> bits, const std::source_location location )
 {
-    LOG_DEBUG << "  01234567 01234567";
-    LOG_DEBUG << "  -------- --------";
+    LOG_DEBUG_LOC << "  01234567 01234567";
+    LOG_DEBUG_LOC << "  -------- --------";
     for ( unsigned short rank = 8; rank > 0; rank-- )
     {
         unsigned short line = rank - 1;
@@ -84,8 +82,8 @@ void Utilities::dump0x88( std::bitset<128> bits )
                 stream << "|";
             }
         }
-        LOG_DEBUG << stream.str() << "|" << line;
+        LOG_DEBUG_LOC << stream.str() << "|" << line;
     }
-    LOG_DEBUG << "  -------- --------";
-    LOG_DEBUG << "  01234567 89ABCDEF";
+    LOG_DEBUG_LOC << "  -------- --------";
+    LOG_DEBUG_LOC << "  01234567 89ABCDEF";
 }
