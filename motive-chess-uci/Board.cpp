@@ -250,9 +250,10 @@ bool Board::isSamePosition( const Board& board ) const
 
 bool Board::isRefutation( const Move& move, const Move& response ) const
 {
+    LOG_TRACE << "Looking at any refutation of " << move.toString() << " by " << response.toString();
+
     // TODO consider whether any other checks need to go in here
-    // TODO change this to a trace message
-    LOG_DEBUG << "Looking at any refutation of " << move.toString() << " by " << response.toString();
+
     if ( Piece::isKing( pieceAt( response.getTo() ) ) )
     { 
         LOG_TRACE << "Move " << move.toString() << " is refuted by " << response.toString();

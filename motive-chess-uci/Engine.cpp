@@ -765,7 +765,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
                 if ( refuted )
                 {
-                    LOG_DEBUG << "Move refuted: " << ( *it ).toString();
+                    LOG_TRACE << "Move refuted: " << ( *it ).toString();
                     candidateMoves.erase( it++ );
                 }
             }
