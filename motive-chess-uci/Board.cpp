@@ -375,10 +375,167 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
+std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
+{
+    // Worker variables
+    std::vector<Move> moves;
+
+    unsigned long long mask = 1;
+    unsigned long piece;
+    unsigned short index;
+    unsigned long long pieces;
+
+    // Let's make some bitboards
+    // TODO see if we can make these const
+    // TODO see if we can populate them better
+    unsigned long long ownPawns = makePieceBitboard( isWhite ? Piece::WPAWN : Piece::BPAWN );
+    unsigned long long ownKnights = makePieceBitboard( isWhite ? Piece::WKNIGHT : Piece::BKNIGHT );
+    unsigned long long ownBishops = makePieceBitboard( isWhite ? Piece::WBISHOP : Piece::BBISHOP );
+    unsigned long long ownRooks = makePieceBitboard( isWhite ? Piece::WROOK : Piece::BROOK );
+    unsigned long long ownQueens = makePieceBitboard( isWhite ? Piece::WQUEEN : Piece::BQUEEN );
+    unsigned long long ownKing = makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+    unsigned long long enemyPawns = makePieceBitboard( isWhite ? Piece::BPAWN : Piece::WPAWN );
+    unsigned long long enemyKnights = makePieceBitboard( isWhite ? Piece::BKNIGHT : Piece::WKNIGHT );
+    unsigned long long enemyBishops = makePieceBitboard( isWhite ? Piece::BBISHOP : Piece::WBISHOP );
+    unsigned long long enemyRooks = makePieceBitboard( isWhite ? Piece::BROOK : Piece::WROOK );
+    unsigned long long enemyQueens = makePieceBitboard( isWhite ? Piece::BQUEEN : Piece::WQUEEN );
+    unsigned long long enemyKing = makePieceBitboard( isWhite ? Piece::BKING : Piece::WKING );
+
+    unsigned short promotionRank = isWhite ? 7 : 0;
+
+    unsigned long long ownPieces = ownPawns | ownKnights | ownBishops | ownRooks | ownQueens | ownKing;
+    unsigned long long enemyPieces = enemyPawns | enemyKnights | enemyBishops | enemyRooks | enemyQueens | enemyKing;
+    unsigned long long emptySquares = ~( ownPieces | enemyPieces );
+    unsigned long long ownOrEmpty = ownPieces | emptySquares;
+    unsigned long long enemyOrEmpty = enemyPieces | emptySquares;
+
+    // Generate possible moves
+
+    // Iterate through all pieces
+    pieces = ownPawns;
+    while ( _BitScanForward64( &piece, pieces ) )
+    {
+        // TODO check this works to mask the piece we've just extracted
+        Utilities::dumpBitmask( pieces );
+        pieces ^= (1ull << piece);
+        Utilities::dumpBitmask( pieces );
+
+        index = static_cast<unsigned short>( piece );
+
+        // Determine piece moves
+        unsigned long long setOfMoves = 0;
+
+        unsigned long long possibleMoves = Bitboards->getPawnMoves( index );
+
+        // TODO actually have premade bitboards for each color
+        if ( !isWhite )
+        {
+            possibleMoves = _byteswap_uint64( possibleMoves );
+        }
+
+        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
+        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+
+        // Masks for specific directions of travel
+        unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask, false );
+
+        // Include captures, include en passant
+        unsigned long long possibleCaptures = Bitboards->getPawnCaptures( index );
+        possibleCaptures &= ( Utilities::isOffboard( enPassantIndex ) ? enemyPieces : ( enemyPieces | 1ull << enPassantIndex ) );
+
+        setOfMoves |= possibleCaptures;
+
+        while ( setOfMoves != 0 )
+        {
+            unsigned long destination;
+
+            if ( _BitScanForward64( &destination, setOfMoves ) )
+            {
+                setOfMoves &= ~( 1ull << destination );
+
+                unsigned short destinationShort = static_cast<unsigned short>( destination );
+
+                // Promotions lead to extra moves
+                if ( Utilities::indexToRank( destinationShort ) == promotionRank )
+                {
+                    // Promote to...
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WQUEEN ) );
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WROOK ) );
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WBISHOP ) );
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WKNIGHT ) );
+                }
+                else
+                {
+                    // Destination will not be damaged by cast to short
+                    moves.push_back( Move::createMove( index, destinationShort ) );
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    pieces = ownKnights;
+    while ( _BitScanForward64( &piece, pieces ) )
+    {
+        // TODO check this works to mask the piece we've just extracted
+        pieces ^= ( 1ull << piece );
+
+        // Determine knight moves
+    }
+
+    pieces = ownBishops;
+    while ( _BitScanForward64( &piece, pieces ) )
+    {
+        // TODO check this works to mask the piece we've just extracted
+        pieces ^= ( 1ull << piece );
+
+        // Determine piece moves
+    }
+
+    pieces = ownRooks;
+    while ( _BitScanForward64( &piece, pieces ) )
+    {
+        // TODO check this works to mask the piece we've just extracted
+        pieces ^= ( 1ull << piece );
+
+        // Determine knight moves
+    }
+
+    pieces = ownQueens;
+    while ( _BitScanForward64( &piece, pieces ) )
+    {
+        // TODO check this works to mask the piece we've just extracted
+        pieces ^= ( 1ull << piece );
+
+        // Determine piece moves
+    }
+
+    pieces = ownKing;
+    while ( _BitScanForward64( &piece, pieces ) )
+    {
+        // TODO check this works to mask the piece we've just extracted
+        pieces ^= ( 1ull << piece );
+
+        // Determine knight moves
+    }
+
+    return moves;
+}
+
 std::vector<Move> Board::getPseudoLegalMoves()
 {
     std::vector<Move> moves;
 
+    // TODO this is only a testing step - remove when ready
+    if ( Piece::isWhite( activeColor ) )
+    {
+        return getPseudoLegalMoves( true );
+    }
     // Right then. Now how do we do this...
 
     // Let's make some bitboards

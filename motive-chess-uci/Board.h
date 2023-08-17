@@ -109,6 +109,9 @@ private:
     /// <param name="move">the move</param>
     void applyMove( const Move& move );
 
+    // TODO perhaps refactor this once it is running to make color handling better
+    std::vector<Move> getPseudoLegalMoves( bool isWhite );
+
 public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
