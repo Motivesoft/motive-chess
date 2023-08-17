@@ -1,5 +1,5 @@
 uci
-position fen k7/1p6/P1P5/8/3pP/2P5/8/7K b - e3 0 1
+position fen k7/1p6/P1P5/8/3pP3/2P5/8/7K b - e3 0 1
 go
 stop
 quit

@@ -1,0 +1,5 @@
+uci
+position fen k7/8/2p5/3Pp3/8/p1p5/1P6/7K w - e6 0 1
+go
+stop
+quit
