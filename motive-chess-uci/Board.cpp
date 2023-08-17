@@ -404,13 +404,13 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         unsigned long long belowMask;
         if ( isWhite )
         {
-            aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
-            belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
+            aboveMask = Bitboards->makeMask( index + 1, 63 );
+            belowMask = Bitboards->makeMask( 0, index - 1 );
         }
         else
         {
-            aboveMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
-            belowMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
+            aboveMask = Bitboards->makeMask( 0, index - 1 );
+            belowMask = Bitboards->makeMask( index + 1, 63 );
         }
 
         // Masks for specific directions of travel
@@ -479,8 +479,8 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long possibleMoves = Bitboards->getBishopMoves( index );
 
-        unsigned long long aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
-        unsigned long long belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
+        unsigned long long aboveMask = Bitboards->makeMask( index + 1, 63 );
+        unsigned long long belowMask = Bitboards->makeMask( 0, index - 1 );
 
         // Masks for specific directions of travel
         unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
@@ -514,8 +514,8 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long possibleMoves = Bitboards->getRookMoves( index );
 
-        unsigned long long aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
-        unsigned long long belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
+        unsigned long long aboveMask = Bitboards->makeMask( index + 1, 63 );
+        unsigned long long belowMask = Bitboards->makeMask( 0, index - 1 );
 
         // Masks for specific directions of travel
         unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
@@ -548,8 +548,8 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long possibleMoves = Bitboards->getQueenMoves( index );
 
-        unsigned long long aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
-        unsigned long long belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
+        unsigned long long aboveMask = Bitboards->makeMask( index + 1, 63 );
+        unsigned long long belowMask = Bitboards->makeMask( 0, index - 1 );
 
         // Masks for specific directions of travel
         unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );

@@ -151,6 +151,12 @@ public:
 
     unsigned long long makeMask( unsigned short from, unsigned short to )
     {
+        // This covers going outside at either end of the range as the inputs are unsigned
+        if ( from > 63 || to > 63 )
+        {
+            return 0ull;
+        }
+
         unsigned long long result = 0;
         unsigned long long mask = 1ull << from;
 
