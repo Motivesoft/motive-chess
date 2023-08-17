@@ -131,12 +131,17 @@ public:
 
     inline bool isKingsideCastle() const
     {
-        return flag & CASTLE_KINGSIDE;
+        return (flag & CASTLE_KINGSIDE) == CASTLE_KINGSIDE;
     }
 
     inline bool isQueensideCastle() const
     {
-        return flag & CASTLE_QUEENSIDE;
+        return (flag & CASTLE_QUEENSIDE) == CASTLE_QUEENSIDE;
+    }
+
+    inline bool isCastle() const
+    {
+        return isKingsideCastle() || isQueensideCastle();
     }
 
     std::string toString() const;

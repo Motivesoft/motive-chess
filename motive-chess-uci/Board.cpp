@@ -260,21 +260,12 @@ bool Board::isRefutation( const Move& move, const Move& response ) const
         return true;
     }
 
-    if ( move.isKingsideCastle() )
+    if ( move.isCastle() )
     {
-        unsigned long long refutationSquares = Bitboards->getKingsideCastlingJourney();
-        Utilities::dumpBitmask( response.getTo() );
-        Utilities::dumpBitmask( refutationSquares );
-        Utilities::dumpBitmask( refutationSquares & response.getTo() );
-        if ( response.getTo() & refutationSquares )
-        {
-            return true;
-        }
-    }
-    else if ( move.isKingsideCastle() )
-    {
-        unsigned long long refutationSquares = Bitboards->getQueensideCastlingJourney();
-        if ( response.getTo() & refutationSquares )
+        // Walk over the King journey by making a mask covering from and to from the move
+        unsigned long long refutationSquares = Bitboards->makeMask( move.getFrom(), move.getTo() );
+
+        if ( (1ull << response.getTo()) & refutationSquares )
         {
             return true;
         }
@@ -282,25 +273,6 @@ bool Board::isRefutation( const Move& move, const Move& response ) const
 
     return false;
 }
-
-unsigned long long makeMask1( unsigned long from, unsigned long to )
-{
-    unsigned long long result = 0;
-    unsigned long long mask = 1ull << from;
-
-    if ( to < from )
-    {
-        return makeMask1( to, from );
-    }
-
-    for ( unsigned long loop = from; loop <= to; loop++, mask <<= 1 )
-    {
-        result |= mask;
-    }
-
-    return result;
-}
-
 
 unsigned long long movesInARay( unsigned long long possibleMoves,
                                 unsigned long long rayMask,
@@ -337,7 +309,7 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         // The effect of the '&' should be only to remove upper or lower bits 
         // of the mask if they contain blocking pieces, where if they contain capturable
         // enemies we should keep those bits set
-        unsigned long long mask = makeMask1( msb, lsb ) & ~absoluteBlockers;
+        unsigned long long mask = Bitboards->makeMask( static_cast<unsigned short>( msb ), static_cast<unsigned short>( lsb ) ) & ~absoluteBlockers;
 
         // Limit this to moves possible when surrounded by friendly pieces
         rayMoves &= mask;
@@ -365,7 +337,7 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         }
 
         // As we're looking at enemy pieces here, the mask covers everything we need
-        unsigned long long mask = makeMask1( msb, lsb );
+        unsigned long long mask = Bitboards->makeMask( static_cast<unsigned short>( msb ), static_cast<unsigned short>( lsb ) );
 
         moves |= ( rayMoves & mask );
     }
@@ -432,13 +404,13 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         unsigned long long belowMask;
         if ( isWhite )
         {
-            aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
-            belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+            aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
+            belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
         }
         else
         {
-            aboveMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
-            belowMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
+            aboveMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
+            belowMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
         }
 
         // Masks for specific directions of travel
@@ -507,8 +479,8 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long possibleMoves = Bitboards->getBishopMoves( index );
 
-        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
-        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+        unsigned long long aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
+        unsigned long long belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
 
         // Masks for specific directions of travel
         unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
@@ -542,8 +514,8 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long possibleMoves = Bitboards->getRookMoves( index );
 
-        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
-        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+        unsigned long long aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
+        unsigned long long belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
 
         // Masks for specific directions of travel
         unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
@@ -576,8 +548,8 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long possibleMoves = Bitboards->getQueenMoves( index );
 
-        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
-        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+        unsigned long long aboveMask = index == 63 ? 0 : Bitboards->makeMask( index + 1, 63 );
+        unsigned long long belowMask = index == 0 ? 0 : Bitboards->makeMask( 0, index - 1 );
 
         // Masks for specific directions of travel
         unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
@@ -627,25 +599,48 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
             moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
         }
 
-        if ( castlingRights.canWhiteCastleKingside() )
+        bool kingside;
+        bool queenside;
+        unsigned long long kingsideMask;
+        unsigned long long queensideMask;
+        if ( isWhite )
         {
-            if ( ( Bitboards->getKingsideCastlingMask() & emptySquares ) == Bitboards->getKingsideCastlingMask() )
+            kingside = castlingRights.canWhiteCastleKingside();
+            queenside = castlingRights.canWhiteCastleQueenside();
+            kingsideMask = Bitboards->getWhiteKingsideCastlingMask();
+            queensideMask = Bitboards->getWhiteQueensideCastlingMask();
+        }
+        else
+        {
+            kingside = castlingRights.canBlackCastleKingside();
+            queenside = castlingRights.canBlackCastleQueenside();
+            kingsideMask = Bitboards->getBlackKingsideCastlingMask();
+            queensideMask = Bitboards->getBlackQueensideCastlingMask();
+        }
+
+        if ( kingside )
+        {
+            if ( ( kingsideMask & emptySquares ) == kingsideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                // TODO See if we can improve this and make it more color-neutral
                 moves.push_back( Move::createKingsideCastlingMove( index, index + 2 ) );
             }
         }
 
-        if ( castlingRights.canWhiteCastleQueenside() )
+        if ( queenside )
         {
-            if ( ( Bitboards->getQueensideCastlingMask() & emptySquares ) == Bitboards->getQueensideCastlingMask() )
+            if ( ( queensideMask & emptySquares ) == queensideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                // TODO See if we can improve this and make it more color-neutral
                 moves.push_back( Move::createQueensideCastlingMove( index, index - 2 ) );
             }
         }
+    }
+
+    LOG_TRACE << "PseudoLevel moves:";
+    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+    {
+        LOG_TRACE << ( *it ).toString();
     }
 
     return moves;
@@ -653,276 +648,7 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
 std::vector<Move> Board::getPseudoLegalMoves()
 {
-    std::vector<Move> moves;
-
-    // TODO this is only a testing step - remove when ready
-    if ( Piece::isWhite( activeColor ) )
-    {
-        return getPseudoLegalMoves( true );
-    }
-    if ( Piece::isBlack( activeColor ) )
-    {
-        return getPseudoLegalMoves( false );
-    }
-
-    // Right then. Now how do we do this...
-
-    // Let's make some bitboards
-    unsigned long long whitePawns = makePieceBitboard( Piece::WPAWN );
-    unsigned long long whiteKnights = makePieceBitboard( Piece::WKNIGHT );
-    unsigned long long whiteBishops = makePieceBitboard( Piece::WBISHOP );
-    unsigned long long whiteRooks = makePieceBitboard( Piece::WROOK );
-    unsigned long long whiteQueens = makePieceBitboard( Piece::WQUEEN );
-    unsigned long long whiteKing = makePieceBitboard( Piece::WKING );
-    unsigned long long blackPawns = makePieceBitboard( Piece::BPAWN );
-    unsigned long long blackKnights = makePieceBitboard( Piece::BKNIGHT );
-    unsigned long long blackBishops = makePieceBitboard( Piece::BBISHOP );
-    unsigned long long blackRooks = makePieceBitboard( Piece::BROOK );
-    unsigned long long blackQueens = makePieceBitboard( Piece::BQUEEN );
-    unsigned long long blackKing = makePieceBitboard( Piece::BKING );
-
-    unsigned long long whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
-    unsigned long long blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
-    unsigned long long emptySquares = ~( whitePieces | blackPieces );
-    unsigned long long whiteOrEmpty = whitePieces | emptySquares;
-    unsigned long long blackOrEmpty = blackPieces | emptySquares;
-
-    unsigned long long mask = 1;
-
-    // There must be a better way to do this - rotation maybe?
-    if ( Piece::isWhite( activeColor ) )
-    {
-        // Generate possible white moves
-
-        for ( int loop = 0; loop < 64; loop++, mask <<= 1 )
-        {
-            // Find a pawn
-            if ( whitePawns & mask )
-            {
-                unsigned long long setOfMoves = 0;
-
-                unsigned long long possibleMoves = Bitboards->getPawnMoves( loop, true );
-
-                unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
-                unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
-
-                // Masks for specific directions of travel
-                unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
-
-                setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask, false );
-
-                // Include captures, include en passant
-                unsigned long long possibleCaptures = Bitboards->getPawnCaptures( loop, true );
-                possibleCaptures &= (Utilities::isOffboard( enPassantIndex ) ? blackPieces : ( blackPieces | 1ull << enPassantIndex ) );
-
-                setOfMoves |= possibleCaptures;
-
-                while ( setOfMoves != 0 )
-                {
-                    unsigned long destination;
-
-                    if ( _BitScanForward64( &destination, setOfMoves ) )
-                    {
-                        setOfMoves &= ~( 1ull << destination );
-
-                        unsigned short destinationShort = static_cast<unsigned short>( destination );
-
-                        // Promotions lead to extra moves
-                        if ( Utilities::indexToRank( destinationShort ) == 7 )
-                        {
-                            // Promote to...
-                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WQUEEN ) );
-                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WROOK ) );
-                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WBISHOP ) );
-                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WKNIGHT ) );
-                        }
-                        else
-                        {
-                            // Destination will not be damaged by cast to short
-                            moves.push_back( Move::createMove( loop, destinationShort ) );
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            else if ( whiteKnights & mask )
-            {
-                unsigned long long possibleMoves = Bitboards->getKnightMoves( loop );
-                possibleMoves &= blackOrEmpty;
-
-                while ( possibleMoves > 0 )
-                {
-                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
-
-                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
-                    moves.push_back( Move::createMove( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
-                    possibleMoves &= ~msb;
-                }
-            }
-            else if ( whiteBishops & mask )
-            {
-                unsigned long long setOfMoves = 0;
-
-                unsigned long long possibleMoves = Bitboards->getBishopMoves( loop );
-
-                unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
-                unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
-
-                // Masks for specific directions of travel
-                unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( loop ),
-                                                                          Utilities::indexToRank( loop ) );
-
-                setOfMoves |= movesInARay( possibleMoves, diagMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-                unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( loop ),
-                                                                              Utilities::indexToRank( loop ) );
-
-                setOfMoves |= movesInARay( possibleMoves, antiMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-                while ( setOfMoves != 0 )
-                {
-                    unsigned long destination;
-
-                    if ( _BitScanForward64( &destination, setOfMoves ) )
-                    {
-                        setOfMoves &= ~( 1ull << destination );
-
-                        // Destination will not be damaged by cast to short
-                        moves.push_back( Move::createMove( loop, (unsigned short) destination ) );
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            else if ( whiteRooks & mask )
-            {
-            unsigned long long setOfMoves = 0;
-
-            unsigned long long possibleMoves = Bitboards->getRookMoves( loop );
-
-            unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
-            unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
-
-            // Masks for specific directions of travel
-            unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
-
-            setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-            unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
-
-            setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-            while ( setOfMoves != 0 )
-            {
-                unsigned long destination;
-
-                if ( _BitScanForward64( &destination, setOfMoves ) )
-                {
-                    setOfMoves &= ~( 1ull << destination );
-
-                    // Destination will not be damaged by cast to short
-                    moves.push_back( Move::createMove( loop, (unsigned short) destination ) );
-                }
-                else
-                {
-                    break;
-                }
-            }
-            }
-            else if ( whiteQueens & mask )
-            {
-            unsigned long long setOfMoves = 0;
-
-            unsigned long long possibleMoves = Bitboards->getQueenMoves( loop );
-
-            unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
-            unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
-
-            // Masks for specific directions of travel
-            unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( loop ) );
-
-            setOfMoves |= movesInARay( possibleMoves, rankMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-            unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( loop ) );
-
-            setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-            unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( loop ),
-                                                                      Utilities::indexToRank( loop ) );
-
-            setOfMoves |= movesInARay( possibleMoves, diagMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-            unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( loop ),
-                                                                          Utilities::indexToRank( loop ) );
-
-            setOfMoves |= movesInARay( possibleMoves, antiMask, whitePieces, blackPieces, aboveMask, belowMask );
-
-            while ( setOfMoves != 0 )
-            {
-                unsigned long destination;
-
-                if ( _BitScanForward64( &destination, setOfMoves ) )
-                {
-                    setOfMoves &= ~( 1ull << destination );
-
-                    // Destination will not be damaged by cast to short
-                    moves.push_back( Move::createMove( loop, (unsigned short) destination ) );
-                }
-                else
-                {
-                    break;
-                }
-            }
-            }
-            else if ( whiteKing & mask )
-            {
-                unsigned long long possibleMoves = Bitboards->getKingMoves( loop );
-                possibleMoves &= blackOrEmpty;
-
-                while ( possibleMoves > 0 )
-                {
-                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
-
-                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
-                    moves.push_back( Move::createMove( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
-                    possibleMoves &= ~msb;
-                }
-
-                if ( castlingRights.canWhiteCastleKingside() )
-                {
-                    if ( ( Bitboards->getKingsideCastlingMask() & emptySquares ) == Bitboards->getKingsideCastlingMask() )
-                    {
-                        // Check for moving out of, or through check is done as a refutation check, later
-                        // TODO See if we can improve this and make it more color-neutral
-                        moves.push_back( Move::createKingsideCastlingMove( loop, loop + 2 ) );
-                    }
-                }
-
-                if ( castlingRights.canWhiteCastleQueenside() )
-                {
-                    if ( ( Bitboards->getQueensideCastlingMask() & emptySquares ) == Bitboards->getQueensideCastlingMask() )
-                    {
-                        // Check for moving out of, or through check is done as a refutation check, later
-                        // TODO See if we can improve this and make it more color-neutral
-                        moves.push_back( Move::createQueensideCastlingMove( loop, loop - 2 ) );
-                    }
-                }
-            }
-        }
-    }
-
-    LOG_TRACE << "Moves:";
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
-    {
-        LOG_TRACE << ( *it ).toString();
-    }
-
-    return moves;
+    return getPseudoLegalMoves( Piece::isWhite( activeColor ) );
 }
 
 unsigned long long Board::makePieceBitboard( unsigned char piece )

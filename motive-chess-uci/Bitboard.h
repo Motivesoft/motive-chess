@@ -80,24 +80,24 @@ public:
         return kingMoves[ index ];
     }
 
-    inline unsigned long long getKingsideCastlingMask()
+    inline unsigned long long getWhiteKingsideCastlingMask()
     {
-        return 0b01100000;
+        return 0b01100000ull;
     }
 
-    inline unsigned long long getKingsideCastlingJourney()
+    inline unsigned long long getBlackKingsideCastlingMask()
     {
-        return 0b01110000;
+        return 0b01100000ull << 56;
     }
 
-    inline unsigned long long getQueensideCastlingMask()
+    inline unsigned long long getWhiteQueensideCastlingMask()
     {
-        return 0b00001110;
+        return 0b00001110ull;
     }
 
-    inline unsigned long long getQueensideCastlingJourney()
+    inline unsigned long long getBlackQueensideCastlingMask()
     {
-        return 0b00011100;
+        return 0b00001110ull << 56;
     }
 
     unsigned long long getFileMask( unsigned short file )
@@ -147,5 +147,23 @@ public:
         }
 
         return value;
+    }
+
+    unsigned long long makeMask( unsigned short from, unsigned short to )
+    {
+        unsigned long long result = 0;
+        unsigned long long mask = 1ull << from;
+
+        if ( to < from )
+        {
+            return makeMask( to, from );
+        }
+
+        for ( unsigned long loop = from; loop <= to; loop++, mask <<= 1 )
+        {
+            result |= mask;
+        }
+
+        return result;
     }
 };

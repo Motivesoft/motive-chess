@@ -746,13 +746,14 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 break;
             }
 
-            for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); it++ )
+            for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); )
             {
-                LOG_DEBUG << "PseudoLegal move " << ( *it ).toString();
+                LOG_TRACE << "PseudoLegal move " << ( *it ).toString();
 
                 Board tBoard = board->makeMove( *it );
                 std::vector<Move> tMoves = tBoard.getPseudoLegalMoves();
 
+                LOG_TRACE << "Looking for refutations";
                 bool refuted = false;
                 for ( std::vector<Move>::iterator tIt = tMoves.begin(); tIt != tMoves.end(); tIt++ )
                 {
@@ -766,8 +767,20 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 if ( refuted )
                 {
                     LOG_TRACE << "Move refuted: " << ( *it ).toString();
-                    candidateMoves.erase( it++ );
+                    it = candidateMoves.erase( it );
                 }
+                else
+                {
+                    it++;
+                }
+            }
+
+            // List of moves after refutations have been removed
+            // TODO reduce this to TRACE
+            LOG_DEBUG << "Search list:";
+            for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); it++ )
+            {
+                LOG_DEBUG << ( *it ).toString();
             }
 
             if ( thoughts.getBestMove().isNullMove() )

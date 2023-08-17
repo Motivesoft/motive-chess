@@ -23,7 +23,7 @@ void Bitboard::buildBitboards()
     unsigned long long mask = 1;
     unsigned short path;
 
-    LOG_DEBUG << "Creating movement bitboards";
+    LOG_TRACE << "Creating movement bitboards";
 
     // Initialise
     for ( int loop = 0; loop < 64; loop++ )
@@ -249,7 +249,7 @@ void Bitboard::buildBitboards()
         kingMoves[ index ] = bitboardFrom0x88( x88 );
     }
 
-    LOG_DEBUG << "Done creating bitboards";
+    LOG_TRACE << "Done creating bitboards";
 }
 
 unsigned long long Bitboard::bitboardFrom0x88( std::bitset<128>& bits )
