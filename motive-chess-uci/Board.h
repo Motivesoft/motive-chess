@@ -100,20 +100,6 @@ private:
         return pieceAt( Utilities::squareToIndex( file, rank ) );
     }
 
-    /// <summary>
-    /// Return true if any of the squares in the supplied mask are attacked
-    /// </summary>
-    /// <param name="squareMask">a mask of one or more bits</param>
-    /// <returns>true if any of the represented squares are currently attacked</returns>
-    bool isAttacked( unsigned long long squareMask,
-                     unsigned long long ownPieces,
-                     unsigned long long enemyPawns,
-                     unsigned long long enemyKnights,
-                     unsigned long long enemyBishops,
-                     unsigned long long enemyRooks,
-                     unsigned long long enemyQueens,
-                     unsigned long long enemyKing );
-
     // This is a precise equality check, not a "is this the same position" check
     bool positionMatch( const Board& board ) const;
 
