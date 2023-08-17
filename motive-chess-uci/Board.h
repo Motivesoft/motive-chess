@@ -105,19 +105,14 @@ private:
     /// </summary>
     /// <param name="squareMask">a mask of one or more bits</param>
     /// <returns>true if any of the represented squares are currently attacked</returns>
-    bool isAttacked( unsigned long long squareMask )
-    {
-        // TODO make this work for either color
-        unsigned long lsb;
-        while ( _BitScanForward64( &lsb, squareMask ) )
-        {
-            squareMask &= ~( 1ull << lsb );
-
-            // Is this square
-        }
-
-        return false;
-    }
+    bool isAttacked( unsigned long long squareMask,
+                     unsigned long long ownPieces,
+                     unsigned long long enemyPawns,
+                     unsigned long long enemyKnights,
+                     unsigned long long enemyBishops,
+                     unsigned long long enemyRooks,
+                     unsigned long long enemyQueens,
+                     unsigned long long enemyKing );
 
     // This is a precise equality check, not a "is this the same position" check
     bool positionMatch( const Board& board ) const;
@@ -203,13 +198,14 @@ public:
     bool isSamePosition( const Board& board ) const;
 
     /// <summary>
-    /// Check whether this move refutes the move we're currently examining.
+    /// Check whether this move is refuted by this response.
     /// The general idea is to generate pseudo legal moves and for each, generate the possible responses.
     /// Push the responses to this method to determine whether the psuedo legal move is indeed legal
     /// </summary>
     /// <param name="move">a move</param>
-    /// <returns>true if this move should not be possible, demonstrating that the move leading to this is invalid</returns>
-    bool isRefutation( const Move& move ) const;
+    /// <param name="response">a response to move that may refute the move</param>
+    /// <returns>true if move should not be possible due to the response</returns>
+    bool isRefutation( const Move& move, const Move& response ) const;
 
     /// <summary>
     /// Returns a new board, based on the current board but with this move applied

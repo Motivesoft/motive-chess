@@ -247,10 +247,38 @@ bool Board::isSamePosition( const Board& board ) const
     return true;
 }
 
-bool Board::isRefutation( const Move& move ) const
+bool Board::isRefutation( const Move& move, const Move& response ) const
 {
     // TODO consider whether any other checks need to go in here
-    return Piece::isKing( pieceAt( move.getTo() ) );
+    // TODO change this to a trace message
+    LOG_DEBUG << "Looking at any refutation of " << move.toString() << " by " << response.toString();
+    if ( Piece::isKing( pieceAt( response.getTo() ) ) )
+    { 
+        LOG_TRACE << "Move " << move.toString() << " is refuted by " << response.toString();
+        return true;
+    }
+
+    if ( move.isKingsideCastle() )
+    {
+        unsigned long long refutationSquares = Bitboards->getKingsideCastlingJourney();
+        Utilities::dumpBitmask( response.getTo() );
+        Utilities::dumpBitmask( refutationSquares );
+        Utilities::dumpBitmask( refutationSquares & response.getTo() );
+        if ( response.getTo() & refutationSquares )
+        {
+            return true;
+        }
+    }
+    else if ( move.isKingsideCastle() )
+    {
+        unsigned long long refutationSquares = Bitboards->getQueensideCastlingJourney();
+        if ( response.getTo() & refutationSquares )
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 unsigned long long makeMask1( unsigned long from, unsigned long to )
@@ -417,15 +445,15 @@ std::vector<Move> Board::getPseudoLegalMoves()
                         if ( Utilities::indexToRank( destinationShort ) == 7 )
                         {
                             // Promote to...
-                            moves.push_back( Move( loop, destinationShort, Piece::WQUEEN ) );
-                            moves.push_back( Move( loop, destinationShort, Piece::WROOK ) );
-                            moves.push_back( Move( loop, destinationShort, Piece::WBISHOP ) );
-                            moves.push_back( Move( loop, destinationShort, Piece::WKNIGHT ) );
+                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WQUEEN ) );
+                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WROOK ) );
+                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WBISHOP ) );
+                            moves.push_back( Move::createPromotionMove( loop, destinationShort, Piece::WKNIGHT ) );
                         }
                         else
                         {
                             // Destination will not be damaged by cast to short
-                            moves.push_back( Move( loop, destinationShort ) );
+                            moves.push_back( Move::createMove( loop, destinationShort ) );
                         }
                     }
                     else
@@ -444,7 +472,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
 
                     // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
-                    moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
+                    moves.push_back( Move::createMove( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
                     possibleMoves &= ~msb;
                 }
             }
@@ -477,7 +505,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
                         setOfMoves &= ~( 1ull << destination );
 
                         // Destination will not be damaged by cast to short
-                        moves.push_back( Move( loop, (unsigned short) destination ) );
+                        moves.push_back( Move::createMove( loop, (unsigned short) destination ) );
                     }
                     else
                     {
@@ -512,7 +540,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     setOfMoves &= ~( 1ull << destination );
 
                     // Destination will not be damaged by cast to short
-                    moves.push_back( Move( loop, (unsigned short) destination ) );
+                    moves.push_back( Move::createMove( loop, (unsigned short) destination ) );
                 }
                 else
                 {
@@ -557,7 +585,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
                     setOfMoves &= ~( 1ull << destination );
 
                     // Destination will not be damaged by cast to short
-                    moves.push_back( Move( loop, (unsigned short) destination ) );
+                    moves.push_back( Move::createMove( loop, (unsigned short) destination ) );
                 }
                 else
                 {
@@ -570,14 +598,31 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 unsigned long long possibleMoves = Bitboards->getKingMoves( loop );
                 possibleMoves &= blackOrEmpty;
 
+                while ( possibleMoves > 0 )
+                {
+                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
+
+                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
+                    moves.push_back( Move::createMove( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
+                    possibleMoves &= ~msb;
+                }
+
                 if ( castlingRights.canWhiteCastleKingside() )
                 {
                     if ( ( Bitboards->getKingsideCastlingMask() & emptySquares ) == Bitboards->getKingsideCastlingMask() )
                     {
-                        // TODO moving out of, or through check check
-                        if ( !isAttacked( Bitboards->getKingsideCastlingJourney() ) )
+                        // Check for moving out of, or through check - disallowed for castling
+                        if ( !isAttacked( Bitboards->getKingsideCastlingJourney(),
+                                          whitePieces,
+                                          blackPawns,
+                                          blackKnights,
+                                          blackBishops,
+                                          blackRooks,
+                                          blackQueens,
+                                          blackKing ) )
                         {
-                            possibleMoves |= Bitboards->getKingsideCastlingTo();
+                            // TODO See if we can improve this and make it more color-neutral
+                            moves.push_back( Move::createKingsideCastlingMove( loop, loop + 2 ) );
                         }
                     }
                 }
@@ -586,21 +631,20 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 {
                     if ( ( Bitboards->getQueensideCastlingMask() & emptySquares ) == Bitboards->getQueensideCastlingMask() )
                     {
-                        // TODO moving out of, or through check check
-                        if ( !isAttacked( Bitboards->getQueensideCastlingJourney() ) )
+                        // Check for moving out of, or through check - disallowed for castling
+                        if ( !isAttacked( Bitboards->getQueensideCastlingJourney(),
+                                          whitePieces,
+                                          blackPawns,
+                                          blackKnights,
+                                          blackBishops,
+                                          blackRooks,
+                                          blackQueens,
+                                          blackKing ) )
                         {
-                            possibleMoves |= Bitboards->getQueensideCastlingTo();
+                            // TODO See if we can improve this and make it more color-neutral
+                            moves.push_back( Move::createQueensideCastlingMove( loop, loop - 2 ) );
                         }
                     }
-                }
-
-                while ( possibleMoves > 0 )
-                {
-                    unsigned long long msb = possibleMoves & ~( possibleMoves - 1 );
-
-                    // Fortunately, msb will not be zero here, so 'std::bit_width( msb ) - 1' should fine
-                    moves.push_back( Move( loop, (unsigned short) std::bit_width( msb ) - 1 ) );
-                    possibleMoves &= ~msb;
                 }
             }
         }
@@ -613,6 +657,74 @@ std::vector<Move> Board::getPseudoLegalMoves()
     }
 
     return moves;
+}
+
+bool Board::isAttacked( unsigned long long squareMask,
+                        unsigned long long ownPieces,
+                        unsigned long long enemyPawns,
+                        unsigned long long enemyKnights,
+                        unsigned long long enemyBishops,
+                        unsigned long long enemyRooks,
+                        unsigned long long enemyQueens,
+                        unsigned long long enemyKing )
+{
+    unsigned long lsb;
+
+    // Check the possible captures of each enemy piece and see if any are a match for
+    // the king journey towards castling. If so, return true immediately
+
+    // Pawns
+    while ( _BitScanForward64( &lsb, enemyPawns ) )
+    {
+        unsigned short enemyPiece = 1ull << lsb;
+        enemyPawns &= ~enemyPiece;
+
+        // Is this square attacking one of the squareMask squares? If so, return true immediately
+        if ( Bitboards->getEnemyPawnCaptures( enemyPiece ) & squareMask )
+        {
+            return true;
+        }
+    }
+
+    // Knights
+    while ( _BitScanForward64( &lsb, enemyKnights ) )
+    {
+        unsigned short enemyPiece = 1ull << lsb;
+        enemyKnights &= ~enemyPiece;
+
+        if ( Bitboards->getKnightMoves( enemyPiece ) & squareMask )
+        {
+            return true;
+        }
+    }
+
+    // Bishop
+    while ( _BitScanForward64( &lsb, enemyBishops ) )
+    {
+        unsigned short enemyPiece = 1ull << lsb;
+        enemyBishops &= ~enemyPiece;
+
+        if ( Bitboards->getDiagonalMask( Utilities::indexToFile(enemyPiece),
+                                         Utilities::indexToRank(enemyPiece) ) & squareMask )
+        {
+            // Potential match. Clip to the two squares in question
+            return true;
+        }
+    }
+
+    // King
+    while ( _BitScanForward64( &lsb, enemyKing ) )
+    {
+        unsigned short enemyPiece = 1ull << lsb;
+        enemyKing &= ~enemyPiece;
+
+        if ( Bitboards->getKingMoves( enemyPiece ) & squareMask )
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 unsigned long long Board::makePieceBitboard( unsigned char piece )

@@ -52,6 +52,12 @@ public:
         return pawnCaptures[ index ];
     }
 
+    inline unsigned long long getEnemyPawnCaptures( unsigned short index )
+    {
+        // TODO refactor this when we do Black stuff better
+        return rotate180( pawnCaptures[ index ] );
+    }
+
     inline unsigned long long getKnightMoves( unsigned short index )
     {
         return knightMoves[ index ];
@@ -82,11 +88,6 @@ public:
         return 0b01100000;
     }
 
-    inline unsigned long long getKingsideCastlingTo()
-    {
-        return 0b01000000;
-    }
-
     inline unsigned long long getKingsideCastlingJourney()
     {
         return 0b01110000;
@@ -95,11 +96,6 @@ public:
     inline unsigned long long getQueensideCastlingMask()
     {
         return 0b00001110;
-    }
-
-    inline unsigned long long getQueensideCastlingTo()
-    {
-        return 0b00000100;
     }
 
     inline unsigned long long getQueensideCastlingJourney()
@@ -152,40 +148,7 @@ public:
         {
             value |= 1ull << ( ( rorigin << 3 ) + forigin );
         }
-        /*
-        if ( rank == ( 7 - file ) )
-        {
-            LOG_DEBUG << "PATH1";
-            // Use signed here so we can check for going over the left-hand edge
-            short rorigin = 0;
-            short forigin = 7; // (effectively, 7-0)
-            for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
-            {
-                value |= 1ull << ( ( rorigin << 3 ) + forigin );
-            }
-        }
-        else if ( rank > ( 7 - file ) )
-        {
-            LOG_DEBUG << "PATH2";
-            // Use signed here so we can check for going over the left-hand edge
-            short rorigin = rank - ( 7 - file );
-            short forigin = 7; // (effectively, 7-0)
-            for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
-            {
-                value |= 1ull << ( ( rorigin << 3 ) + forigin );
-            }
-        }
-        else if ( rank < ( 7 - file ) )
-        {
-            LOG_DEBUG << "PATH3";
-            short rorigin = 0;
-            short forigin = file + rank;
-            for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
-            {
-                value |= 1ull << ( ( rorigin << 3 ) + forigin );
-            }
-        }
-        */
+
         return value;
     }
 };
