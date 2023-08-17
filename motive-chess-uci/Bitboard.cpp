@@ -43,7 +43,7 @@ void Bitboard::buildBitboards()
     // Single square advance
     for ( int loop = 8; loop < 56; loop++ )
     {
-        whitePawnMoves[ loop ] = mask << ( loop + 8 );
+        whitePawnMoves[ loop ] |= mask << ( loop + 8 );
     }
 
     // Add double-square advance to elligible squares
@@ -54,7 +54,7 @@ void Bitboard::buildBitboards()
 
     for ( int loop = 55; loop > 7; loop-- )
     {
-        blackPawnMoves[ loop ] = mask << ( loop - 8 );
+        blackPawnMoves[ loop ] |= mask << ( loop - 8 );
     }
 
     // Add double-square advance to elligible squares

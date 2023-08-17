@@ -742,6 +742,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             std::vector<Move> candidateMoves = board->getPseudoLegalMoves();
             if ( candidateMoves.empty() )
             {
+                LOG_DEBUG << "No candidate moves";
                 break;
             }
 

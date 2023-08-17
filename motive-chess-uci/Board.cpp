@@ -34,6 +34,7 @@ void Board::applyMove( const Move& move )
     movePiece( move.getFrom(), move.getTo() );
 
     // Handle castling - check the piece that has just moved and work it out from there
+    // TODO use Move's new knowledge about whether it is a castling move
     if ( movingPiece == Piece::WKING )
     {
         if ( move.getFrom() == Board::E1 )
@@ -426,12 +427,18 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         unsigned long long possibleMoves = Bitboards->getPawnMoves( index, isWhite );
         unsigned long long possibleCaptures = Bitboards->getPawnCaptures( index, isWhite );
 
-        LOG_DEBUG << Utilities::indexToSquare( index );
-        Utilities::dumpBitboard( possibleMoves );
-        Utilities::dumpBitboard( possibleCaptures );
-
-        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
-        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+        unsigned long long aboveMask;
+        unsigned long long belowMask;
+        if ( isWhite )
+        {
+            aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
+            belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+        }
+        else
+        {
+            aboveMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+            belowMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
+        }
 
         // Masks for specific directions of travel
         unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
@@ -443,34 +450,26 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         setOfMoves |= possibleCaptures;
 
-        while ( setOfMoves != 0 )
+        unsigned long destination;
+        while ( _BitScanForward64( &destination, setOfMoves ) )
         {
-            unsigned long destination;
+            setOfMoves &= ~( 1ull << destination );
 
-            if ( _BitScanForward64( &destination, setOfMoves ) )
+            unsigned short destinationShort = static_cast<unsigned short>( destination );
+
+            // Promotions lead to extra moves
+            if ( Utilities::indexToRank( destinationShort ) == promotionRank )
             {
-                setOfMoves &= ~( 1ull << destination );
-
-                unsigned short destinationShort = static_cast<unsigned short>( destination );
-
-                // Promotions lead to extra moves
-                if ( Utilities::indexToRank( destinationShort ) == promotionRank )
-                {
-                    // Promote to...
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WQUEEN : Piece::BQUEEN ) );
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WROOK : Piece::BROOK ) );
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WBISHOP : Piece::BBISHOP ) );
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WKNIGHT : Piece::BKNIGHT ) );
-                }
-                else
-                {
-                    // Destination will not be damaged by cast to short
-                    moves.push_back( Move::createMove( index, destinationShort ) );
-                }
+                // Promote to...
+                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WQUEEN : Piece::BQUEEN ) );
+                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WROOK : Piece::BROOK ) );
+                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WBISHOP : Piece::BBISHOP ) );
+                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WKNIGHT : Piece::BKNIGHT ) );
             }
             else
             {
-                break;
+                // Destination will not be damaged by cast to short
+                moves.push_back( Move::createMove( index, destinationShort ) );
             }
         }
     }
@@ -478,17 +477,29 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
     pieces = ownKnights;
     while ( _BitScanForward64( &piece, pieces ) )
     {
-        // TODO check this works to mask the piece we've just extracted
         pieces ^= ( 1ull << piece );
 
+        index = static_cast<unsigned short>( piece );
+
         // Determine knight moves
+        unsigned long long setOfMoves = Bitboards->getKnightMoves( index );
+        setOfMoves &= enemyOrEmpty;
+
+        unsigned long destination;
+        while ( _BitScanForward64( &destination, setOfMoves ) )
+        {
+            setOfMoves &= ~( 1ull << destination );
+
+            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+        }
     }
 
     pieces = ownBishops;
     while ( _BitScanForward64( &piece, pieces ) )
     {
-        // TODO check this works to mask the piece we've just extracted
         pieces ^= ( 1ull << piece );
+
+        index = static_cast<unsigned short>( piece );
 
         // Determine piece moves
     }
@@ -496,8 +507,9 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
     pieces = ownRooks;
     while ( _BitScanForward64( &piece, pieces ) )
     {
-        // TODO check this works to mask the piece we've just extracted
         pieces ^= ( 1ull << piece );
+
+        index = static_cast<unsigned short>( piece );
 
         // Determine knight moves
     }
@@ -505,8 +517,9 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
     pieces = ownQueens;
     while ( _BitScanForward64( &piece, pieces ) )
     {
-        // TODO check this works to mask the piece we've just extracted
         pieces ^= ( 1ull << piece );
+
+        index = static_cast<unsigned short>( piece );
 
         // Determine piece moves
     }
@@ -514,8 +527,9 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
     pieces = ownKing;
     while ( _BitScanForward64( &piece, pieces ) )
     {
-        // TODO check this works to mask the piece we've just extracted
         pieces ^= ( 1ull << piece );
+
+        index = static_cast<unsigned short>( piece );
 
         // Determine knight moves
     }
