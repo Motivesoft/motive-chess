@@ -1,0 +1,5 @@
+uci
+position fen r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1
+go
+stop
+quit

@@ -532,7 +532,37 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         index = static_cast<unsigned short>( piece );
 
-        // Determine knight moves
+        // Determine piece moves
+        unsigned long long setOfMoves = Bitboards->getKingMoves( index );
+        setOfMoves &= enemyOrEmpty;
+
+        unsigned long destination;
+        while ( _BitScanForward64( &destination, setOfMoves ) )
+        {
+            setOfMoves &= ~( 1ull << destination );
+
+            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+        }
+
+        if ( castlingRights.canWhiteCastleKingside() )
+        {
+            if ( ( Bitboards->getKingsideCastlingMask() & emptySquares ) == Bitboards->getKingsideCastlingMask() )
+            {
+                // Check for moving out of, or through check is done as a refutation check, later
+                // TODO See if we can improve this and make it more color-neutral
+                moves.push_back( Move::createKingsideCastlingMove( index, index + 2 ) );
+            }
+        }
+
+        if ( castlingRights.canWhiteCastleQueenside() )
+        {
+            if ( ( Bitboards->getQueensideCastlingMask() & emptySquares ) == Bitboards->getQueensideCastlingMask() )
+            {
+                // Check for moving out of, or through check is done as a refutation check, later
+                // TODO See if we can improve this and make it more color-neutral
+                moves.push_back( Move::createQueensideCastlingMove( index, index - 2 ) );
+            }
+        }
     }
 
     return moves;

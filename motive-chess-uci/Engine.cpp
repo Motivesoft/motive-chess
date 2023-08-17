@@ -756,11 +756,12 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 bool refuted = false;
                 for ( std::vector<Move>::iterator tIt = tMoves.begin(); tIt != tMoves.end(); tIt++ )
                 {
-                    if ( tBoard.isRefutation( *it, *tIt ) )
-                    {
-                        refuted = true;
-                        break;
-                    }
+                    // TODO reinstate this and debug it as it seems to crash with castling checks
+                    //if ( tBoard.isRefutation( *it, *tIt ) )
+                    //{
+                    //    refuted = true;
+                    //    break;
+                    //}
                 }
 
                 if ( refuted )
