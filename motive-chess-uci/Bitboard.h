@@ -13,8 +13,11 @@ class Bitboard
 private:
     static std::unique_ptr<Bitboard> instance;
 
-    static unsigned long long pawnMoves[ 64 ];
-    static unsigned long long pawnCaptures[ 64 ]; // Can include ep by checking the EP square
+    static unsigned long long whitePawnMoves[ 64 ];
+    static unsigned long long whitePawnCaptures[ 64 ];
+    static unsigned long long blackPawnMoves[ 64 ];
+    static unsigned long long blackPawnCaptures[ 64 ];
+
     static unsigned long long knightMoves[ 64 ];
     static unsigned long long bishopMoves[ 64 ];
     static unsigned long long rookMoves[ 64 ];
@@ -42,20 +45,14 @@ public:
         return instance.get();
     }
 
-    inline unsigned long long getPawnMoves( unsigned short index )
+    inline unsigned long long getPawnMoves( unsigned short index, bool isWhite )
     {
-        return pawnMoves[ index ];
+        return isWhite ? whitePawnMoves[ index ] : blackPawnMoves[ index ];
     }
 
-    inline unsigned long long getPawnCaptures( unsigned short index )
+    inline unsigned long long getPawnCaptures( unsigned short index, bool isWhite )
     {
-        return pawnCaptures[ index ];
-    }
-
-    inline unsigned long long getEnemyPawnCaptures( unsigned short index )
-    {
-        // TODO refactor this when we do Black stuff better
-        return rotate180( pawnCaptures[ index ] );
+        return isWhite ? whitePawnCaptures[ index ] : blackPawnCaptures[ index ];
     }
 
     inline unsigned long long getKnightMoves( unsigned short index )

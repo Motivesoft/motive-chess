@@ -411,27 +411,24 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
     // Generate possible moves
 
-    // Iterate through all pieces
+    // Iterate through all pieces by popping them out of the mask
     pieces = ownPawns;
     while ( _BitScanForward64( &piece, pieces ) )
     {
-        // TODO check this works to mask the piece we've just extracted
-        Utilities::dumpBitmask( pieces );
+        // Mask piece out of pieces so that pieces eventually reduces to empty (0)
         pieces ^= (1ull << piece);
-        Utilities::dumpBitmask( pieces );
 
         index = static_cast<unsigned short>( piece );
 
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
-        unsigned long long possibleMoves = Bitboards->getPawnMoves( index );
+        unsigned long long possibleMoves = Bitboards->getPawnMoves( index, isWhite );
+        unsigned long long possibleCaptures = Bitboards->getPawnCaptures( index, isWhite );
 
-        // TODO actually have premade bitboards for each color
-        if ( !isWhite )
-        {
-            possibleMoves = _byteswap_uint64( possibleMoves );
-        }
+        LOG_DEBUG << Utilities::indexToSquare( index );
+        Utilities::dumpBitboard( possibleMoves );
+        Utilities::dumpBitboard( possibleCaptures );
 
         unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
         unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
@@ -442,7 +439,6 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask, false );
 
         // Include captures, include en passant
-        unsigned long long possibleCaptures = Bitboards->getPawnCaptures( index );
         possibleCaptures &= ( Utilities::isOffboard( enPassantIndex ) ? enemyPieces : ( enemyPieces | 1ull << enPassantIndex ) );
 
         setOfMoves |= possibleCaptures;
@@ -461,10 +457,10 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
                 if ( Utilities::indexToRank( destinationShort ) == promotionRank )
                 {
                     // Promote to...
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WQUEEN ) );
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WROOK ) );
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WBISHOP ) );
-                    moves.push_back( Move::createPromotionMove( index, destinationShort, Piece::WKNIGHT ) );
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WQUEEN : Piece::BQUEEN ) );
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WROOK : Piece::BROOK ) );
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WBISHOP : Piece::BBISHOP ) );
+                    moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WKNIGHT : Piece::BKNIGHT ) );
                 }
                 else
                 {
@@ -536,6 +532,11 @@ std::vector<Move> Board::getPseudoLegalMoves()
     {
         return getPseudoLegalMoves( true );
     }
+    if ( Piece::isBlack( activeColor ) )
+    {
+        return getPseudoLegalMoves( false );
+    }
+
     // Right then. Now how do we do this...
 
     // Let's make some bitboards
@@ -572,7 +573,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
             {
                 unsigned long long setOfMoves = 0;
 
-                unsigned long long possibleMoves = Bitboards->getPawnMoves( loop );
+                unsigned long long possibleMoves = Bitboards->getPawnMoves( loop, true );
 
                 unsigned long long aboveMask = loop == 63 ? 0 : makeMask1( loop + 1, 63 );
                 unsigned long long belowMask = loop == 0 ? 0 : makeMask1( 0, loop - 1 );
@@ -583,7 +584,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
                 setOfMoves |= movesInARay( possibleMoves, fileMask, whitePieces, blackPieces, aboveMask, belowMask, false );
 
                 // Include captures, include en passant
-                unsigned long long possibleCaptures = Bitboards->getPawnCaptures( loop );
+                unsigned long long possibleCaptures = Bitboards->getPawnCaptures( loop, true );
                 possibleCaptures &= (Utilities::isOffboard( enPassantIndex ) ? blackPieces : ( blackPieces | 1ull << enPassantIndex ) );
 
                 setOfMoves |= possibleCaptures;

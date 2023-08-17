@@ -5,8 +5,10 @@
 
 std::unique_ptr<Bitboard> Bitboard::instance {};
 
-unsigned long long Bitboard::pawnMoves[ 64 ];
-unsigned long long Bitboard::pawnCaptures[ 64 ];
+unsigned long long Bitboard::whitePawnMoves[ 64 ];
+unsigned long long Bitboard::whitePawnCaptures[ 64 ];
+unsigned long long Bitboard::blackPawnMoves[ 64 ];
+unsigned long long Bitboard::blackPawnCaptures[ 64 ];
 unsigned long long Bitboard::knightMoves[ 64 ];
 unsigned long long Bitboard::bishopMoves[ 64 ];
 unsigned long long Bitboard::rookMoves[ 64 ];
@@ -26,8 +28,10 @@ void Bitboard::buildBitboards()
     // Initialise
     for ( int loop = 0; loop < 64; loop++ )
     {
-        pawnMoves[ loop ] = 0;
-        pawnCaptures[ loop ] = 0;
+        whitePawnMoves[ loop ] = 0;
+        whitePawnCaptures[ loop ] = 0;
+        blackPawnMoves[ loop ] = 0;
+        blackPawnCaptures[ loop ] = 0;
         knightMoves[ loop ] = 0;
         bishopMoves[ loop ] = 0;
         rookMoves[ loop ] = 0;
@@ -39,13 +43,24 @@ void Bitboard::buildBitboards()
     // Single square advance
     for ( int loop = 8; loop < 56; loop++ )
     {
-        pawnMoves[ loop ] = mask << ( loop + 8 );
+        whitePawnMoves[ loop ] = mask << ( loop + 8 );
     }
 
     // Add double-square advance to elligible squares
     for ( int loop = 8; loop < 16; loop++ )
     {
-        pawnMoves[ loop ] |= mask << ( loop + 16 );
+        whitePawnMoves[ loop ] |= mask << ( loop + 16 );
+    }
+
+    for ( int loop = 55; loop > 7; loop-- )
+    {
+        blackPawnMoves[ loop ] = mask << ( loop - 8 );
+    }
+
+    // Add double-square advance to elligible squares
+    for ( int loop = 55; loop > 47; loop-- )
+    {
+        blackPawnMoves[ loop ] |= mask << ( loop - 16 );
     }
 
     // Captures (be wary of the edge of the board)
@@ -54,11 +69,25 @@ void Bitboard::buildBitboards()
         // Set, but with edge detection
         if ( Utilities::indexToFile( loop ) > 0 )
         {
-            pawnCaptures[ loop ] |= mask << ( loop + 7 );
+            whitePawnCaptures[ loop ] |= mask << ( loop + 7 );
         }
         if ( Utilities::indexToFile( loop ) < 7 )
         {
-            pawnCaptures[ loop ] |= mask << ( loop + 9 );
+            whitePawnCaptures[ loop ] |= mask << ( loop + 9 );
+        }
+    }
+
+    // Captures (be wary of the edge of the board)
+    for ( int loop = 55; loop > 7; loop-- )
+    {
+        // Set, but with edge detection
+        if ( Utilities::indexToFile( loop ) > 0 )
+        {
+            blackPawnCaptures[ loop ] |= mask << ( loop - 9 );
+        }
+        if ( Utilities::indexToFile( loop ) < 7 )
+        {
+            blackPawnCaptures[ loop ] |= mask << ( loop - 7 );
         }
     }
 
