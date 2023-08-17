@@ -482,7 +482,7 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         index = static_cast<unsigned short>( piece );
 
-        // Determine knight moves
+        // Determine piece moves
         unsigned long long setOfMoves = Bitboards->getKnightMoves( index );
         setOfMoves &= enemyOrEmpty;
 
@@ -503,6 +503,31 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         index = static_cast<unsigned short>( piece );
 
         // Determine piece moves
+        unsigned long long setOfMoves = 0;
+
+        unsigned long long possibleMoves = Bitboards->getBishopMoves( index );
+
+        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
+        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+
+        // Masks for specific directions of travel
+        unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
+                                                                  Utilities::indexToRank( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( index ),
+                                                                      Utilities::indexToRank( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long destination;
+        while ( _BitScanForward64( &destination, setOfMoves ) )
+        {
+            setOfMoves &= ~( 1ull << destination );
+
+            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+        }
     }
 
     pieces = ownRooks;
@@ -512,7 +537,31 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         index = static_cast<unsigned short>( piece );
 
-        // Determine knight moves
+        // Determine piece moves
+        unsigned long long setOfMoves = 0;
+
+        unsigned long long possibleMoves = Bitboards->getRookMoves( index );
+
+        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
+        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+
+        // Masks for specific directions of travel
+        unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long destination;
+        while ( _BitScanForward64( &destination, setOfMoves ) )
+        {
+            setOfMoves &= ~( 1ull << destination );
+
+            // Destination will not be damaged by cast to short
+            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+        }
     }
 
     pieces = ownQueens;
@@ -523,6 +572,40 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         index = static_cast<unsigned short>( piece );
 
         // Determine piece moves
+        unsigned long long setOfMoves = 0;
+
+        unsigned long long possibleMoves = Bitboards->getQueenMoves( index );
+
+        unsigned long long aboveMask = index == 63 ? 0 : makeMask1( index + 1, 63 );
+        unsigned long long belowMask = index == 0 ? 0 : makeMask1( 0, index - 1 );
+
+        // Masks for specific directions of travel
+        unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
+                                                                  Utilities::indexToRank( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( index ),
+                                                                      Utilities::indexToRank( index ) );
+
+        setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+        unsigned long destination;
+        while ( _BitScanForward64( &destination, setOfMoves ) )
+        {
+            setOfMoves &= ~( 1ull << destination );
+
+            // Destination will not be damaged by cast to short
+            moves.push_back( Move::createMove( index, (unsigned short) destination ) );
+        }
     }
 
     pieces = ownKing;
