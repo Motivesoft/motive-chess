@@ -288,7 +288,6 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
     // If a sliding move can't be a capture (pawns), then both own and enemy pieces are blocking
     unsigned long long absoluteBlockers = supportsCaptures ? ownPieces : ownPieces | enemyPieces;
 
-
     // Possible moves available despite friendly pieces getting in the way
     {
         unsigned long long topBlocks = aboveMask & rayMoves & absoluteBlockers;
@@ -297,15 +296,15 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         unsigned long lsb;
         if ( !_BitScanForward64( &lsb, topBlocks ) )
         {
-            // If no matches, set the mask extent to the location of the piece in question
-            _BitScanReverse64( &lsb, aboveMask );
+            // If no matches (blockers), set the mask extent to the upper limit
+            lsb = 63;
         }
 
         unsigned long msb;
         if ( !_BitScanReverse64( &msb, botBlocks ) )
         {
-            // If no matches, set the mask extent to the location of the piece in question
-            _BitScanForward64( &msb, belowMask );
+            // If no matches (blockers), set the mask extent to the lower limit
+            msb = 0;
         }
 
         // As we're looking at blocking pieces here, exclude the actual found squares
@@ -325,20 +324,18 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         unsigned long long topBlocks = aboveMask & rayMoves & enemyPieces;
         unsigned long long botBlocks = belowMask & rayMoves & enemyPieces;
 
-        // TODO check that we couldn't/shouldn't just set the value inside the if to a fixed/known value
         unsigned long lsb;
         if ( !_BitScanForward64( &lsb, topBlocks ) )
         {
-            // If no matches, set the mask extent to the location of the piece in question
-            _BitScanReverse64( &lsb, aboveMask );
+            // If no matches (blockers), set the mask extent to the upper limit
+            lsb = 63;
         }
 
-        // TODO check that we couldn't/shouldn't just set the value inside the if to a fixed/known value
         unsigned long msb;
         if ( !_BitScanReverse64( &msb, botBlocks ) )
         {
-            // If no matches, set the mask extent to the location of the piece in question
-            _BitScanForward64( &msb, belowMask );
+            // If no matches (blockers), set the mask extent to the lower limit
+            msb = 0;
         }
 
         // As we're looking at enemy pieces here, the mask covers everything we need
