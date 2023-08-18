@@ -288,6 +288,7 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
     // If a sliding move can't be a capture (pawns), then both own and enemy pieces are blocking
     unsigned long long absoluteBlockers = supportsCaptures ? ownPieces : ownPieces | enemyPieces;
 
+
     // Possible moves available despite friendly pieces getting in the way
     {
         unsigned long long topBlocks = aboveMask & rayMoves & absoluteBlockers;
@@ -296,13 +297,15 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         unsigned long lsb;
         if ( !_BitScanForward64( &lsb, topBlocks ) )
         {
-            _BitScanReverse64( &lsb, aboveMask & rayMoves );
+            // If no matches, set the mask extent to the location of the piece in question
+            _BitScanReverse64( &lsb, aboveMask );
         }
 
         unsigned long msb;
         if ( !_BitScanReverse64( &msb, botBlocks ) )
         {
-            _BitScanForward64( &msb, belowMask & rayMoves );
+            // If no matches, set the mask extent to the location of the piece in question
+            _BitScanForward64( &msb, belowMask );
         }
 
         // As we're looking at blocking pieces here, exclude the actual found squares
@@ -326,14 +329,16 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
         unsigned long lsb;
         if ( !_BitScanForward64( &lsb, topBlocks ) )
         {
-            _BitScanReverse64( &lsb, aboveMask & rayMoves );
+            // If no matches, set the mask extent to the location of the piece in question
+            _BitScanReverse64( &lsb, aboveMask );
         }
 
         // TODO check that we couldn't/shouldn't just set the value inside the if to a fixed/known value
         unsigned long msb;
         if ( !_BitScanReverse64( &msb, botBlocks ) )
         {
-            _BitScanForward64( &msb, belowMask & rayMoves );
+            // If no matches, set the mask extent to the location of the piece in question
+            _BitScanForward64( &msb, belowMask );
         }
 
         // As we're looking at enemy pieces here, the mask covers everything we need
@@ -515,7 +520,9 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         unsigned long long possibleMoves = Bitboards->getRookMoves( index );
 
         unsigned long long aboveMask = Bitboards->makeMask( index + 1, 63 );
+
         unsigned long long belowMask = Bitboards->makeMask( 0, index - 1 );
+
 
         // Masks for specific directions of travel
         unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
@@ -523,7 +530,7 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
         unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
-
+        
         setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
         unsigned long destination;

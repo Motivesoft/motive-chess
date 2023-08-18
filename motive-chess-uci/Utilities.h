@@ -94,9 +94,9 @@ public:
         return USHRT_MAX;
     }
 
-    static void dumpBoard( std::array< unsigned char, 64>& pieces, const std::source_location location = std::source_location::current() );
-    static void dumpBitboard( unsigned long long pieces, const std::source_location location = std::source_location::current() );
-    static void dump0x88( std::bitset<128> bits, const std::source_location location = std::source_location::current() );
-    static void dumpBitmask( unsigned long long bits, const std::source_location location = std::source_location::current() );
+    static void dumpBoard( std::array< unsigned char, 64>& pieces, std::string title = "", const std::source_location location = std::source_location::current() );
+    static void dumpBitboard( unsigned long long pieces, std::string title = "", const std::source_location location = std::source_location::current() );
+    static void dump0x88( std::bitset<128> bits, std::string title = "", const std::source_location location = std::source_location::current() );
+    static void dumpBitmask( unsigned long long bits, std::string title = "", const std::source_location location = std::source_location::current());
 };
 

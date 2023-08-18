@@ -3,9 +3,9 @@
 #include "Logger.h"
 #include "Piece.h"
 
-void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, const std::source_location location )
+void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, std::string title, const std::source_location location )
 {
-    LOG_DEBUG_LOC << "  ABCDEFGH";
+    LOG_DEBUG_LOC << "  ABCDEFGH    " << title;
     LOG_DEBUG_LOC << "  --------";
     for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
     {
@@ -23,9 +23,9 @@ void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, const std::so
     LOG_DEBUG_LOC << "  ABCDEFGH";
 }
 
-void Utilities::dumpBitboard( unsigned long long pieces, const std::source_location location )
+void Utilities::dumpBitboard( unsigned long long pieces, std::string title, const std::source_location location )
 {
-    LOG_DEBUG_LOC << "  ABCDEFGH";
+    LOG_DEBUG_LOC << "  ABCDEFGH    " << title;
     LOG_DEBUG_LOC << "  --------";
 
     unsigned long long mask = 1;
@@ -44,7 +44,7 @@ void Utilities::dumpBitboard( unsigned long long pieces, const std::source_locat
     LOG_DEBUG_LOC << "  ABCDEFGH";
 }
 
-void Utilities::dumpBitmask( unsigned long long bits, const std::source_location location )
+void Utilities::dumpBitmask( unsigned long long bits, std::string title, const std::source_location location )
 {
     std::stringstream stream;
 
@@ -54,16 +54,16 @@ void Utilities::dumpBitmask( unsigned long long bits, const std::source_location
         stream << (( bits & (mask << index) ) ? "1" : "0");
     }
 
-    LOG_DEBUG_LOC << stream.str() << " : " << bits;
+    LOG_DEBUG_LOC << stream.str() << "    " << title;
 }
 
 /// <summary>
 /// Dump an 0x88 board, which is effectively two 8x8 boards side by side
 /// </summary>
 /// <param name="bits">the board</param>
-void Utilities::dump0x88( std::bitset<128> bits, const std::source_location location )
+void Utilities::dump0x88( std::bitset<128> bits, std::string title, const std::source_location location )
 {
-    LOG_DEBUG_LOC << "  01234567 01234567";
+    LOG_DEBUG_LOC << "  01234567 01234567    " << title;
     LOG_DEBUG_LOC << "  -------- --------";
     for ( unsigned short rank = 8; rank > 0; rank-- )
     {
