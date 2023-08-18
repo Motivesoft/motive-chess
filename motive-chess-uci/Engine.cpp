@@ -513,7 +513,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
     std::vector<std::string>::iterator it = arguments.begin();
     if ( it != arguments.end() )
     {
-        depth = stoi( *it );
+        depth = stoi( *(it++) );
 
         for ( ; it != arguments.end(); it++ )
         {
@@ -527,13 +527,19 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 
         fen = stream.str();
 
+        if ( fen.empty() )
+        {
+            LOG_INFO << "No FEN string specified; using default";
+
+            fen = Fen::startingPosition;
+        }
+
         if ( !fen.empty() )
         {
-            perftImpl( depth, fen );
+            unsigned long nodes = perftImpl( depth, fen );
 
-            // TODO respond with outcome
             std::stringstream response;
-            response << "nodes " << 100;
+            response << "node count at depth " << depth << " is " << nodes;
             broadcaster.info( response.str() );
         }
         else
@@ -686,12 +692,59 @@ void Engine::goImpl( GoContext* goContext )
 
 // Special perft command
 
-void Engine::perftImpl( int depth, std::string& fen )
+unsigned long Engine::perftLoop( int depth, Board board )
 {
-    LOG_INFO << "Perft at depth " << depth << " with FEN " << fen;
+    unsigned long nodes = 0;
 
-    // TODO Implement
+    if ( depth == 0 )
+    {
+        return 0;
+    }
 
+    std::vector<Move> moves;
+    moves = board.getPseudoLegalMoves();
+
+    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
+    {
+        Board tBoard = board.makeMove( *it );
+        std::vector<Move> tMoves = tBoard.getPseudoLegalMoves();
+
+        bool refuted = false;
+        for ( std::vector<Move>::iterator tIt = tMoves.begin(); tIt != tMoves.end(); tIt++ )
+        {
+            if ( tBoard.isRefutation( *it, *tIt ) )
+            {
+                refuted = true;
+                break;
+            }
+        }
+
+        if ( refuted )
+        {
+            it = moves.erase( it );
+        }
+        else
+        {
+            nodes++;
+
+            if ( depth > 0 )
+            {
+                nodes += perftLoop( depth - 1, tBoard );
+            }
+
+            it++;
+        }
+    }
+
+    return nodes;
+}
+
+unsigned long Engine::perftImpl( int depth, std::string& fenString )
+{
+    Fen fen = Fen::fromPosition( fenString );
+    Board board( fen );
+
+    return perftLoop( depth, board );
 }
 
 // Internal methods

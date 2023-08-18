@@ -116,7 +116,9 @@ private:
     void setoptionImpl( std::string& name, std::string& value );
     void positionImpl( const std::string& fen, std::vector<std::string> moves );
     void goImpl( GoContext* goContext );
-    void perftImpl( int depth, std::string& fen );
+
+    unsigned long perftImpl( int depth, std::string& fen );
+    unsigned long perftLoop( int depth, Board board );
 
     std::vector<std::string> getGoDirectives()
     {
