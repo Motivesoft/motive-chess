@@ -179,6 +179,16 @@ public:
         return !positionMatch( board );
     }
 
+    Fen toFEN()
+    {
+        return Fen( pieces, activeColor, castlingRights, enPassantIndex, halfmoveClock, fullmoveNumber );
+    }
+
+    std::string toFENString()
+    {
+        return Fen( pieces, activeColor, castlingRights, enPassantIndex, halfmoveClock, fullmoveNumber ).toString();
+    }
+
     /// <summary>
     /// Performs an "is this the same position" check, not a precise equality check
     /// </summary>

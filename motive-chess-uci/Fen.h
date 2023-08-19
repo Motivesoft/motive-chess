@@ -24,6 +24,23 @@ private:
 
     std::string nextWord( std::string::iterator& it, std::string::iterator& end );
 
+private:
+    Fen( std::array<unsigned char,64>& pieces,
+         unsigned char activeColor,
+         CastlingRights& castlingRights,
+         unsigned short enPassantIndex,
+         unsigned short halfmoveClock,
+         unsigned short fullmoveNumber ) :
+        pieces( pieces ),
+        activeColor( activeColor ),
+        castlingRights( castlingRights ),
+        enPassantIndex( enPassantIndex ),
+        halfmoveClock( halfmoveClock ),
+        fullmoveNumber( fullmoveNumber )
+    {
+
+    }
+
 public:
     inline static const std::string startingPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
