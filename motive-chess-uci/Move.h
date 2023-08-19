@@ -8,6 +8,8 @@ class Move
 {
 private:
     // Flags to describe the move
+    inline static const unsigned char FLAG_MASK        = 0b11110000;
+
     inline static const unsigned char CASTLE_KINGSIDE  = 0b00100000;
     inline static const unsigned char CASTLE_QUEENSIDE = 0b01100000;
 
@@ -131,12 +133,12 @@ public:
 
     inline bool isKingsideCastle() const
     {
-        return (flag & CASTLE_KINGSIDE) == CASTLE_KINGSIDE;
+        return (flag & FLAG_MASK) == CASTLE_KINGSIDE;
     }
 
     inline bool isQueensideCastle() const
     {
-        return (flag & CASTLE_QUEENSIDE) == CASTLE_QUEENSIDE;
+        return (flag & FLAG_MASK) == CASTLE_QUEENSIDE;
     }
 
     inline bool isCastle() const
