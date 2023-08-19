@@ -507,7 +507,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
     UCI_DEBUG << "Received perft";
 
     int depth = 0;
-    std::string fen;
+    std::string fenString;
     std::stringstream stream;
 
     std::vector<std::string>::iterator it = arguments.begin();
@@ -525,16 +525,21 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
             stream << *it;
         }
 
-        fen = stream.str();
+        fenString = stream.str();
 
-        if ( fen.empty() )
+        if ( fenString.empty() )
         {
             LOG_DEBUG << "No FEN string specified; using default";
 
-            fen = Fen::startingPosition;
+            fenString = Fen::startingPosition;
         }
 
-        unsigned long nodes = perftImpl( depth, fen );
+        Fen fen = Fen::fromPosition( fenString );
+        Board board( fen );
+
+        LOG_INFO << "Starting perft run at depth " << depth << " with " << fenString;
+
+        unsigned long nodes = perftImpl( depth, board );
 
         LOG_INFO << "Total node count at depth " << depth << " is " << nodes;
     }
@@ -683,7 +688,7 @@ void Engine::goImpl( GoContext* goContext )
 
 // Special perft command
 
-unsigned long Engine::perftLoop( int depth, Board board )
+unsigned long Engine::perftImpl( int depth, Board board )
 {
     unsigned long nodes = 0;
 
@@ -720,7 +725,7 @@ unsigned long Engine::perftLoop( int depth, Board board )
         {
             if ( depth > 0 )
             {
-                nodes += perftLoop( depth - 1, tBoard );
+                nodes += perftImpl( depth - 1, tBoard );
             }
 
             it++;
@@ -728,14 +733,6 @@ unsigned long Engine::perftLoop( int depth, Board board )
     }
 
     return nodes;
-}
-
-unsigned long Engine::perftImpl( int depth, std::string& fenString )
-{
-    Fen fen = Fen::fromPosition( fenString );
-    Board board( fen );
-
-    return perftLoop( depth, board );
 }
 
 // Internal methods
