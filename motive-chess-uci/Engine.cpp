@@ -529,23 +529,14 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 
         if ( fen.empty() )
         {
-            LOG_INFO << "No FEN string specified; using default";
+            LOG_DEBUG << "No FEN string specified; using default";
 
             fen = Fen::startingPosition;
         }
 
-        if ( !fen.empty() )
-        {
-            unsigned long nodes = perftImpl( depth, fen );
+        unsigned long nodes = perftImpl( depth, fen );
 
-            std::stringstream response;
-            response << "Total node count at depth " << depth << " is " << nodes;
-            broadcaster.info( response.str() );
-        }
-        else
-        {
-            UCI_ERROR << "Missing FEN in perft command";
-        }
+        LOG_INFO << "Total node count at depth " << depth << " is " << nodes;
     }
     else
     {
