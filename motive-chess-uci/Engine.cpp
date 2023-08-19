@@ -539,7 +539,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
             unsigned long nodes = perftImpl( depth, fen );
 
             std::stringstream response;
-            response << "node count at depth " << depth << " is " << nodes;
+            response << "Total node count at depth " << depth << " is " << nodes;
             broadcaster.info( response.str() );
         }
         else
@@ -698,7 +698,9 @@ unsigned long Engine::perftLoop( int depth, Board board )
 
     if ( depth == 0 )
     {
-        return 0;
+        // I don't see why this should be made to return 1, but that does seem to be the 
+        // accepted way
+        return 1;
     }
 
     std::vector<Move> moves;
@@ -725,8 +727,6 @@ unsigned long Engine::perftLoop( int depth, Board board )
         }
         else
         {
-            nodes++;
-
             if ( depth > 0 )
             {
                 nodes += perftLoop( depth - 1, tBoard );
