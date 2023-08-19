@@ -758,6 +758,7 @@ void Engine::goImpl( GoContext* goContext )
 
 unsigned long Engine::perftImpl( int depth, Board board )
 {
+    const std::string padding = "                    ";
     unsigned long nodes = 0;
 
     if ( depth == 0 )
@@ -795,6 +796,8 @@ unsigned long Engine::perftImpl( int depth, Board board )
             {
                 nodes += perftImpl( depth - 1, tBoard );
             }
+            
+            LOG_DEBUG << padding.substr( 0, depth ) << ( *it ).toString();
 
             it++;
         }
