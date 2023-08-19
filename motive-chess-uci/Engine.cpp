@@ -511,6 +511,8 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
     //      depth is an integer search depth in half-moves
     //      fen is a starting position FEN string. We will use the default if it comes to it
     //      a set of expected results in the form <;Dx y> where x is depth and y is the expected node count
+    // e.g. 
+    //      perft 1 4k3/8/8/8/8/8/8/4K2R w K - 0 1 ;D1 15 ;D2 66 ;D3 1197 ;D4 7059 ;D5 133987 ;D6 764643
 
     int depth = 0;
     std::string fenString;
