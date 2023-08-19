@@ -37,6 +37,8 @@ public:
         return Fen( position );
     }
 
+    std::string toString();
+
     Fen( Fen& fen ) :
         pieces( fen.pieces ),
         activeColor( fen.activeColor ),

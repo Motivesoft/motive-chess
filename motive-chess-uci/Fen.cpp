@@ -176,3 +176,58 @@ std::string Fen::nextWord( std::string::iterator& it, std::string::iterator& end
 
     return stream.str();
 }
+
+std::string Fen::toString()
+{
+    std::stringstream fenString;
+
+    // Component parts
+    //   - position
+    //   - active color
+    //   - castling rights
+    //   - en passant square
+    //   - halfmove clock
+    //   - fullmove number
+    for ( unsigned short rank = 8; rank > 0; rank -- )
+    {
+        // Slash between ranks
+        if ( rank < 8 )
+        {
+            fenString << "/";
+        }
+
+        unsigned short spaceCount = 0;
+        for ( unsigned short file = 0; file < 8; file++ )
+        {
+            // From A8-H8 and then onto A7...
+            unsigned short index = ((rank-1)<<3) + file;
+            if ( Piece::isEmpty( pieces[ index ] ) )
+            {
+                spaceCount++;
+                continue;
+            }
+            
+            if ( spaceCount > 0 )
+            {
+                fenString << spaceCount;
+                spaceCount = 0;
+            }
+
+            fenString << Piece::toFENString( pieces[ index ] );
+        }
+
+        if ( spaceCount > 0 )
+        {
+            fenString << spaceCount;
+            spaceCount = 0;
+        }
+    }
+
+    fenString << " " << Piece::toColorLetter( activeColor );
+    fenString << " " << castlingRights.toString();
+    fenString << " " << (Utilities::isOffboard( enPassantIndex ) ? "-" : Utilities::indexToSquare( enPassantIndex ));
+    fenString << " " << halfmoveClock;
+    fenString << " " << fullmoveNumber;
+
+    return fenString.str();
+}
