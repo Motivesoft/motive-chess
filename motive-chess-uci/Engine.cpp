@@ -506,17 +506,31 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 {
     UCI_DEBUG << "Received perft";
 
+    // Command line syntax:
+    //  perft [depth] <fen> <expected>
+    //      depth is an integer search depth in half-moves
+    //      fen is a starting position FEN string. We will use the default if it comes to it
+    //      a set of expected results in the form <;Dx y> where x is depth and y is the expected node count
+
     int depth = 0;
     std::string fenString;
     std::stringstream stream;
+    std::vector<std::pair<unsigned int, unsigned int>> expectedResults;
 
     std::vector<std::string>::iterator it = arguments.begin();
     if ( it != arguments.end() )
     {
+        // Read the depth (mandatory)
         depth = stoi( *(it++) );
 
+        // Read the FEN string (treat as optional, but expected if there is anything later)
         for ( ; it != arguments.end(); it++ )
         {
+            if ( ( *it )[ 0 ] == ';' )
+            {
+                break;
+            }
+
             if ( !stream.str().empty() )
             {
                 stream << " ";
@@ -526,6 +540,36 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
         }
 
         fenString = stream.str();
+
+        for ( ; it != arguments.end(); it++ )
+        {
+            if ( ( *it )[ 0 ] == ';' )
+            {
+                if ( ( *it ).size() > 2 )
+                {
+                    if ( ( *it )[ 1 ] == 'D' )
+                    {
+                        unsigned int expectedDepth = stoi( (*it++).substr( 2 ) );
+                        unsigned int expectedCount = stoi( *it );
+
+                        LOG_TRACE << "Noting expected result for depth " << expectedDepth << " of " << expectedCount;
+                        expectedResults.push_back( std::pair<unsigned int, unsigned int>( expectedDepth, expectedCount ) );
+                    }
+                    else
+                    {
+                        LOG_ERROR << "Unexpected result " << *it;
+                    }
+                }
+                else
+                {
+                    LOG_ERROR << "Unexpected value " << *it;
+                }
+            }
+            else
+            {
+                LOG_ERROR << "Unexpected argument" << *it;
+            }
+        }
 
         if ( fenString.empty() )
         {
@@ -541,7 +585,29 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 
         unsigned long nodes = perftImpl( depth, board );
 
-        LOG_INFO << "Total node count at depth " << depth << " is " << nodes;
+        bool reported = false;
+        for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
+        {
+            if ( depth == ( *it ).first )
+            {
+                if ( nodes == ( *it ).second )
+                {
+                    LOG_INFO << "Total node count at depth " << depth << " is " << nodes;
+                }
+                else
+                {
+                    LOG_ERROR << "Total node count at depth " << depth << " is " << nodes << " but expected to be " << (*it).second;
+                }
+
+                reported = true;
+                break;
+            }
+        }
+
+        if ( !reported )
+        {
+            LOG_INFO << "Total node count at depth " << depth << " is " << nodes;
+        }
     }
     else
     {

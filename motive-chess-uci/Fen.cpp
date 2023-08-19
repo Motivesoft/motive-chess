@@ -83,8 +83,6 @@ Fen::Fen( std::string position )
         }
     }
 
-    Utilities::dumpBoard( pieces );
-
     skipSpace( it, end );
 
     // Active color
