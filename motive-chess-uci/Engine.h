@@ -117,7 +117,7 @@ private:
     void positionImpl( const std::string& fen, std::vector<std::string> moves );
     void goImpl( GoContext* goContext );
 
-    unsigned long perftImpl( int depth, Board board );
+    unsigned long perftImpl( int depth, Board board, bool divide = false );
 
     std::vector<std::string> getGoDirectives()
     {

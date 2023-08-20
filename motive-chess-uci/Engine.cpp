@@ -585,7 +585,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 
         LOG_INFO << "Starting perft run at depth " << depth << " with " << fenString;
 
-        unsigned long nodes = perftImpl( depth, board );
+        unsigned long nodes = perftImpl( depth, board, true );
 
         bool reported = false;
         for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
@@ -756,9 +756,8 @@ void Engine::goImpl( GoContext* goContext )
 
 // Special perft command
 
-unsigned long Engine::perftImpl( int depth, Board board )
+unsigned long Engine::perftImpl( int depth, Board board, bool divide )
 {
-    const std::string padding = "                    ";
     unsigned long nodes = 0;
 
     if ( depth == 0 )
@@ -792,12 +791,17 @@ unsigned long Engine::perftImpl( int depth, Board board )
         }
         else
         {
-            if ( depth > 0 )
+            if ( divide )
+            {
+                unsigned long moveNodes = perftImpl( depth - 1, tBoard );
+                nodes += moveNodes;
+
+                LOG_INFO << ( *it ).toString() << ": " << moveNodes;
+            }
+            else
             {
                 nodes += perftImpl( depth - 1, tBoard );
             }
-            
-            LOG_DEBUG << padding.substr( 0, depth ) << ( *it ).toString();
 
             it++;
         }
