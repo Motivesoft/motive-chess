@@ -762,48 +762,25 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
 
     if ( depth == 0 )
     {
-        // I don't see why this should be made to return 1, but that does seem to be the 
-        // accepted way
         return 1;
     }
 
-    std::vector<Move> moves;
-    moves = board.getPseudoLegalMoves();
+    std::vector<Move> moves = board.getPseudoLegalMoves();
 
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
+    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
     {
         Board tBoard = board.makeMove( *it );
-        std::vector<Move> tMoves = tBoard.getPseudoLegalMoves();
 
-        bool refuted = false;
-        for ( std::vector<Move>::iterator tIt = tMoves.begin(); tIt != tMoves.end(); tIt++ )
+        if ( divide )
         {
-            if ( tBoard.isRefutation( *it, *tIt ) )
-            {
-                refuted = true;
-                break;
-            }
-        }
+            unsigned long moveNodes = perftImpl( depth - 1, tBoard );
+            nodes += moveNodes;
 
-        if ( refuted )
-        {
-            it = moves.erase( it );
+            LOG_DEBUG << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
         }
         else
         {
-            if ( divide )
-            {
-                unsigned long moveNodes = perftImpl( depth - 1, tBoard );
-                nodes += moveNodes;
-
-                LOG_DEBUG << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
-            }
-            else
-            {
-                nodes += perftImpl( depth - 1, tBoard );
-            }
-
-            it++;
+            nodes += perftImpl( depth - 1, tBoard );
         }
     }
 
@@ -860,35 +837,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             {
                 LOG_DEBUG << "No candidate moves";
                 break;
-            }
-
-            for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); )
-            {
-                LOG_TRACE << "PseudoLegal move " << ( *it ).toString();
-
-                Board tBoard = board->makeMove( *it );
-                std::vector<Move> tMoves = tBoard.getPseudoLegalMoves();
-
-                LOG_TRACE << "Looking for refutations";
-                bool refuted = false;
-                for ( std::vector<Move>::iterator tIt = tMoves.begin(); tIt != tMoves.end(); tIt++ )
-                {
-                    if ( tBoard.isRefutation( *it, *tIt ) )
-                    {
-                        refuted = true;
-                        break;
-                    }
-                }
-
-                if ( refuted )
-                {
-                    LOG_TRACE << "Move refuted: " << ( *it ).toString();
-                    it = candidateMoves.erase( it );
-                }
-                else
-                {
-                    it++;
-                }
             }
 
             // List of moves after refutations have been removed

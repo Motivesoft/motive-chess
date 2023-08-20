@@ -350,8 +350,10 @@ unsigned long long movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
-std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
-{
+std::vector<Move> Board::getPseudoLegalMoves()
+{ 
+    bool isWhite = Piece::isWhite( activeColor );
+
     // Worker variables
     std::vector<Move> moves;
 
@@ -642,12 +644,169 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         LOG_TRACE << ( *it ).toString();
     }
 
+    // Make the move and test whether it is really legal, not just pseudo legal
+    unsigned long long protectedSquares;
+    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
+    {
+        Board testBoard( *this );
+        testBoard.makeMove( *it );
+
+        // Which suqares are we testing?
+        protectedSquares = ownKing;
+        if ( ( *it ).isKingsideCastle() )
+        {
+            protectedSquares |= isWhite ? Bitboards->getWhiteKingsideCastlingMask() : Bitboards->getBlackKingsideCastlingMask();
+        }
+        else if ( ( *it ).isQueensideCastle() )
+        {
+            protectedSquares |= isWhite ? Bitboards->getWhiteQueensideCastlingMask() : Bitboards->getBlackQueensideCastlingMask();
+        }
+
+        if ( testBoard.failsCheckTests( protectedSquares ) )
+        {
+            LOG_DEBUG << "Refuting " << ( *it ).toString();
+            it = moves.erase( it );
+        }
+        else
+        {
+            // Move is fine, go on to the next one
+            it++;
+        }
+    }
+
+
     return moves;
 }
 
-std::vector<Move> Board::getPseudoLegalMoves()
+// TODO rename this method and remove the isRefutation() implementation
+bool Board::failsCheckTests( unsigned long long protectedSquares )
 {
-    return getPseudoLegalMoves( Piece::isWhite( activeColor ) );
+    // If any of the protected squares are attacked by this player, the test fails and should return true immediately
+    // This will be called after making our move and so the state should be as though the opponent was about to play
+    // This takes a mask as it might be up to three squares we need to check, during a castling operation
+
+    bool isWhite = Piece::isWhite( activeColor );
+
+    // Worker variables
+    std::vector<Move> moves;
+
+    unsigned long long mask = 1;
+
+    // Let's make some bitboards
+    // TODO see if we can make these const
+    // TODO see if we can populate them better
+    unsigned long long ownPawns = makePieceBitboard( isWhite ? Piece::WPAWN : Piece::BPAWN );
+    unsigned long long ownKnights = makePieceBitboard( isWhite ? Piece::WKNIGHT : Piece::BKNIGHT );
+    unsigned long long ownBishops = makePieceBitboard( isWhite ? Piece::WBISHOP : Piece::BBISHOP );
+    unsigned long long ownRooks = makePieceBitboard( isWhite ? Piece::WROOK : Piece::BROOK );
+    unsigned long long ownQueens = makePieceBitboard( isWhite ? Piece::WQUEEN : Piece::BQUEEN );
+    unsigned long long ownKing = makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+    unsigned long long enemyPawns = makePieceBitboard( isWhite ? Piece::BPAWN : Piece::WPAWN );
+    unsigned long long enemyKnights = makePieceBitboard( isWhite ? Piece::BKNIGHT : Piece::WKNIGHT );
+    unsigned long long enemyBishops = makePieceBitboard( isWhite ? Piece::BBISHOP : Piece::WBISHOP );
+    unsigned long long enemyRooks = makePieceBitboard( isWhite ? Piece::BROOK : Piece::WROOK );
+    unsigned long long enemyQueens = makePieceBitboard( isWhite ? Piece::BQUEEN : Piece::WQUEEN );
+    unsigned long long enemyKing = makePieceBitboard( isWhite ? Piece::BKING : Piece::WKING );
+
+    unsigned long long ownPieces = ownPawns | ownKnights | ownBishops | ownRooks | ownQueens | ownKing;
+    unsigned long long enemyPieces = enemyPawns | enemyKnights | enemyBishops | enemyRooks | enemyQueens | enemyKing;
+    unsigned long long emptySquares = ~( ownPieces | enemyPieces );
+    unsigned long long ownOrEmpty = ownPieces | emptySquares;
+    unsigned long long enemyOrEmpty = enemyPieces | emptySquares;
+
+    // Worker variables
+    unsigned short index;
+    unsigned long protectedSquare;
+    unsigned long long captureMask;
+
+    while ( _BitScanReverse64( &protectedSquare, protectedSquares ) )
+    {
+        protectedSquares ^= ( 1ull << protectedSquare );
+
+        index = static_cast<unsigned short>( protectedSquare );
+
+        // Is 'square' reachable by this color's pieces
+
+        // Pawn
+        // Captures are reflections, so can index 'capture' potential pawn is a viable test
+        captureMask = Bitboards->getPawnCaptures( index, isWhite );
+
+        if ( captureMask & ownPawns )
+        {
+            return true;
+        }
+
+        // Knight
+        captureMask = Bitboards->getKnightMoves( index );
+
+        if ( captureMask & ownKnights )
+        {
+            return true;
+        }
+
+        // Bishop
+        {
+            unsigned long long setOfMoves = 0;
+
+            unsigned long long possibleMoves = Bitboards->getBishopMoves( index );
+
+            unsigned long long aboveMask = Bitboards->makeMask( index + 1, 63 );
+            unsigned long long belowMask = Bitboards->makeMask( 0, index - 1 );
+
+            // Masks for specific directions of travel
+            unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
+                                                                      Utilities::indexToRank( index ) );
+
+            setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+            unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( index ),
+                                                                          Utilities::indexToRank( index ) );
+
+            setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+            if ( setOfMoves & ( ownBishops | ownQueens ) )
+            {
+                return true;
+            }
+        }
+
+        // Rook
+        {
+            unsigned long long setOfMoves = 0;
+
+            unsigned long long possibleMoves = Bitboards->getRookMoves( index );
+
+            unsigned long long aboveMask = Bitboards->makeMask( index + 1, 63 );
+            unsigned long long belowMask = Bitboards->makeMask( 0, index - 1 );
+
+
+            // Masks for specific directions of travel
+            unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
+
+            setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+            unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
+
+            setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
+
+            if ( setOfMoves & ( ownRooks | ownQueens ) )
+            {
+                return true;
+            }
+        }
+
+        // Queen
+
+        // King
+        captureMask = Bitboards->getKingMoves( index );
+
+        if ( captureMask & ownKing )
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 unsigned long long Board::makePieceBitboard( unsigned char piece )
