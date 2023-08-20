@@ -648,8 +648,9 @@ std::vector<Move> Board::getPseudoLegalMoves()
     unsigned long long protectedSquares;
     for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
     {
-        Board testBoard( *this );
-        testBoard.makeMove( *it );
+        LOG_TRACE << "Testing pseudo legal move " << ( *it ).toString();
+
+        Board testBoard = makeMove( *it );
 
         // Which suqares are we testing?
         protectedSquares = ownKing;
@@ -664,7 +665,8 @@ std::vector<Move> Board::getPseudoLegalMoves()
 
         if ( testBoard.failsCheckTests( protectedSquares ) )
         {
-            LOG_DEBUG << "Refuting " << ( *it ).toString();
+            LOG_TRACE << "Refuting " << ( *it ).toString();
+
             it = moves.erase( it );
         }
         else
@@ -673,7 +675,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
             it++;
         }
     }
-
 
     return moves;
 }
