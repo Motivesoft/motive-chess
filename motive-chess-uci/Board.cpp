@@ -653,7 +653,7 @@ std::vector<Move> Board::getPseudoLegalMoves()
         Board testBoard = makeMove( *it );
 
         // Which suqares are we testing?
-        protectedSquares = ownKing;
+        protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         if ( ( *it ).isKingsideCastle() )
         {
             protectedSquares |= isWhite ? Bitboards->getWhiteKingsideCastlingMask() : Bitboards->getBlackKingsideCastlingMask();
