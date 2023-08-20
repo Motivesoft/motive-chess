@@ -97,7 +97,7 @@ public:
 
     inline unsigned long long getBlackQueensideCastlingMask()
     {
-        return 0b00001110ull << 56;
+        return 0b00011100ull << 56;
     }
 
     unsigned long long getFileMask( unsigned short file )

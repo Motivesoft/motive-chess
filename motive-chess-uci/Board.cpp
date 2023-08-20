@@ -638,12 +638,6 @@ std::vector<Move> Board::getPseudoLegalMoves()
         }
     }
 
-    LOG_TRACE << "PseudoLevel moves:";
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
-    {
-        LOG_TRACE << ( *it ).toString();
-    }
-
     // Make the move and test whether it is really legal, not just pseudo legal
     unsigned long long protectedSquares;
     for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
@@ -674,6 +668,12 @@ std::vector<Move> Board::getPseudoLegalMoves()
             // Move is fine, go on to the next one
             it++;
         }
+    }
+
+    LOG_TRACE << "Generated moves:";
+    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+    {
+        LOG_TRACE << ( *it ).toString();
     }
 
     return moves;
