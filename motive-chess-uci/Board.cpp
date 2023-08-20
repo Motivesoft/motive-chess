@@ -394,6 +394,8 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         pieces ^= (1ull << piece);
 
         index = static_cast<unsigned short>( piece );
+        
+        LOG_TRACE << Utilities::indexToSquare( index ); // DELETEME
 
         // Determine piece moves
         unsigned long long setOfMoves = 0;
@@ -403,16 +405,16 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long aboveMask;
         unsigned long long belowMask;
-        if ( isWhite )
+//        if ( isWhite )
         {
             aboveMask = Bitboards->makeMask( index + 1, 63 );
             belowMask = Bitboards->makeMask( 0, index - 1 );
         }
-        else
-        {
-            aboveMask = Bitboards->makeMask( 0, index - 1 );
-            belowMask = Bitboards->makeMask( index + 1, 63 );
-        }
+        //else
+        //{
+        //    aboveMask = Bitboards->makeMask( 0, index - 1 );
+        //    belowMask = Bitboards->makeMask( index + 1, 63 );
+        //}
 
         // Masks for specific directions of travel
         unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
