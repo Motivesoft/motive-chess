@@ -405,16 +405,9 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
 
         unsigned long long aboveMask;
         unsigned long long belowMask;
-//        if ( isWhite )
-        {
-            aboveMask = Bitboards->makeMask( index + 1, 63 );
-            belowMask = Bitboards->makeMask( 0, index - 1 );
-        }
-        //else
-        //{
-        //    aboveMask = Bitboards->makeMask( 0, index - 1 );
-        //    belowMask = Bitboards->makeMask( index + 1, 63 );
-        //}
+
+        aboveMask = Bitboards->makeMask( index + 1, 63 );
+        belowMask = Bitboards->makeMask( 0, index - 1 );
 
         // Masks for specific directions of travel
         unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
@@ -608,6 +601,7 @@ std::vector<Move> Board::getPseudoLegalMoves( bool isWhite )
         bool queenside;
         unsigned long long kingsideMask;
         unsigned long long queensideMask;
+
         if ( isWhite )
         {
             kingside = castlingRights.canWhiteCastleKingside();
