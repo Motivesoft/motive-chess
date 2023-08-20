@@ -796,7 +796,7 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
                 unsigned long moveNodes = perftImpl( depth - 1, tBoard );
                 nodes += moveNodes;
 
-                LOG_DEBUG << ( *it ).toString() << ": " << moveNodes;
+                LOG_DEBUG << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
             }
             else
             {
