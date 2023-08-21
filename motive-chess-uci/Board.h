@@ -109,6 +109,28 @@ private:
     /// <param name="move">the move</param>
     void applyMove( const Move& move );
 
+    void validateCastlingRights()
+    {
+        // Some FEN strings in the wild have wrong castling flags. Nip this in the board to
+        // avoid having to consider it during thinking time
+        if ( pieces[ Board::E1 ] != Piece::WKING || pieces[ Board::H1 ] != Piece::WROOK )
+        {
+            castlingRights.removeWhiteKingsideCastlingRights();
+        }
+        if ( pieces[ Board::E1 ] != Piece::WKING || pieces[ Board::A1 ] != Piece::WROOK )
+        {
+            castlingRights.removeWhiteQueensideCastlingRights();
+        }
+        if ( pieces[ Board::E8 ] != Piece::BKING || pieces[ Board::H8 ] != Piece::BROOK )
+        {
+            castlingRights.removeBlackKingsideCastlingRights();
+        }
+        if ( pieces[ Board::E8 ] != Piece::BKING || pieces[ Board::A8 ] != Piece::BROOK )
+        {
+            castlingRights.removeBlackQueensideCastlingRights();
+        }
+    }
+
 public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
@@ -134,7 +156,7 @@ public:
         halfmoveClock( halfmoveClock ),
         fullmoveNumber( fullmoveNumber )
     {
-        // TODO implement this
+        validateCastlingRights();
     };
 
     Board( Board& board ) :
@@ -145,7 +167,7 @@ public:
         halfmoveClock( board.halfmoveClock ),
         fullmoveNumber( board.fullmoveNumber )
     {
-        // TODO
+        // Plain copy, nothing to do
     };
 
     Board( const Fen& fen ) :
@@ -156,7 +178,7 @@ public:
         halfmoveClock( fen.halfmoveClock ),
         fullmoveNumber( fen.fullmoveNumber )
     {
-
+        validateCastlingRights();
     }
 
     virtual ~Board()

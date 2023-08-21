@@ -7,7 +7,7 @@
 Board Board::makeMove( const Move& move )
 {
     Board board( *this );
-    Utilities::dumpBoard( board.pieces );
+
     board.applyMove( move );
 
     return board;
