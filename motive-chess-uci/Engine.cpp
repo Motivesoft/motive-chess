@@ -612,7 +612,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
             float elapsed = static_cast<float>(clock() - now) / CLOCKS_PER_SEC;
             float nps = nodes / elapsed;
 
-            LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "ms (" << nps << " nps)";
+            LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)";
         }
     }
     else
