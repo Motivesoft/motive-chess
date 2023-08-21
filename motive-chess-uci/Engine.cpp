@@ -584,6 +584,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
         Board board( fen );
 
         LOG_INFO << "Starting perft run at depth " << depth << " with " << fenString;
+        clock_t now = clock();
 
         unsigned long nodes = perftImpl( depth, board, true );
 
@@ -608,7 +609,10 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 
         if ( !reported )
         {
-            LOG_INFO << "Total node count at depth " << depth << " is " << nodes;
+            float elapsed = static_cast<float>(clock() - now) / CLOCKS_PER_SEC;
+            float nps = nodes / elapsed;
+
+            LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "ms (" << nps << " nps)";
         }
     }
     else
