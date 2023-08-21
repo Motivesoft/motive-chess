@@ -648,24 +648,32 @@ std::vector<Move> Board::getPseudoLegalMoves()
         protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         if ( ( *it ).isKingsideCastle() )
         {
-            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
+//            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
 
-            protectedSquares |= (isWhite ? 0b00111000ull : 0b00111000ull << 56 );
-            Utilities::dumpBoard( testBoard.pieces, "Board before kingside castle check" );
-            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
+            protectedSquares |= (isWhite ?  0b01110000ull : 0b01110000ull << 56 );
+//            Utilities::dumpBoard( testBoard.pieces, "Board for kingside castle check" );
+//            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
         }
         else if ( ( *it ).isQueensideCastle() )
         {
-            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
+//            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
 
             protectedSquares |= ( isWhite ? 0b00011100ull : 0b00011100ull << 56 );
-            Utilities::dumpBoard( testBoard.pieces, "Board before queenside castle check");
-            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
+//            Utilities::dumpBoard( testBoard.pieces, "Board for queenside castle check");
+//            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
+        }
+        else // TODO DEBUG code - remove
+        {
+            protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+//            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
+
+//            Utilities::dumpBoard( testBoard.pieces, "Board for check check" );
+//            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
         }
 
         if ( testBoard.failsCheckTests( protectedSquares ) )
         {
-            LOG_DEBUG << "Refuting " << ( *it ).toString();
+//            LOG_DEBUG << "Refuting " << ( *it ).toString();
 
             it = moves.erase( it );
         }
@@ -702,18 +710,19 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
     // Let's make some bitboards
     // TODO see if we can make these const
     // TODO see if we can populate them better
-    unsigned long long ownPawns = makePieceBitboard( isWhite ? Piece::WPAWN : Piece::BPAWN );
-    unsigned long long ownKnights = makePieceBitboard( isWhite ? Piece::WKNIGHT : Piece::BKNIGHT );
-    unsigned long long ownBishops = makePieceBitboard( isWhite ? Piece::WBISHOP : Piece::BBISHOP );
-    unsigned long long ownRooks = makePieceBitboard( isWhite ? Piece::WROOK : Piece::BROOK );
-    unsigned long long ownQueens = makePieceBitboard( isWhite ? Piece::WQUEEN : Piece::BQUEEN );
-    unsigned long long ownKing = makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
-    unsigned long long enemyPawns = makePieceBitboard( isWhite ? Piece::BPAWN : Piece::WPAWN );
-    unsigned long long enemyKnights = makePieceBitboard( isWhite ? Piece::BKNIGHT : Piece::WKNIGHT );
-    unsigned long long enemyBishops = makePieceBitboard( isWhite ? Piece::BBISHOP : Piece::WBISHOP );
-    unsigned long long enemyRooks = makePieceBitboard( isWhite ? Piece::BROOK : Piece::WROOK );
-    unsigned long long enemyQueens = makePieceBitboard( isWhite ? Piece::BQUEEN : Piece::WQUEEN );
-    unsigned long long enemyKing = makePieceBitboard( isWhite ? Piece::BKING : Piece::WKING );
+    unsigned long long enemyPawns = makePieceBitboard( isWhite ? Piece::WPAWN : Piece::BPAWN );
+    unsigned long long enemyKnights = makePieceBitboard( isWhite ? Piece::WKNIGHT : Piece::BKNIGHT );
+    unsigned long long enemyBishops = makePieceBitboard( isWhite ? Piece::WBISHOP : Piece::BBISHOP );
+    unsigned long long enemyRooks = makePieceBitboard( isWhite ? Piece::WROOK : Piece::BROOK );
+    unsigned long long enemyQueens = makePieceBitboard( isWhite ? Piece::WQUEEN : Piece::BQUEEN );
+    unsigned long long enemyKing = makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+
+    unsigned long long ownPawns = makePieceBitboard( isWhite ? Piece::BPAWN : Piece::WPAWN );
+    unsigned long long ownKnights = makePieceBitboard( isWhite ? Piece::BKNIGHT : Piece::WKNIGHT );
+    unsigned long long ownBishops = makePieceBitboard( isWhite ? Piece::BBISHOP : Piece::WBISHOP );
+    unsigned long long ownRooks = makePieceBitboard( isWhite ? Piece::BROOK : Piece::WROOK );
+    unsigned long long ownQueens = makePieceBitboard( isWhite ? Piece::BQUEEN : Piece::WQUEEN );
+    unsigned long long ownKing = makePieceBitboard( isWhite ? Piece::BKING : Piece::WKING );
 
     unsigned long long ownPieces = ownPawns | ownKnights | ownBishops | ownRooks | ownQueens | ownKing;
     unsigned long long enemyPieces = enemyPawns | enemyKnights | enemyBishops | enemyRooks | enemyQueens | enemyKing;
@@ -736,9 +745,9 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
         // Pawn
         // Captures are reflections, so can index 'capture' potential pawn is a viable test
-        captureMask = Bitboards->getPawnCaptures( index, isWhite );
+        captureMask = Bitboards->getPawnCaptures( index, !isWhite );
 
-        if ( captureMask & ownPawns )
+        if ( captureMask & enemyPawns )
         {
             return true;
         }
@@ -746,7 +755,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         // Knight
         captureMask = Bitboards->getKnightMoves( index );
 
-        if ( captureMask & ownKnights )
+        if ( captureMask & enemyKnights )
         {
             return true;
         }
@@ -771,7 +780,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
             setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-            if ( setOfMoves & ( ownBishops | ownQueens ) )
+            if ( setOfMoves & ( enemyBishops | enemyQueens ) )
             {
                 return true;
             }
@@ -796,7 +805,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
             setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-            if ( setOfMoves & ( ownRooks | ownQueens ) )
+            if ( setOfMoves & ( enemyRooks | enemyQueens ) )
             {
                 return true;
             }
@@ -807,7 +816,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         // King
         captureMask = Bitboards->getKingMoves( index );
 
-        if ( captureMask & ownKing )
+        if ( captureMask & enemyKing )
         {
             return true;
         }

@@ -64,7 +64,9 @@ void Bitboard::buildBitboards()
     }
 
     // Captures (be wary of the edge of the board)
-    for ( int loop = 8; loop < 56; loop++ )
+    // This should start at 8 because pawns will never be on the first rank
+    // but we use this for possible attack detection to, so we need it to go all the way
+    for ( int loop = 0; loop < 56; loop++ )
     {
         // Set, but with edge detection
         if ( Utilities::indexToFile( loop ) > 0 )
@@ -78,7 +80,9 @@ void Bitboard::buildBitboards()
     }
 
     // Captures (be wary of the edge of the board)
-    for ( int loop = 55; loop > 7; loop-- )
+    // This should start at 55 because pawns will never be on the first rank
+    // but we use this for possible attack detection to, so we need it to go all the way
+    for ( int loop = 63; loop > 7; loop-- )
     {
         // Set, but with edge detection
         if ( Utilities::indexToFile( loop ) > 0 )
