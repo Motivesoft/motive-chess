@@ -642,24 +642,30 @@ std::vector<Move> Board::getPseudoLegalMoves()
     unsigned long long protectedSquares;
     for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
     {
-        LOG_TRACE << "Testing pseudo legal move " << ( *it ).toString();
-
         Board testBoard = makeMove( *it );
 
         // Which suqares are we testing?
         protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         if ( ( *it ).isKingsideCastle() )
         {
-            protectedSquares |= isWhite ? Bitboards->getWhiteKingsideCastlingMask() : Bitboards->getBlackKingsideCastlingMask();
+            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
+
+            protectedSquares |= (isWhite ? 0b00111000ull : 0b00111000ull << 56 );
+            Utilities::dumpBoard( testBoard.pieces, "Board before kingside castle check" );
+            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
         }
         else if ( ( *it ).isQueensideCastle() )
         {
-            protectedSquares |= isWhite ? Bitboards->getWhiteQueensideCastlingMask() : Bitboards->getBlackQueensideCastlingMask();
+            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
+
+            protectedSquares |= ( isWhite ? 0b00011100ull : 0b00011100ull << 56 );
+            Utilities::dumpBoard( testBoard.pieces, "Board before queenside castle check");
+            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
         }
 
         if ( testBoard.failsCheckTests( protectedSquares ) )
         {
-            LOG_TRACE << "Refuting " << ( *it ).toString();
+            LOG_DEBUG << "Refuting " << ( *it ).toString();
 
             it = moves.erase( it );
         }
