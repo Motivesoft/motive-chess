@@ -216,16 +216,6 @@ public:
     bool isSamePosition( const Board& board ) const;
 
     /// <summary>
-    /// Check whether this move is refuted by this response.
-    /// The general idea is to generate pseudo legal moves and for each, generate the possible responses.
-    /// Push the responses to this method to determine whether the psuedo legal move is indeed legal
-    /// </summary>
-    /// <param name="move">a move</param>
-    /// <param name="response">a response to move that may refute the move</param>
-    /// <returns>true if move should not be possible due to the response</returns>
-    bool isRefutation( const Move& move, const Move& response ) const;
-
-    /// <summary>
     /// Returns a new board, based on the current board but with this move applied
     /// </summary>
     /// <param name="move">the move</param>
@@ -236,6 +226,14 @@ public:
 
     // TODO call this internally and make getPseudoLegalMoves into getLegalMoves
     bool failsCheckTests( unsigned long long protectedSquares );
+
+    unsigned long long movesInARay( unsigned long long possibleMoves,
+                                    unsigned long long rayMask,
+                                    unsigned long long ownPieces,
+                                    unsigned long long enemyPieces,
+                                    unsigned long long aboveMask,
+                                    unsigned long long belowMask,
+                                    bool supportsCaptures = true );
 
     unsigned long long makePieceBitboard( unsigned char piece );
 };

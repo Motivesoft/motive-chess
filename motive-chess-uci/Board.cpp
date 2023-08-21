@@ -264,38 +264,13 @@ bool Board::isSamePosition( const Board& board ) const
     return true;
 }
 
-bool Board::isRefutation( const Move& move, const Move& response ) const
-{
-    LOG_TRACE << "Looking at any refutation of " << move.toString() << " by " << response.toString();
-
-    // TODO consider whether any other checks need to go in here
-    if ( Piece::isKing( pieceAt( response.getTo() ) ) )
-    { 
-        LOG_TRACE << "Move " << move.toString() << " is refuted by " << response.toString();
-        return true;
-    }
-
-    if ( move.isCastle() )
-    {
-        // Walk over the King journey by making a mask covering from and to from the move
-        unsigned long long refutationSquares = Bitboards->makeMask( move.getFrom(), move.getTo() );
-
-        if ( (1ull << response.getTo()) & refutationSquares )
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-unsigned long long movesInARay( unsigned long long possibleMoves,
-                                unsigned long long rayMask,
-                                unsigned long long ownPieces,
-                                unsigned long long enemyPieces,
-                                unsigned long long aboveMask,
-                                unsigned long long belowMask,
-                                bool supportsCaptures = true )
+unsigned long long Board::movesInARay( unsigned long long possibleMoves,
+                                       unsigned long long rayMask,
+                                       unsigned long long ownPieces,
+                                       unsigned long long enemyPieces,
+                                       unsigned long long aboveMask,
+                                       unsigned long long belowMask,
+                                       bool supportsCaptures )
 {
     unsigned long long moves = 0;
     unsigned long long rayMoves = possibleMoves & rayMask;
@@ -660,37 +635,20 @@ std::vector<Move> Board::getPseudoLegalMoves()
     {
         Board testBoard = makeMove( *it );
 
-        // Which suqares are we testing?
+        // Which suqares are we testing? Just the king for check, or the squares it passes
+        // through when castling
         protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         if ( ( *it ).isKingsideCastle() )
         {
-//            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
-
             protectedSquares |= (isWhite ?  0b01110000ull : 0b01110000ull << 56 );
-//            Utilities::dumpBoard( testBoard.pieces, "Board for kingside castle check" );
-//            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
         }
         else if ( ( *it ).isQueensideCastle() )
         {
-//            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
-
             protectedSquares |= ( isWhite ? 0b00011100ull : 0b00011100ull << 56 );
-//            Utilities::dumpBoard( testBoard.pieces, "Board for queenside castle check");
-//            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
-        }
-        else // TODO DEBUG code - remove
-        {
-            protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
-//            LOG_DEBUG << "Testing pseudo legal move " << ( *it ).toString();
-
-//            Utilities::dumpBoard( testBoard.pieces, "Board for check check" );
-//            Utilities::dumpBitboard( protectedSquares, "Protected squares" );
         }
 
         if ( testBoard.failsCheckTests( protectedSquares ) )
         {
-//            LOG_DEBUG << "Refuting " << ( *it ).toString();
-
             it = moves.erase( it );
         }
         else
