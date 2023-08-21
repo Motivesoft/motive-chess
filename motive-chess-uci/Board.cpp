@@ -102,6 +102,24 @@ void Board::applyMove( const Move& move )
         }
     }
 
+    // If a piece captures a rook, that prevents castling
+    if ( move.getTo() == Board::H8 )
+    {
+        castlingRights.removeBlackKingsideCastlingRights();
+    }
+    else if ( move.getTo() == Board::A8 )
+    {
+        castlingRights.removeBlackQueensideCastlingRights();
+    }
+    else if ( move.getTo() == Board::H1 )
+    {
+        castlingRights.removeWhiteKingsideCastlingRights();
+    }
+    else if ( move.getTo() == Board::A1 )
+    {
+        castlingRights.removeWhiteQueensideCastlingRights();
+    }
+
     LOG_TRACE << "Castling set to " << castlingRights.toString();
 
     // Promotions
