@@ -238,42 +238,42 @@ public:
 
     inline static bool isWhite( unsigned char value )
     {
-        return (value & WHITE) == WHITE;
+        return (value & COLOR_MASK) == WHITE;
     }
 
     inline static bool isBlack( unsigned char value )
     {
-        return (value & BLACK) == BLACK;
+        return (value & COLOR_MASK) == BLACK;
     }
 
     inline static bool isKing( unsigned char value )
     {
-        return (value & KING) == KING;
+        return (value & PIECE_MASK) == KING;
     }
 
     inline static bool isQueen( unsigned char value )
     {
-        return (value & QUEEN) == QUEEN;
+        return (value & PIECE_MASK) == QUEEN;
     }
 
     inline static bool isRook( unsigned char value )
     {
-        return (value & ROOK) == ROOK;
+        return (value & PIECE_MASK) == ROOK;
     }
 
     inline static bool isBishop( unsigned char value )
     {
-        return (value & BISHOP) == BISHOP;
+        return (value & PIECE_MASK) == BISHOP;
     }
 
     inline static bool isKnight( unsigned char value )
     {
-        return (value & KNIGHT) == KNIGHT;
+        return (value & PIECE_MASK) == KNIGHT;
     }
 
     inline static bool isPawn( unsigned char value )
     {
-        return (value & PAWN) == PAWN;
+        return (value & PIECE_MASK) == PAWN;
     }
 
     inline static unsigned char emptyPiece()

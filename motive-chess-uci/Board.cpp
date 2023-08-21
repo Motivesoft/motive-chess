@@ -151,17 +151,15 @@ void Board::applyMove( const Move& move )
         if ( Utilities::indexToRank( move.getFrom() ) == RANK_2 && Utilities::indexToRank( move.getTo() ) == RANK_4 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
+
+            LOG_TRACE << "En-passant square: " << Utilities::indexToSquare( enPassantIndex );
         }
         else if ( Utilities::indexToRank( move.getFrom() ) == RANK_7 && Utilities::indexToRank( move.getTo() ) == RANK_5 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
-        }
 
-        LOG_TRACE << "En-passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) );
-    }
-    else
-    {
-        LOG_TRACE << "En-passant square cleared";
+            LOG_TRACE << "En-passant square: " << Utilities::indexToSquare( enPassantIndex );
+        }
     }
 
     // Halfmove increment? Only if not a capture or pawn move
