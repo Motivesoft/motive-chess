@@ -5,22 +5,39 @@
 
 void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, std::string title, const std::source_location location )
 {
-    LOG_DEBUG_LOC << "  ABCDEFGH    " << title;
-    LOG_DEBUG_LOC << "  --------";
+    LOG_DEBUG_LOC << "  +---+---+---+---+---+---+---+---+ " << title;
+    
+    bool squareIsDark;
     for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
     {
+        squareIsDark = (rank & 1);
         std::stringstream stream;
-        for ( unsigned short index = rankIndex; index < rankIndex + 8; index++ )
+
+        for ( unsigned short index = rankIndex; index < rankIndex + 8; index++, squareIsDark = !squareIsDark )
         {
-            stream << ( Piece::isEmpty( pieces[ index ] ) ?
-                        ( ( index & 1 ) == 0 ? "." : " " ) :
-                        Piece::toFENString( pieces[ index ] ) );
+            if ( Piece::isEmpty( pieces[ index ] ) )
+            {
+                stream << "|" << ( squareIsDark ? ":::" : "   " );
+            }
+            else
+            {
+                if ( Piece::isWhite( pieces[ index ] ) )
+                {
+                    stream << "| " << Piece::toFENString( pieces[ index ] ) << " ";
+                }
+                else
+                {
+                    stream << "|*" << Piece::toFENString( pieces[ index ] ) << "*";
+                }
+            }
         }
 
-        LOG_DEBUG_LOC << 1 + rankIndex / 8 << "|" << stream.str() << "|" << 1 + rankIndex / 8;
+        LOG_DEBUG_LOC << 1 + rankIndex / 8 << " " << stream.str() << "|";
+
+        LOG_DEBUG_LOC << "  +---+---+---+---+---+---+---+---+";
     }
-    LOG_DEBUG_LOC << "  --------";
-    LOG_DEBUG_LOC << "  ABCDEFGH";
+
+    LOG_DEBUG_LOC << "    a   b   c   d   e   f   g   g    ";
 }
 
 void Utilities::dumpBitboard( unsigned long long pieces, std::string title, const std::source_location location )
