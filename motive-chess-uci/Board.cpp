@@ -341,7 +341,7 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
-std::vector<Move> Board::getPseudoLegalMoves()
+std::vector<Move> Board::getMoves()
 { 
     bool isWhite = Piece::isWhite( activeColor );
 

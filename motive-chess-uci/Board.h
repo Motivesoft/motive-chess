@@ -222,9 +222,8 @@ public:
     /// <returns>a new board</returns>
     Board makeMove( const Move& move );
 
-    std::vector<Move> getPseudoLegalMoves();
+    std::vector<Move> getMoves();
 
-    // TODO call this internally and make getPseudoLegalMoves into getLegalMoves
     bool failsCheckTests( unsigned long long protectedSquares );
 
     unsigned long long movesInARay( unsigned long long possibleMoves,

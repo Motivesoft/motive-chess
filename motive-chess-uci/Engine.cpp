@@ -769,7 +769,7 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
         return 1;
     }
 
-    std::vector<Move> moves = board.getPseudoLegalMoves();
+    std::vector<Move> moves = board.getMoves();
 
     for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
     {
@@ -836,7 +836,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         do
         {
-            std::vector<Move> candidateMoves = board->getPseudoLegalMoves();
+            std::vector<Move> candidateMoves = board->getMoves();
             if ( candidateMoves.empty() )
             {
                 LOG_DEBUG << "No candidate moves";
