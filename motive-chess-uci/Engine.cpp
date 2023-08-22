@@ -519,6 +519,48 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
     std::stringstream stream;
     std::vector<std::pair<unsigned int, unsigned int>> expectedResults;
 
+    // Rewrite 'arguments' to split anything containing a ';' or ',' because these are used
+    // to add perft hints to the FEN string and need to be parsed out here
+
+    for ( std::vector<std::string>::iterator it = arguments.begin(); it != arguments.end(); )
+    {
+        // Looking for either xxx,yyy or xxx;yyy - but not ,yyy or ;yyy
+        
+        // Comma?
+        size_t splitPoint = ( *it ).find( "," );
+        if ( splitPoint == 0 )
+        {
+            splitPoint = ( *it ).find( ",", 1 );
+        }
+
+        // No comma. Semi-colon?
+        if ( splitPoint == std::string::npos )
+        {
+            splitPoint = ( *it ).find( ";" );
+            if ( splitPoint == 0 )
+            {
+                splitPoint = ( *it ).find( ";", 1 );
+            }
+        }
+
+        // Did we find either punctuation mark?
+        if ( splitPoint != std::string::npos )
+        {
+            std::string part1 = ( *it ).substr( 0, splitPoint );
+            std::string part2 = ( *it ).substr( splitPoint );
+
+            // Remove the unsplit argument and replace with the split version - adding in
+            // this order to preserve the overall structure
+            it = arguments.erase( it );
+            it = arguments.insert( it, part2 );
+            it = arguments.insert( it, part1 );
+        }
+        else
+        {
+            it++;
+        }
+    }
+
     std::vector<std::string>::iterator it = arguments.begin();
     if ( it != arguments.end() )
     {
@@ -528,7 +570,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
         // Read the FEN string (treat as optional, but expected if there is anything later)
         for ( ; it != arguments.end(); it++ )
         {
-            if ( ( *it )[ 0 ] == ';' )
+            if ( ( *it )[ 0 ] == ';' || ( *it )[ 0 ] == ',' )
             {
                 break;
             }
@@ -543,33 +585,46 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 
         fenString = stream.str();
 
+        unsigned int expectedDepth = 0;
+        unsigned int expectedCount = 0;
+
         for ( ; it != arguments.end(); it++ )
         {
-            if ( ( *it )[ 0 ] == ';' )
+            switch ( ( *it )[ 0 ] )
             {
-                if ( ( *it ).size() > 2 )
-                {
-                    if ( ( *it )[ 1 ] == 'D' )
+                case ';':// Expected structure: "<FEN>;D1 20; D2 400; D3 8902;..."
+                    if ( ( *it ).size() > 2 )
                     {
-                        unsigned int expectedDepth = stoi( (*it++).substr( 2 ) );
-                        unsigned int expectedCount = stoi( *it );
+                        if ( ( *it )[ 1 ] == 'D' )
+                        {
+                            expectedDepth = stoi( (*it++).substr( 2 ) );
+                            expectedCount = stoi( *it );
 
-                        LOG_TRACE << "Noting expected result for depth " << expectedDepth << " of " << expectedCount;
-                        expectedResults.push_back( std::pair<unsigned int, unsigned int>( expectedDepth, expectedCount ) );
+                            LOG_TRACE << "Noting expected result for depth " << expectedDepth << " of " << expectedCount;
+                            expectedResults.push_back( std::pair<unsigned int, unsigned int>( expectedDepth, expectedCount ) );
+                        }
+                        else
+                        {
+                            LOG_ERROR << "Unexpected result " << *it;
+                        }
                     }
                     else
                     {
-                        LOG_ERROR << "Unexpected result " << *it;
+                        LOG_ERROR << "Unexpected value " << *it;
                     }
-                }
-                else
-                {
-                    LOG_ERROR << "Unexpected value " << *it;
-                }
-            }
-            else
-            {
-                LOG_ERROR << "Unexpected argument" << *it;
+                    break;
+
+                case ',': // Expected structure: "<FEN>,20,400,8902,..."
+                    expectedCount = stoi( ( *it ).substr( 1 ) );
+                    expectedDepth++;
+
+                    LOG_TRACE << "Noting expected result for depth " << expectedDepth << " of " << expectedCount;
+                    expectedResults.push_back( std::pair<unsigned int, unsigned int>( expectedDepth, expectedCount ) );
+                    break;
+
+                default:
+                    LOG_ERROR << "Unexpected argument" << *it;
+                    break;
             }
         }
 
@@ -584,6 +639,13 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
         Board board( fen );
 
         LOG_INFO << "Starting perft run at depth " << depth << " with " << fenString;
+
+        LOG_DEBUG << "Expected results:";
+        for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
+        {
+            LOG_DEBUG << "  Depth " << ( *it ).first << ". Count " << ( *it ).second;
+        }
+
         clock_t now = clock();
 
         unsigned long nodes = perftImpl( depth, board, true );
@@ -780,7 +842,7 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
             unsigned long moveNodes = perftImpl( depth - 1, tBoard );
             nodes += moveNodes;
 
-            LOG_DEBUG << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
+            LOG_INFO << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
         }
         else
         {
