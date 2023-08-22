@@ -83,26 +83,31 @@ Fen::Fen( std::string position )
         }
     }
 
-    skipSpace( it, end );
+    // The fields below are mandatory in a FEN string, but it is not uncommon to see examples
+    // where some values (e.g. ep square) are excluded from the end. Try not to crash
 
     // Active color
 
-    activeColor = Piece::colorFrom( *it++ );
+    std::string activeColorString = nextWord( it, end );
 
-    LOG_TRACE << "Active color: " << Piece::toColorString( activeColor );
+    if ( activeColorString.empty() )
+    {
+        activeColor = Piece::getStartingColor();
 
-    skipSpace( it, end );
+        LOG_ERROR << "FEN string is missing the active color value. Assuming " << Piece::toColorString( activeColor );
+    }
+    else
+    {
+        activeColor = Piece::colorFrom( activeColorString );
+
+        LOG_TRACE << "Active color: " << Piece::toColorString( activeColor );
+    }
 
     // Castling rights (whichever still available are presented from KQkq with '-' for none)
 
-    std::stringstream castling;
+    std::string castling = nextWord( it, end );
 
-    while ( *it != ' ' )
-    {
-        castling << *it++;
-    }
-
-    if ( castling.str() == "-" )
+    if ( castling == "-" || castling.empty() )
     {
         castlingRights = CastlingRights( false );
 
@@ -110,12 +115,10 @@ Fen::Fen( std::string position )
     }
     else
     {
-        castlingRights = CastlingRights::fromFENString( castling.str() );
+        castlingRights = CastlingRights::fromFENString( castling );
 
-        LOG_TRACE << "Castling rights for " << castling.str() << " are " << castlingRights.toString();
+        LOG_TRACE << "Castling rights for " << castling << " are " << castlingRights.toString();
     }
-
-    skipSpace( it, end );
 
     // En passant target square or '-' for none
 
@@ -125,8 +128,6 @@ Fen::Fen( std::string position )
 
     LOG_TRACE << "En passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) );
 
-    skipSpace( it, end );
-
     // Halfmove clock
 
     std::string halfmoveClockValue = nextWord( it, end );
@@ -134,8 +135,6 @@ Fen::Fen( std::string position )
     halfmoveClock = atoi( halfmoveClockValue.c_str() );
 
     LOG_TRACE << "Halfmove clock " << halfmoveClock;
-
-    skipSpace( it, end );
 
     // Fullmove number
 
@@ -165,7 +164,7 @@ std::string Fen::nextWord( std::string::iterator& it, std::string::iterator& end
 {
     std::stringstream stream;
 
-    stream.clear();
+    skipSpace( it, end );
 
     while ( it != end && *it != ' ' )
     {

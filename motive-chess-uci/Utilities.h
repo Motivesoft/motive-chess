@@ -28,6 +28,11 @@ class Utilities
 public:
     inline static unsigned short squareToIndex( const std::string& square )
     {
+        if ( square.empty() )
+        {
+            return getOffboardLocation();
+        }
+
         // Support upper and lower case files
         unsigned short a = ( square[ 0 ] >= 'a' && square[ 0 ] <= 'h' ) ? 'a' : 'A';
 
@@ -97,6 +102,6 @@ public:
     static void dumpBoard( std::array< unsigned char, 64>& pieces, std::string title = "", const std::source_location location = std::source_location::current() );
     static void dumpBitboard( unsigned long long pieces, std::string title = "", const std::source_location location = std::source_location::current() );
     static void dump0x88( std::bitset<128> bits, std::string title = "", const std::source_location location = std::source_location::current() );
-    static void dumpBitmask( unsigned long long bits, std::string title = "", const std::source_location location = std::source_location::current());
+    static void dumpBitmask( unsigned long long bits, std::string title = "", const std::source_location location = std::source_location::current() );
 };
 
