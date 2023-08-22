@@ -193,7 +193,7 @@ public:
     bool quitCommand();
 
     // Special perft command
-    void perftCommand( std::vector<std::string>& arguments );
+    void perftCommand( std::vector<std::string>& arguments, bool expectsDepth = true );
 
     // Option methods
 

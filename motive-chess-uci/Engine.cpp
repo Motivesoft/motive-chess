@@ -503,7 +503,7 @@ bool Engine::quitCommand()
 
 // Special perft command
 
-void Engine::perftCommand( std::vector<std::string>& arguments )
+void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDepth )
 {
     UCI_DEBUG << "Received perft";
 
@@ -585,8 +585,11 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
             return;
         }
 
-        // Read the depth (mandatory)
-        depth = stoi( *(it++) );
+        // Read the depth (if mandatory)
+        if ( expectsDepth )
+        {
+            depth = stoi( *( it++ ) );
+        }
 
         // Read the FEN string (treat as optional, but expected if there is anything later)
         for ( ; it != arguments.end(); it++ )
@@ -760,8 +763,8 @@ void Engine::perftFile( std::string& filename )
                 argument.clear();
             }
 
-            // This just happens to do the processing we want
-            perftCommand( arguments );
+            // This just happens to do the processing we want, although we are not providing a depth this way
+            perftCommand( arguments, false );
         }
     }
     else
@@ -927,7 +930,7 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
             unsigned long moveNodes = perftImpl( depth - 1, tBoard );
             nodes += moveNodes;
 
-            LOG_INFO << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
+            LOG_DEBUG << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
         }
         else
         {
