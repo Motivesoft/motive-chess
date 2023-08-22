@@ -593,9 +593,11 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
 
                 if ( filename.empty() )
                 {
+                    LOG_ERROR << "Empty filename";
                     return;
                 }
-                perftFile( *it );
+
+                perftFile( filename );
             }
 
             return;
