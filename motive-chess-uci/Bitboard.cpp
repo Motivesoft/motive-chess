@@ -15,12 +15,15 @@ unsigned long long Bitboard::rookMoves[ 64 ];
 unsigned long long Bitboard::queenMoves[ 64 ];
 unsigned long long Bitboard::kingMoves[ 64 ];
 
+unsigned long long Bitboard::indexBitTable[ 64 ];
+
 void Bitboard::buildBitboards()
 {
+    const unsigned long long mask = 1; // 0b0000000000000000000000000000000000000000000000000000000000000001;
+
     std::bitset<128> x88;
     std::bitset<128> pieceSquares;
 
-    unsigned long long mask = 1;
     unsigned short path;
 
     LOG_TRACE << "Creating movement bitboards";
@@ -254,6 +257,12 @@ void Bitboard::buildBitboards()
     }
 
     LOG_TRACE << "Done creating bitboards";
+
+    // Table to turn indexes into their bit representation
+    for ( unsigned short index = 0; index < 64; index++ )
+    {
+        indexBitTable[ index ] = mask << index;
+    }
 }
 
 unsigned long long Bitboard::bitboardFrom0x88( std::bitset<128>& bits )

@@ -349,8 +349,8 @@ std::vector<Move> Board::getMoves()
     std::vector<Move> moves;
 
     unsigned long long mask = 1;
-    unsigned long piece;
     unsigned short index;
+    unsigned short destination;
     unsigned long long pieces;
 
     // Let's make some bitboards
@@ -381,15 +381,8 @@ std::vector<Move> Board::getMoves()
 
     // Iterate through all pieces by popping them out of the mask
     pieces = ownPawns;
-    while ( _BitScanForward64( &piece, pieces ) )
+    while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
-        // Mask piece out of pieces so that pieces eventually reduces to empty (0)
-        pieces ^= (1ull << piece);
-
-        index = static_cast<unsigned short>( piece );
-        
-        LOG_TRACE << Utilities::indexToSquare( index ); // DELETEME
-
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
@@ -412,57 +405,40 @@ std::vector<Move> Board::getMoves()
 
         setOfMoves |= possibleCaptures;
 
-        unsigned long destination;
-        while ( _BitScanForward64( &destination, setOfMoves ) )
+        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
         {
-            setOfMoves &= ~( 1ull << destination );
-
-            unsigned short destinationShort = static_cast<unsigned short>( destination );
-
             // Promotions lead to extra moves
-            if ( Utilities::indexToRank( destinationShort ) == promotionRank )
+            if ( Utilities::indexToRank( destination ) == promotionRank )
             {
                 // Promote to...
-                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WQUEEN : Piece::BQUEEN ) );
-                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WROOK : Piece::BROOK ) );
-                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WBISHOP : Piece::BBISHOP ) );
-                moves.push_back( Move::createPromotionMove( index, destinationShort, isWhite ? Piece::WKNIGHT : Piece::BKNIGHT ) );
+                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WQUEEN : Piece::BQUEEN ) );
+                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WROOK : Piece::BROOK ) );
+                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WBISHOP : Piece::BBISHOP ) );
+                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WKNIGHT : Piece::BKNIGHT ) );
             }
             else
             {
-                // Destination will not be damaged by cast to short
-                moves.push_back( Move::createMove( index, destinationShort ) );
+                moves.push_back( Move::createMove( index, destination ) );
             }
         }
     }
 
     pieces = ownKnights;
-    while ( _BitScanForward64( &piece, pieces ) )
+    while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
-        pieces ^= ( 1ull << piece );
-
-        index = static_cast<unsigned short>( piece );
-
         // Determine piece moves
         unsigned long long setOfMoves = Bitboards->getKnightMoves( index );
         setOfMoves &= enemyOrEmpty;
 
-        unsigned long destination;
-        while ( _BitScanForward64( &destination, setOfMoves ) )
+        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
         {
-            setOfMoves &= ~( 1ull << destination );
-
-            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+            moves.push_back( Move::createMove( index, destination ) );
         }
     }
 
     pieces = ownBishops;
-    while ( _BitScanForward64( &piece, pieces ) )
+    while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
-        pieces ^= ( 1ull << piece );
-
-        index = static_cast<unsigned short>( piece );
-
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
@@ -482,22 +458,15 @@ std::vector<Move> Board::getMoves()
 
         setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        unsigned long destination;
-        while ( _BitScanForward64( &destination, setOfMoves ) )
+        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
         {
-            setOfMoves &= ~( 1ull << destination );
-
-            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+            moves.push_back( Move::createMove( index, destination ) );
         }
     }
 
     pieces = ownRooks;
-    while ( _BitScanForward64( &piece, pieces ) )
+    while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
-        pieces ^= ( 1ull << piece );
-
-        index = static_cast<unsigned short>( piece );
-
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
@@ -517,23 +486,15 @@ std::vector<Move> Board::getMoves()
         
         setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        unsigned long destination;
-        while ( _BitScanForward64( &destination, setOfMoves ) )
+        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
         {
-            setOfMoves &= ~( 1ull << destination );
-
-            // Destination will not be damaged by cast to short
-            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+            moves.push_back( Move::createMove( index, destination ) );
         }
     }
 
     pieces = ownQueens;
-    while ( _BitScanForward64( &piece, pieces ) )
+    while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
-        pieces ^= ( 1ull << piece );
-
-        index = static_cast<unsigned short>( piece );
-
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
@@ -561,33 +522,22 @@ std::vector<Move> Board::getMoves()
 
         setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        unsigned long destination;
-        while ( _BitScanForward64( &destination, setOfMoves ) )
+        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
         {
-            setOfMoves &= ~( 1ull << destination );
-
-            // Destination will not be damaged by cast to short
-            moves.push_back( Move::createMove( index, (unsigned short) destination ) );
+            moves.push_back( Move::createMove( index, destination ) );
         }
     }
 
     pieces = ownKing;
-    while ( _BitScanForward64( &piece, pieces ) )
+    while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
-        pieces ^= ( 1ull << piece );
-
-        index = static_cast<unsigned short>( piece );
-
         // Determine piece moves
         unsigned long long setOfMoves = Bitboards->getKingMoves( index );
         setOfMoves &= enemyOrEmpty;
 
-        unsigned long destination;
-        while ( _BitScanForward64( &destination, setOfMoves ) )
+        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
         {
-            setOfMoves &= ~( 1ull << destination );
-
-            moves.push_back( Move::createMove( index, static_cast<unsigned short>( destination ) ) );
+            moves.push_back( Move::createMove( index, destination ) );
         }
 
         bool kingside;
@@ -701,15 +651,10 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
     // Worker variables
     unsigned short index;
-    unsigned long protectedSquare;
     unsigned long long captureMask;
 
-    while ( _BitScanReverse64( &protectedSquare, protectedSquares ) )
+    while ( Bitboards->getEachIndexForward( &index, protectedSquares ) )
     {
-        protectedSquares ^= ( 1ull << protectedSquare );
-
-        index = static_cast<unsigned short>( protectedSquare );
-
         // Is 'square' reachable by this color's pieces
 
         // Pawn

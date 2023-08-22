@@ -24,6 +24,8 @@ private:
     static unsigned long long queenMoves[ 64 ];
     static unsigned long long kingMoves[ 64 ];
 
+    static unsigned long long indexBitTable[ 64 ];
+
     static void buildBitboards();
 
     inline static std::mutex creationMutex;
@@ -171,5 +173,43 @@ public:
         }
 
         return result;
+    }
+
+    inline unsigned long long indexToBit( unsigned short index )
+    {
+        return indexBitTable[ index ];
+    }
+
+    // When called in a while loop, extracts each bit of source as an unsigned short index
+    inline bool getEachIndexForward( unsigned short* index, unsigned long long& source )
+    {
+        unsigned long sourceIndex;
+        if ( _BitScanForward64( &sourceIndex, source ) )
+        {
+            // Now we've read a bit, remove it from source using this lookup table
+            source ^= indexBitTable[ sourceIndex ];
+
+            // Cast the result to an unsigned short
+            *index = static_cast<unsigned short>( sourceIndex );
+            return true;
+        }
+
+        return false;
+    }
+
+    inline bool getEachIndexReverse( unsigned short* index, unsigned long long& source )
+    {
+        unsigned long sourceIndex;
+        if ( _BitScanReverse64( &sourceIndex, source ) )
+        {
+            // Now we've read a bit, remove it from source using this lookup table
+            source ^= indexBitTable[ sourceIndex ];
+
+            // Cast the result to an unsigned short
+            *index = static_cast<unsigned short>( sourceIndex );
+            return true;
+        }
+
+        return false;
     }
 };
