@@ -750,11 +750,11 @@ unsigned long long Board::makePieceBitboard( unsigned char piece )
     
     unsigned long long bitboard = 0;
 
-    for ( int loop = 0; loop < 64; loop++ )
+    for ( unsigned short index = 0; index < 64; index++ )
     {
-        if ( pieceAt( loop ) == piece )
+        if ( pieceAt( index ) == piece )
         {
-            bitboard |= (bit << loop);
+            bitboard |= (bit << index);
         }
     }
 
