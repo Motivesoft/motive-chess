@@ -119,6 +119,10 @@ private:
 
     unsigned long perftImpl( int depth, Board board, bool divide = false );
 
+    void perftDepth( Board& board, int depth );
+    void perftRange( Board& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults );
+    void perftFile( std::string& filename );
+
     std::vector<std::string> getGoDirectives()
     {
         std::vector<std::string> directives;

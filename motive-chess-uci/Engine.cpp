@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 #include <thread>
 #include <vector>
 
@@ -568,6 +569,22 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
     std::vector<std::string>::iterator it = arguments.begin();
     if ( it != arguments.end() )
     {
+        if ( *it == "file" )
+        {
+            it++;
+
+            if ( it == arguments.end() )
+            {
+                LOG_ERROR << "Missing filename";
+            }
+            else
+            {
+                perftFile( *it );
+            }
+
+            return;
+        }
+
         // Read the depth (mandatory)
         depth = stoi( *(it++) );
 
@@ -650,35 +667,13 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
             LOG_DEBUG << "  Depth " << ( *it ).first << ". Count " << ( *it ).second;
         }
 
-        clock_t now = clock();
-
-        unsigned long nodes = perftImpl( depth, board, true );
-
-        bool reported = false;
-        for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
+        if ( expectedResults.empty() )
         {
-            if ( depth == ( *it ).first )
-            {
-                if ( nodes == ( *it ).second )
-                {
-                    LOG_INFO << "Total node count at depth " << depth << " is " << nodes;
-                }
-                else
-                {
-                    LOG_ERROR << "Total node count at depth " << depth << " is " << nodes << " but expected to be " << (*it).second;
-                }
-
-                reported = true;
-                break;
-            }
+            perftDepth( board, depth );
         }
-
-        if ( !reported )
+        else
         {
-            float elapsed = static_cast<float>(clock() - now) / CLOCKS_PER_SEC;
-            float nps = nodes / elapsed;
-
-            LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)";
+            perftRange( board, expectedResults );
         }
     }
     else
@@ -688,6 +683,92 @@ void Engine::perftCommand( std::vector<std::string>& arguments )
 }
 
 // Helper methods
+void Engine::perftDepth( Board& board, int depth )
+{
+    clock_t now = clock();
+
+    unsigned long nodes = perftImpl( depth, board, true );
+
+    float elapsed = static_cast<float>( clock() - now ) / CLOCKS_PER_SEC;
+    float nps = nodes / elapsed;
+
+    LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)";
+}
+
+void Engine::perftRange( Board& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults )
+{
+    for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
+    {
+        unsigned int depth = ( *it ).first;
+        unsigned int count = ( *it ).second;
+
+        clock_t now = clock();
+
+        unsigned long nodes = perftImpl( depth, board, true );
+
+        float elapsed = static_cast<float>( clock() - now ) / CLOCKS_PER_SEC;
+        float nps = nodes / elapsed;
+
+        if ( nodes == count )
+        {
+            LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)";
+        }
+        else
+        {
+            LOG_ERROR << "Total node count at depth " << depth << " is " << nodes << " but expected to be " << count << ". Time " << elapsed << "s (" << nps << " nps)";
+        }
+    }
+}
+
+void Engine::perftFile( std::string& filename )
+{
+    std::fstream file;
+    file.open( filename, std::ios::in );
+
+    if ( file.is_open() )
+    {
+        std::string line;
+        while ( std::getline( file, line ) )
+        {
+            if ( line.empty() )
+            {
+                continue;
+            }
+
+            // Split the line into tokens
+            std::vector<std::string> arguments;
+            std::string argument;
+            for ( std::string::iterator it = line.begin(); it != line.end(); it++ )
+            {
+                if ( *it == ' ' )
+                {
+                    if ( !argument.empty() )
+                    {
+                        arguments.push_back( argument );
+                        argument.clear();
+                    }
+                }
+                else
+                {
+                    argument.push_back( *it );
+                }
+            }
+
+            if ( !argument.empty() )
+            {
+                arguments.push_back( argument );
+                argument.clear();
+            }
+
+            // This just happens to do the processing we want
+            perftCommand( arguments );
+        }
+    }
+    else
+    {
+        LOG_ERROR << "Failed to read file " << filename;
+    }
+}
 
 void Engine::listVisibleOptions()
 {
