@@ -579,6 +579,22 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
             }
             else
             {
+                std::string filename = *it;
+
+                // Strip quotes - added when pasting a file path containing spaces
+                while ( filename[ 0 ] == '"' )
+                {
+                    filename = filename.substr( 1 );
+                }
+                while ( filename[ filename.length() - 1 ] == '"' )
+                {
+                    filename = filename.substr( 0, filename.length() - 1 );
+                }
+
+                if ( filename.empty() )
+                {
+                    return;
+                }
                 perftFile( *it );
             }
 
@@ -733,10 +749,13 @@ void Engine::perftFile( std::string& filename )
         std::string line;
         while ( std::getline( file, line ) )
         {
-            if ( line.empty() )
+            if ( line.empty() || line[ 0 ] == '#' )
             {
+                LOG_TRACE << "Skipping empty or comment line";
                 continue;
             }
+
+            LOG_TRACE << "Read: " << line;
 
             // Split the line into tokens
             std::vector<std::string> arguments;
