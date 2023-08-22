@@ -680,20 +680,23 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
         Fen fen = Fen::fromPosition( fenString );
         Board board( fen );
 
-        LOG_INFO << "Starting perft run at depth " << depth << " with " << fenString;
-
-        LOG_DEBUG << "Expected results:";
-        for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
-        {
-            LOG_DEBUG << "  Depth " << ( *it ).first << ". Count " << ( *it ).second;
-        }
 
         if ( expectedResults.empty() )
         {
+            LOG_INFO << "Starting perft run at depth " << depth << " with " << fenString;
+            
             perftDepth( board, depth );
         }
         else
         {
+            LOG_INFO << "Starting perft run with " << fenString;
+
+            LOG_TRACE << "Expected results:";
+            for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
+            {
+                LOG_TRACE << "  Depth " << ( *it ).first << ". Count " << ( *it ).second;
+            }
+
             perftRange( board, expectedResults );
         }
     }
