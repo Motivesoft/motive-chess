@@ -725,8 +725,6 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
             }
         }
 
-        // Queen
-
         // King
         captureMask = Bitboards->getKingMoves( index );
 
@@ -746,15 +744,13 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 /// <returns>the bitboard for that piece type and color</returns>
 unsigned long long Board::makePieceBitboard( unsigned char piece )
 {
-    static const unsigned long long bit = 0b0000000000000000000000000000000000000000000000000000000000000001;
-    
     unsigned long long bitboard = 0;
 
     for ( unsigned short index = 0; index < 64; index++ )
     {
         if ( pieceAt( index ) == piece )
         {
-            bitboard |= (bit << index);
+            bitboard |= Bitboards->indexToBit( index );
         }
     }
 
