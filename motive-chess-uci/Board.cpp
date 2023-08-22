@@ -676,11 +676,6 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
     bool isWhite = Piece::isWhite( activeColor );
 
-    // Worker variables
-    std::vector<Move> moves;
-
-    unsigned long long mask = 1;
-
     // Let's make some bitboards
     // TODO see if we can make these const
     // TODO see if we can populate them better
