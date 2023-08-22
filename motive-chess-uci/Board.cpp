@@ -739,16 +739,22 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
     return false;
 }
 
+/// <summary>
+/// Create a bitmask of locations of a specific piece type and color
+/// </summary>
+/// <param name="piece">the piece</param>
+/// <returns>the bitboard for that piece type and color</returns>
 unsigned long long Board::makePieceBitboard( unsigned char piece )
 {
+    static const unsigned long long bit = 0b0000000000000000000000000000000000000000000000000000000000000001;
+    
     unsigned long long bitboard = 0;
 
-    unsigned long long bit = 0b0000000000000000000000000000000000000000000000000000000000000001;
-    for ( int loop = 0; loop < 64; loop++, bit <<= 1 )
+    for ( int loop = 0; loop < 64; loop++ )
     {
         if ( pieceAt( loop ) == piece )
         {
-            bitboard |= bit;
+            bitboard |= (bit << loop);
         }
     }
 
