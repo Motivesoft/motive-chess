@@ -597,6 +597,8 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
                     return;
                 }
 
+                LOG_INFO << "Starting perft run from file " << filename;
+
                 perftFile( filename );
             }
 
