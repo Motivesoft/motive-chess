@@ -1,0 +1,3 @@
+uci
+perft file "C:\Projects\GitHub\motive-chess\testfiles\motive-chess.epd"
+quit
