@@ -162,9 +162,7 @@ public:
 
         if ( versionInfo->isAvailable() )
         {
-            std::stringstream details;
-            details << versionInfo->getProductName() << " version " << versionInfo->getProductVersion();
-            broadcaster.info( details.str() );
+            broadcaster.info( versionInfo->getProductNameAndVersion() );
         }
         else
         {
