@@ -189,43 +189,12 @@ public:
     /// <returns>an inclusive mask between the two extents</returns>
     unsigned long long makeMask( unsigned short from, unsigned short to )
     {
-        // This covers going outside at either end of the range as the inputs are unsigned
-        if ( from > 63 || to > 63 )
-        {
-            // TODO CHS-68 eliminate this if we're not using it
-            LOG_ERROR << "Out of bounds";
-            return 0ull;
-        }
-
-        if ( to < from )
-        {
-            // TODO CHS-68 eliminate this if we're not using it
-            LOG_ERROR << "Odd order";
-            return makeMask( to, from );
-        }
-
-        unsigned long long below = ~makeLowerMask( from );
-
-        if ( to == 63 )
-        {
-            // TODO CHS-68 eliminate this if we're not using it - just let the code fall through
-            if ( below != ( ~makeUpperMask( to ) & below ) )
-            {
-                LOG_ERROR << "From/To == "<<from<<"/63. Return either:";
-                LOG_ERROR << "  - " << std::bitset<64>(below);
-                LOG_ERROR << "  - " << std::bitset<64>( ~makeUpperMask( to ) & below );
-            }
-            return below;
-        }
-
-        unsigned long long above = ~makeUpperMask( to );
-
-        return below & above;
+        return ~makeLowerMask( from ) & ~makeUpperMask( to );
     }
 
     inline unsigned long long indexToBit( unsigned short index )
     {
-        return indexBitTable[ index ];
+        return indexBitTable[ index ]; 
     }
 
     // When called in a while loop, extracts each bit of source as an unsigned short index
