@@ -148,7 +148,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
 {
     // Set initial defaults
     
-    Logger::Level logLevel = Logger::Level::INFO; // TODO set this to INFO
+    Logger::Level logLevel = Logger::Level::INFO;
     
     *benchmarking = false;
 
@@ -276,7 +276,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
 
         if ( versionInfo->isAvailable() )
         {
-            std::cout << versionInfo->getProductName() << " version " << versionInfo->getProductVersion() << std::endl;
+            std::cout << versionInfo->getProductNameAndVersion() << std::endl;
         }
         else
         {
