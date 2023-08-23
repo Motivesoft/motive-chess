@@ -39,8 +39,22 @@ VersionInfo::VersionInfo( const char* filename )
             {
                 productVersion = std::string( (char*) valuePointer );
             }
+
+            if ( ::VerQueryValueA( buffer, "\\StringFileInfo\\080904b0\\CompanyName", &valuePointer, &valueLength ) )
+            {
+                companyName = std::string( (char*) valuePointer );
+            }
         }
 
         delete[] buffer;
     }
+}
+
+std::string VersionInfo::getProductNameAndVersion()
+{
+    std::stringstream details;
+    
+    details << getProductName() << " version " << getProductVersion();
+
+    return details.str();
 }

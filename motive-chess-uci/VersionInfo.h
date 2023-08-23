@@ -9,6 +9,7 @@ private:
 
     std::string productName;
     std::string productVersion;
+    std::string companyName;
 
     VersionInfo( const char* filename );
 
@@ -29,5 +30,12 @@ public:
     {
         return productVersion;
     }
+
+    std::string& getCompanyName()
+    {
+        return companyName;
+    }
+
+    std::string getProductNameAndVersion();
 };
 
