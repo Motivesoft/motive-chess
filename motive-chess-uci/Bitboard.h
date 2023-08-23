@@ -84,6 +84,7 @@ public:
 
     inline unsigned long long getWhiteKingsideCastlingMask()
     {
+        //       hgfedcba
         return 0b01100000ull;
     }
 
@@ -94,6 +95,7 @@ public:
 
     inline unsigned long long getWhiteQueensideCastlingMask()
     {
+        //       hgfedcba
         return 0b00001110ull;
     }
 
@@ -151,28 +153,74 @@ public:
         return value;
     }
 
+    /// <summary>
+    /// Construct a mask that goes from (index+1) to the top of the board
+    /// For performance, assumed index is valid, between 0-63
+    /// </summary>
+    /// <param name="index">a square</param>
+    /// <returns>a bitmask of the squares above 'index'</returns>
+    unsigned long long makeUpperMask( unsigned short index )
+    {
+        if ( index == 63 )
+        {
+            return 0ull;
+        }
+
+        return ~( ( 1ull << (index + 1) ) - 1 );
+    }
+
+    /// <summary>
+    /// Construct a mask that goes from (index-1) to the bottom of the board
+    /// For performance, assumed index is valid, between 0-63
+    /// </summary>
+    /// <param name="index">a square</param>
+    /// <returns>bitmask of the squares below 'index'</returns>
+    unsigned long long makeLowerMask( unsigned short index )
+    {
+        return ( 1ull << index ) - 1;
+    }
+
+    /// <summary>
+    /// Make an inclusive mask of the squares between from and to
+    /// For performance, assumed from and to are valid, between 0-63
+    /// </summary>
+    /// <param name="from">the lower square index</param>
+    /// <param name="to">the upper square index</param>
+    /// <returns>an inclusive mask between the two extents</returns>
     unsigned long long makeMask( unsigned short from, unsigned short to )
     {
         // This covers going outside at either end of the range as the inputs are unsigned
         if ( from > 63 || to > 63 )
         {
+            // TODO CHS-68 eliminate this if we're not using it
+            LOG_ERROR << "Out of bounds";
             return 0ull;
         }
 
-        unsigned long long result = 0;
-        unsigned long long mask = 1ull << from;
-
         if ( to < from )
         {
+            // TODO CHS-68 eliminate this if we're not using it
+            LOG_ERROR << "Odd order";
             return makeMask( to, from );
         }
 
-        for ( unsigned long loop = from; loop <= to; loop++, mask <<= 1 )
+        unsigned long long below = ~makeLowerMask( from );
+
+        if ( to == 63 )
         {
-            result |= mask;
+            // TODO CHS-68 eliminate this if we're not using it - just let the code fall through
+            if ( below != ( ~makeUpperMask( to ) & below ) )
+            {
+                LOG_ERROR << "From/To == "<<from<<"/63. Return either:";
+                LOG_ERROR << "  - " << std::bitset<64>(below);
+                LOG_ERROR << "  - " << std::bitset<64>( ~makeUpperMask( to ) & below );
+            }
+            return below;
         }
 
-        return result;
+        unsigned long long above = ~makeUpperMask( to );
+
+        return below & above;
     }
 
     inline unsigned long long indexToBit( unsigned short index )
