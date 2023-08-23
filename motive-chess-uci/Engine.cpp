@@ -21,10 +21,16 @@ void Engine::uciCommand()
 
     // TODO do any actual initialization/reset here
 
-    // TODO Pull this from resources and maybe add major version
-    broadcaster.id( "MotiveChess", "Motivesoft" );
-    
-    // TODO broadcast options,...
+    VersionInfo* versionInfo = VersionInfo::getVersionInfo();
+    if ( versionInfo->isAvailable() )
+    {
+        broadcaster.id( versionInfo->getProductNameAndVersion(), versionInfo->getCompanyName() );
+    }
+    else
+    {
+        broadcaster.id( "MotiveChess", "Motivesoft" );
+    }
+
     listVisibleOptions();
 
     // Send OK
@@ -203,7 +209,6 @@ void Engine::ucinewgameCommand()
     {
         ucinewgameReceived = true;
 
-        // TODO anything else?
         LOG_TRACE << "Stopping";
         stopImpl();
 
@@ -299,7 +304,6 @@ void Engine::goCommand( std::vector<std::string>& arguments )
 {
     UCI_DEBUG << "Received go";
 
-    // TODO implement
     std::vector<std::string> searchMoves;
     bool ponder = false;
     unsigned int wtime = 0;
@@ -475,7 +479,7 @@ void Engine::stopCommand()
 
     stopImpl( ThinkingOutcome::BROADCAST );
 
-    // TODO do something now we've stopped - bestmove and possibly ponder
+    // TODO do something now we've stopped - bestmove and possibly ponder - currently we are doing this elsewhere
     if ( !quitting )
     {
 
@@ -1017,14 +1021,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             {
                 LOG_DEBUG << "No candidate moves";
                 break;
-            }
-
-            // List of moves after refutations have been removed
-            // TODO reduce this to TRACE
-            LOG_DEBUG << "Search list:";
-            for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); it++ )
-            {
-                LOG_DEBUG << ( *it ).toString();
             }
 
             if ( thoughts.getBestMove().isNullMove() )
