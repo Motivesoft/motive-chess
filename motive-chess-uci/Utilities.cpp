@@ -5,6 +5,11 @@
 
 void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, std::string title, const std::source_location location )
 {
+    if ( Logger::isExcluded( Logger::Level::DEBUG ) )
+    {
+        return;
+    }
+
     LOG_DEBUG_LOC << "  +---+---+---+---+---+---+---+---+ " << title;
     
     bool squareIsDark;
@@ -42,6 +47,11 @@ void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, std::string t
 
 void Utilities::dumpBitboard( unsigned long long pieces, std::string title, const std::source_location location )
 {
+    if ( Logger::isExcluded( Logger::Level::DEBUG ) )
+    {
+        return;
+    }
+
     LOG_DEBUG_LOC << "  ABCDEFGH    " << title;
     LOG_DEBUG_LOC << "  --------";
 
@@ -63,6 +73,11 @@ void Utilities::dumpBitboard( unsigned long long pieces, std::string title, cons
 
 void Utilities::dumpBitmask( unsigned long long bits, std::string title, const std::source_location location )
 {
+    if ( Logger::isExcluded( Logger::Level::DEBUG ) )
+    {
+        return;
+    }
+
     std::stringstream stream;
 
     unsigned long long mask = 1;
@@ -80,6 +95,11 @@ void Utilities::dumpBitmask( unsigned long long bits, std::string title, const s
 /// <param name="bits">the board</param>
 void Utilities::dump0x88( std::bitset<128> bits, std::string title, const std::source_location location )
 {
+    if ( Logger::isExcluded( Logger::Level::DEBUG ) )
+    {
+        return;
+    }
+
     LOG_DEBUG_LOC << "  01234567 01234567    " << title;
     LOG_DEBUG_LOC << "  -------- --------";
     for ( unsigned short rank = 8; rank > 0; rank-- )
