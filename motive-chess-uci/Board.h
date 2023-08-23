@@ -131,6 +131,18 @@ private:
         }
     }
 
+    bool failsCheckTests( unsigned long long protectedSquares );
+
+    unsigned long long movesInARay( unsigned long long possibleMoves,
+                                    unsigned long long rayMask,
+                                    unsigned long long ownPieces,
+                                    unsigned long long enemyPieces,
+                                    unsigned long long aboveMask,
+                                    unsigned long long belowMask,
+                                    bool supportsCaptures = true );
+
+    unsigned long long makePieceBitboard( unsigned char piece );
+
 public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
@@ -223,17 +235,5 @@ public:
     Board makeMove( const Move& move );
 
     std::vector<Move> getMoves();
-
-    bool failsCheckTests( unsigned long long protectedSquares );
-
-    unsigned long long movesInARay( unsigned long long possibleMoves,
-                                    unsigned long long rayMask,
-                                    unsigned long long ownPieces,
-                                    unsigned long long enemyPieces,
-                                    unsigned long long aboveMask,
-                                    unsigned long long belowMask,
-                                    bool supportsCaptures = true );
-
-    unsigned long long makePieceBitboard( unsigned char piece );
 };
 

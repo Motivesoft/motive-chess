@@ -629,25 +629,22 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
     // Let's make some bitboards
     // TODO see if we can make these const
     // TODO see if we can populate them better
-    unsigned long long enemyPawns = makePieceBitboard( isWhite ? Piece::WPAWN : Piece::BPAWN );
-    unsigned long long enemyKnights = makePieceBitboard( isWhite ? Piece::WKNIGHT : Piece::BKNIGHT );
-    unsigned long long enemyBishops = makePieceBitboard( isWhite ? Piece::WBISHOP : Piece::BBISHOP );
-    unsigned long long enemyRooks = makePieceBitboard( isWhite ? Piece::WROOK : Piece::BROOK );
-    unsigned long long enemyQueens = makePieceBitboard( isWhite ? Piece::WQUEEN : Piece::BQUEEN );
-    unsigned long long enemyKing = makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+    const unsigned long long enemyPawns = makePieceBitboard( isWhite ? Piece::WPAWN : Piece::BPAWN );
+    const unsigned long long enemyKnights = makePieceBitboard( isWhite ? Piece::WKNIGHT : Piece::BKNIGHT );
+    const unsigned long long enemyBishops = makePieceBitboard( isWhite ? Piece::WBISHOP : Piece::BBISHOP );
+    const unsigned long long enemyRooks = makePieceBitboard( isWhite ? Piece::WROOK : Piece::BROOK );
+    const unsigned long long enemyQueens = makePieceBitboard( isWhite ? Piece::WQUEEN : Piece::BQUEEN );
+    const unsigned long long enemyKing = makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
 
-    unsigned long long ownPawns = makePieceBitboard( isWhite ? Piece::BPAWN : Piece::WPAWN );
-    unsigned long long ownKnights = makePieceBitboard( isWhite ? Piece::BKNIGHT : Piece::WKNIGHT );
-    unsigned long long ownBishops = makePieceBitboard( isWhite ? Piece::BBISHOP : Piece::WBISHOP );
-    unsigned long long ownRooks = makePieceBitboard( isWhite ? Piece::BROOK : Piece::WROOK );
-    unsigned long long ownQueens = makePieceBitboard( isWhite ? Piece::BQUEEN : Piece::WQUEEN );
-    unsigned long long ownKing = makePieceBitboard( isWhite ? Piece::BKING : Piece::WKING );
+    const unsigned long long ownPawns = makePieceBitboard( isWhite ? Piece::BPAWN : Piece::WPAWN );
+    const unsigned long long ownKnights = makePieceBitboard( isWhite ? Piece::BKNIGHT : Piece::WKNIGHT );
+    const unsigned long long ownBishops = makePieceBitboard( isWhite ? Piece::BBISHOP : Piece::WBISHOP );
+    const unsigned long long ownRooks = makePieceBitboard( isWhite ? Piece::BROOK : Piece::WROOK );
+    const unsigned long long ownQueens = makePieceBitboard( isWhite ? Piece::BQUEEN : Piece::WQUEEN );
+    const unsigned long long ownKing = makePieceBitboard( isWhite ? Piece::BKING : Piece::WKING );
 
-    unsigned long long ownPieces = ownPawns | ownKnights | ownBishops | ownRooks | ownQueens | ownKing;
-    unsigned long long enemyPieces = enemyPawns | enemyKnights | enemyBishops | enemyRooks | enemyQueens | enemyKing;
-    unsigned long long emptySquares = ~( ownPieces | enemyPieces );
-    unsigned long long ownOrEmpty = ownPieces | emptySquares;
-    unsigned long long enemyOrEmpty = enemyPieces | emptySquares;
+    const unsigned long long ownPieces = ownPawns | ownKnights | ownBishops | ownRooks | ownQueens | ownKing;
+    const unsigned long long enemyPieces = enemyPawns | enemyKnights | enemyBishops | enemyRooks | enemyQueens | enemyKing;
 
     // Worker variables
     unsigned short index;
