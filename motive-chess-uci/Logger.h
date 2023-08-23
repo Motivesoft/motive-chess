@@ -133,7 +133,7 @@ public:
 
     virtual ~Logger()
     {
-        if ( level >= Logger::selectedLevel && Logger::selectedLevel != Level::NONE )
+        if ( isIncluded( level ) )
         {
             os << std::endl;
             stream << os.str() << std::flush;
@@ -141,5 +141,25 @@ public:
     }
 
     std::ostringstream& log( const std::source_location location = std::source_location::current() );
+
+    /// <summary>
+    /// Returns true if 'level' would be included in any log output
+    /// </summary>
+    /// <param name="level"></param>
+    /// <returns></returns>
+    inline static bool isIncluded( Logger::Level level )
+    {
+        return level >= Logger::selectedLevel && Logger::selectedLevel != Level::NONE;
+    }
+
+    /// <summary>
+    /// Returns true if 'level' would not be included in any log output
+    /// </summary>
+    /// <param name="level"></param>
+    /// <returns></returns>
+    inline static bool isExcluded( Logger::Level level )
+    {
+        return level < Logger::selectedLevel || Logger::selectedLevel == Level::NONE;
+    }
 };
 
