@@ -3,6 +3,8 @@
 #include <cstdarg>
 #include <fstream>
 #include <functional>
+#include <iomanip>
+#include <iostream>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -41,14 +43,81 @@ public:
         virtual void write( LogManager::Level level, const char* message ) = 0;
     };
 
+    class StreamBuffer : public std::stringbuf
+    {
+        std::ostream& output;
+
+    public:
+        StreamBuffer( std::ostream& output ) :
+            output( output )
+        {
+        }
+
+        ~StreamBuffer()
+        {
+            if ( pbase() != pptr() )
+            {
+                putOutput();
+            }
+        }
+
+        virtual int sync()
+        {
+            putOutput();
+            return 0;
+        }
+
+        void putOutput()
+        {
+            output << "[blah]" << str();
+            str( "" );
+            output.flush();
+        }
+    };
+
+    class LevelLoggerBuffer : public std::stringbuf
+    {
+        LogManager::LoggerBase& logger;
+        LogManager::Level level;
+
+    public:
+        LevelLoggerBuffer( LogManager::LoggerBase& logger, LogManager::Level level ) :
+            logger( logger ),
+            level( level )
+        {
+        }
+
+        ~LevelLoggerBuffer()
+        {
+            if ( pbase() != pptr() )
+            {
+                putOutput();
+            }
+        }
+
+        virtual int sync()
+        {
+            putOutput();
+            return 0;
+        }
+
+        void putOutput()
+        {
+            logger.write( level, str().c_str() );
+            str( "" );
+            //output.flush();
+        }
+    };
+
     /// <summary>
     /// Exists purely to service function-based logging, which is used either for complex or potentially
     /// time consuming stuff that should be called only if guaranteed to be logged
     /// Should look a bit like a logger but is actually a facade
     /// </summary>
-    class LevelLogger
+    class LevelLogger : public std::ostream
     {
     private:
+        LogManager::LevelLoggerBuffer buffer;
         LogManager::Level level;
         LogManager::LoggerBase& logger;
 
@@ -63,9 +132,11 @@ public:
         }
 
     public:
-        LevelLogger( LogManager::Level level, LogManager::LoggerBase& logger ) :
+        LevelLogger( LogManager::Level level, LogManager::LoggerBase& logger ) : 
             level( level ),
-            logger( logger )
+            logger( logger ),
+            std::ostream( &buffer ),
+            buffer( logger, level )
         {
             // Nothing to do
         }

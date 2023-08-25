@@ -54,6 +54,12 @@ int main( int argc, char** argv )
         std::string hello( "Hello world" );
         PLOG_DEBUG( hello );
         SLOG_DEBUG( l, { l.stream() << hello; } );
+        LogManager::getLogger()->log( LogManager::Level::DEBUG, [&] ( LogManager::LevelLogger& logger ) -> void
+        {
+            logger << "Hello" << ", dolly. Are you " << 44 << "yet?" << std::endl;
+            logger << "Hello" << ", dolly. Are you " << 44 << "yet?" << std::endl;
+        } );
+//        SLOG_DEBUG( 1, { l << "Hello" << ", dolly. Are you " << 42 << "yet?" << std::endl; } );
         VLOG_DEBUG( hello );
 
         // Configure output location for where to post our UCI responses
