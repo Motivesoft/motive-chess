@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <fstream>
 #include <functional>
 #include <ostream>
@@ -14,6 +13,8 @@ public:
     {
         TRACE, DEBUG, INFO, WARN, ERROR, NONE
     };
+
+    inline const static LogManager::Level DefaultLevel = LogManager::Level::INFO;
 
     /// <summary>
     /// Abstract base class for all loggers
@@ -51,6 +52,8 @@ public:
 
             }
         }
+
+        std::string getTimestamp();
 
     public:
         // TODO consider renaming this to 'log'
@@ -192,6 +195,16 @@ public:
         return LogManager::logger;
     }
 
+    static LogManager::Level getLevel()
+    {
+        if ( logger == nullptr )
+        {
+            return DefaultLevel;
+        }
+
+        return logger->getLevel();
+    }
+
 private:
     inline static LogManager::Logger* logger = nullptr;
 };
@@ -202,7 +215,7 @@ private:
 class ConsoleLogger : public LogManager::Logger
 {
 public:
-    ConsoleLogger( LogManager::Level level = LogManager::Level::INFO ) :
+    ConsoleLogger( LogManager::Level level = LogManager::DefaultLevel ) :
         Logger( level )
     {
         // Do nothing
@@ -220,10 +233,16 @@ private:
     std::ofstream stream;
 
 public:
-    FileLogger( const char* filename, LogManager::Level level = LogManager::Level::INFO ) :
+    FileLogger( const char* filename, LogManager::Level level = LogManager::DefaultLevel ) :
         Logger( level )
     {
         stream.open( filename, std::ios::out );
+    }
+
+    FileLogger( std::string& filename, LogManager::Level level = LogManager::DefaultLevel ) :
+        FileLogger( filename.c_str(), level )
+    {
+        // Nothing more to do
     }
 
     virtual ~FileLogger()
@@ -232,13 +251,13 @@ public:
         stream.close();
     }
 
-    inline void write( LogManager::Level level, const char* message ) override;
+    void write( LogManager::Level level, const char* message );
 };
 
 /// <summary>
 /// A logger that does nothing
 /// </summary>
-class NullLogger : LogManager::Logger
+class NullLogger : public LogManager::Logger
 {
 public:
     NullLogger() :

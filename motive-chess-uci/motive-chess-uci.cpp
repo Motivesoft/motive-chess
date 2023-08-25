@@ -24,11 +24,13 @@ int main( int argc, char** argv )
     Streams streams;
     bool benchmarking;
 
+    // Default setup, may be overridden later
+    LogManager::setLogger( new ConsoleLogger() );
+
     // Allow command line processing to cause an exit without further activity
     if ( processCommandLine( argc, argv, &benchmarking, streams ) )
     {
         LOG_DEBUG << "Starting";
-        LogManager::setLogger( new ConsoleLogger( LogManager::Level::DEBUG ) );
 
         LogManager::getLogger()->log( LogManager::Level::DEBUG, "Starting" );
         LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ]( LogManager::LevelLogger& logger ) -> void 
@@ -185,24 +187,32 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     if ( it != arguments.end() )
     {
         logLevel = Logger::Level::TRACE;
+
+        LogManager::getLogger()->setLevel( LogManager::Level::TRACE );
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-debug" );
     if ( it != arguments.end() )
     {
         logLevel = Logger::Level::DEBUG;
+
+        LogManager::getLogger()->setLevel( LogManager::Level::DEBUG );
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-quiet" );
     if ( it != arguments.end() )
     {
         logLevel = Logger::Level::ERROR;
+
+        LogManager::getLogger()->setLevel( LogManager::Level::ERROR );
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-silent" );
     if ( it != arguments.end() )
     {
         logLevel = Logger::Level::NONE;
+
+        LogManager::setLogger( new NullLogger() );
     }
 
     // Allow control of input and output
@@ -214,7 +224,9 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
         ++it;
         if ( it != arguments.end() )
         {
-            streams.setLogFile( *it );
+// TODO reinstate this if we need to            streams.setLogFile( *it );
+
+            LogManager::setLogger( new FileLogger( *it, LogManager::getLogger()->getLevel() ) );
         }
     }
 
