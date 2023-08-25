@@ -32,23 +32,29 @@ int main( int argc, char** argv )
     {
         LOG_DEBUG << "Starting";
 
-        LogManager::getLogger()->log( LogManager::Level::DEBUG, "Starting" );
-        LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ]( LogManager::LevelLogger& logger ) -> void 
-        {
-            logger.write( "Simples" );
-            logger.write( " and " );
-            logger.write( "Dimples" );
-        } );
-        PLOG_DEBUG( "Is this OK?" );
-        SLOG_DEBUG( l,
-            {
-                l.stream() << "How about this?";
-            } );
-        LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ] ( LogManager::LevelLogger& logger ) -> void
-        {
-            logger.stream() << "Hello, cruel world. " << "Here we go";
-            logger.stream() << "Again";
-        } );
+        //LogManager::getLogger()->log( LogManager::Level::DEBUG, "Starting" );
+        //LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ]( LogManager::LevelLogger& logger ) -> void 
+        //{
+        //    logger.write( "Simples" );
+        //    logger.write( " and " );
+        //    logger.write( "Dimples" );
+        //} );
+        //PLOG_DEBUG( "Is this OK?" );
+        //VLOG_DEBUG( "Pi is %f", 3.1415926535897973 );
+        //SLOG_DEBUG( l,
+        //    {
+        //        l.stream() << "How about this?";
+        //    } );
+        //LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ] ( LogManager::LevelLogger& logger ) -> void
+        //{
+        //    logger.stream() << "Hello, cruel world. " << "Here we go";
+        //    logger.stream() << "Again";
+        //} );
+
+        std::string hello( "Hello world" );
+        PLOG_DEBUG( hello );
+        SLOG_DEBUG( l, { l.stream() << hello; } );
+        VLOG_DEBUG( hello );
 
         // Configure output location for where to post our UCI responses
         Broadcaster broadcaster( streams.getOuputStream() );

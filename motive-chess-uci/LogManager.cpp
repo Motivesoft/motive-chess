@@ -28,6 +28,31 @@ std::string LogManager::LoggerBase::getTimestamp()
     return timestamp.str();
 }
 
+const char* LogManager::LoggerBase::LevelName( LogManager::Level level ) const
+{
+    switch ( level )
+    {
+        case LogManager::Level::TRACE:
+            return "TRACE";
+
+        case LogManager::Level::DEBUG:
+            return "DEBUG";
+
+        case LogManager::Level::INFO:
+            return "INFO ";
+
+        case LogManager::Level::WARN:
+            return "WARN ";
+
+        case LogManager::Level::ERROR:
+            return "ERROR";
+
+        default:
+        case LogManager::Level::NONE:
+            return "     ";
+
+    }
+}
 
 // ConsoleLogger
 

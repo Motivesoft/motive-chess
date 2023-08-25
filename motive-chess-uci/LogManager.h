@@ -1,13 +1,15 @@
 #pragma once
 
+#include <cstdarg>
 #include <fstream>
 #include <functional>
 #include <ostream>
 #include <sstream>
 #include <string>
 
-#define PLOG_DEBUG( ... ) LogManager::getLogger()->log( LogManager::Level::DEBUG, __VA_ARGS__ );
-#define SLOG_DEBUG( LOGGER, CODE ) LogManager::getLogger()->log( LogManager::Level::DEBUG, [&] ( LogManager::LevelLogger& LOGGER ) -> void CODE );
+#define PLOG_DEBUG( ... ) LogManager::getLogger()->log( LogManager::Level::DEBUG, __VA_ARGS__ )
+#define SLOG_DEBUG( LOGGER, CODE ) LogManager::getLogger()->log( LogManager::Level::DEBUG, [&] ( LogManager::LevelLogger& LOGGER ) -> void CODE )
+#define VLOG_DEBUG( ... ) LogManager::getLogger()->log( LogManager::Level::DEBUG, [&] ( LogManager::LevelLogger& logger ) -> void { logger.write( __VA_ARGS__ ); } )
 
 class LogManager
 {
@@ -30,31 +32,7 @@ public:
             // Do nothing
         }
 
-        const char* LevelName( LogManager::Level level ) const
-        {
-            switch ( level )
-            {
-                case LogManager::Level::TRACE:
-                    return "TRACE";
-
-                case LogManager::Level::DEBUG:
-                    return "DEBUG";
-
-                case LogManager::Level::INFO:
-                    return "INFO ";
-
-                case LogManager::Level::WARN:
-                    return "WARN ";
-
-                case LogManager::Level::ERROR:
-                    return "ERROR";
-
-                default:
-                case LogManager::Level::NONE:
-                    return "     ";
-
-            }
-        }
+        const char* LevelName( LogManager::Level level ) const;
 
         std::string getTimestamp();
 
@@ -63,6 +41,11 @@ public:
         virtual void write( LogManager::Level level, const char* message ) = 0;
     };
 
+    /// <summary>
+    /// Exists purely to service function-based logging, which is used either for complex or potentially
+    /// time consuming stuff that should be called only if guaranteed to be logged
+    /// Should look a bit like a logger but is actually a facade
+    /// </summary>
     class LevelLogger
     {
     private:
@@ -84,7 +67,7 @@ public:
             level( level ),
             logger( logger )
         {
-
+            // Nothing to do
         }
 
         virtual ~LevelLogger()
@@ -102,9 +85,17 @@ public:
             return *currentStream;
         }
 
-        inline void write( const char* message )
+        inline void write( std::string& message )
         {
-            logger.write( level, message );
+            logger.write( level, message.c_str() );
+        }
+
+        inline void write( const char* message, ... )
+        {
+            std::va_list args;
+            va_start( args, message );
+            logger.write( level, message );// , args ); // TODO TODO WAHHH REINSTATE ARGS
+            va_end( args );
         }
     };
 
@@ -121,32 +112,6 @@ public:
         }
 
     public:
-        static LogManager::Logger* getLogger()
-        {
-            return logger;
-        }
-
-        static void setLogger( LogManager::Logger* logger )
-        {
-            if ( LogManager::logger != nullptr )
-            {
-                // (temporarily) close the logger to allow the previous default to be destroyed
-                close();
-            }
-
-            // TODO mutex protect access to logger
-            LogManager::logger = logger;
-        }
-
-        static void close()
-        {
-            if ( LogManager::logger != nullptr )
-            {
-                delete LogManager::logger;
-                LogManager::logger = nullptr;
-            }
-        }
-
         inline void setLevel( LogManager::Level level )
         {
             this->level = level;
@@ -165,11 +130,31 @@ public:
             }
         }
 
-        void log( LogManager::Level level, const char* message )
+        void log( LogManager::Level level, const char* format, ... )
         {
             if ( level >= getLevel() )
             {
-                write( level, message );
+                std::va_list args;
+                va_start( args, format );
+
+                char buffer[ 200 ];
+                size_t size = snprintf( buffer, sizeof( buffer ), format, args );
+
+                if ( size <= sizeof( buffer ) )
+                {
+                    write( level, buffer );
+                }
+                else
+                {
+                    char* longBuffer = new char[ size ];
+                    
+                    write( level, longBuffer );
+                    snprintf( longBuffer, size, format, args );
+
+                    delete[] longBuffer;
+                }
+
+                va_end( args );
             }
         }
 
@@ -183,6 +168,11 @@ public:
         }
     };
 
+    /// <summary>
+    /// Set the current logger
+    /// Any previous logger is destroyed (deleted)
+    /// </summary>
+    /// <param name="logger">the logger</param>
     static void setLogger( Logger* logger )
     {
         if ( LogManager::logger != nullptr )
@@ -193,11 +183,33 @@ public:
         LogManager::logger = logger;
     }
 
+    /// <summary>
+    /// Get the currently installed logger
+    /// </summary>
+    /// <returns>the logger, or nullptr if there is no current logger</returns>
     static Logger* getLogger()
     {
         return LogManager::logger;
     }
 
+    /// <summary>
+    /// Convenience method to set the level of the current logger
+    /// Does nothing if there is no current logger
+    /// </summary>
+    /// <param name="level">the level</param>
+    static void setLevel( LogManager::Level level )
+    {
+        if ( logger != nullptr )
+        {
+            logger->setLevel( level );
+        }
+    }
+
+    /// <summary>
+    /// Convenience method to get the level of the current logger
+    /// Returns the system default value if there is no current logger
+    /// </summary>
+    /// <returns>the level</returns>
     static LogManager::Level getLevel()
     {
         if ( logger == nullptr )
@@ -224,7 +236,7 @@ public:
         // Do nothing
     }
 
-    void write( LogManager::Level level, const char* message );
+    void write( LogManager::Level level, const char* message ) override;
 };
 
 /// <summary>
@@ -254,7 +266,7 @@ public:
         stream.close();
     }
 
-    void write( LogManager::Level level, const char* message );
+    void write( LogManager::Level level, const char* message ) override;
 };
 
 /// <summary>
