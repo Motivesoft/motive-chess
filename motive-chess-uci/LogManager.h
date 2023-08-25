@@ -1,8 +1,11 @@
 #pragma once
 
-#include <cstdio>
+#include <array>
 #include <fstream>
-#include <iostream>
+#include <functional>
+#include <ostream>
+#include <sstream>
+#include <string>
 
 class LogManager
 {
@@ -12,7 +15,110 @@ public:
         TRACE, DEBUG, INFO, WARN, ERROR, NONE
     };
 
-    class Logger
+    /// <summary>
+    /// Abstract base class for all loggers
+    /// </summary>
+    class LoggerBase
+    {
+    protected:
+        LoggerBase()
+        {
+            // Do nothing
+        }
+
+    public:
+        // TODO consider renaming this to 'log'
+        virtual void write( LogManager::Level level, const char* message ) = 0;
+    };
+
+    class LevelLogger
+    {
+    private:
+        LogManager::Level level;
+        LogManager::LoggerBase& logger;
+
+        std::ostringstream* currentStream = nullptr;
+
+        void closeStream()
+        {
+            if ( currentStream != nullptr )
+            {
+                logger.write( level, currentStream->str().c_str() );
+            }
+        }
+
+    public:
+        LevelLogger( LogManager::Level level, LogManager::LoggerBase& logger ) :
+            level( level ),
+            logger( logger )
+        {
+
+        }
+
+        virtual ~LevelLogger()
+        {
+            closeStream();
+        }
+
+        inline std::ostringstream& stream()
+        {
+            if ( currentStream == nullptr )
+            {
+                currentStream = new std::ostringstream();
+            }
+
+            return *currentStream;
+        }
+
+        inline void write( const char* message )
+        {
+            logger.write( level, message );
+        }
+    };
+
+    class StreamFactory
+    {
+    private:
+        LogManager::Level level;
+        LoggerBase& logger;
+        std::ostringstream* currentStream = nullptr;
+
+        void closeStream()
+        {
+            if ( currentStream != nullptr )
+            {
+                logger.write( level, currentStream->str().c_str() );
+                delete currentStream;
+                currentStream = nullptr;
+            }
+        }
+
+    public:
+        StreamFactory( LogManager::Level level, LogManager::LoggerBase& logger ) :
+            level( level ),
+            logger( logger )
+        {
+
+        }
+
+        virtual ~StreamFactory()
+        {
+            closeStream();
+        }
+
+        std::ostringstream& next()
+        {
+            if ( currentStream != nullptr )
+            {
+                closeStream();
+            }
+
+            currentStream = new std::ostringstream();
+            return *currentStream;
+        }
+    };
+
+    class Logger : public LogManager::LoggerBase
     {
     private:
         LogManager::Level level;
@@ -23,8 +129,6 @@ public:
         {
             // Do nothing
         }
-
-        virtual void logImpl( LogManager::Level level, const char* message ) = 0;
 
     public:
         static LogManager::Logger* getLogger()
@@ -63,14 +167,55 @@ public:
             return this->level;
         }
 
+        void log( LogManager::Level level, std::string& message )
+        {
+            if ( level >= getLevel() )
+            {
+                write( level, message.c_str() );
+            }
+        }
+
         void log( LogManager::Level level, const char* message )
         {
             if ( level >= getLevel() )
             {
-                logImpl( level, message );
+                write( level, message );
+            }
+        }
+
+        inline void log( LogManager::Level level, const std::function <void( LogManager::LevelLogger& logger )>& log_callback )
+        {
+            if ( getLevel() <= level )
+            {
+                LevelLogger logger( level, *this );
+                log_callback( logger );
+            }
+        }
+
+        inline void log( LogManager::Level level, const std::function <void( LogManager::StreamFactory& logger )>& log_callback )
+        {
+            if ( getLevel() <= level )
+            {
+                LogManager::StreamFactory factory( level, *this );
+                log_callback( factory );
             }
         }
     };
+
+    static void setLogger( Logger* logger )
+    {
+        if ( LogManager::logger != nullptr )
+        {
+            delete LogManager::logger;
+        }
+
+        LogManager::logger = logger;
+    }
+
+    static Logger* getLogger()
+    {
+        return LogManager::logger;
+    }
 
 private:
     inline static LogManager::Logger* logger = nullptr;
@@ -88,7 +233,7 @@ public:
         // Do nothing
     }
 
-    inline void logImpl( LogManager::Level level, const char* message );
+    void write( LogManager::Level level, const char* message );
 };
 
 /// <summary>
@@ -112,7 +257,7 @@ public:
         stream.close();
     }
 
-    inline void logImpl( LogManager::Level level, const char* message );
+    inline void write( LogManager::Level level, const char* message ) override;
 };
 
 /// <summary>
@@ -132,7 +277,7 @@ public:
         // Do nothing
     }
 
-    inline void logImpl( LogManager::Level level, const char* message )
+    inline void write( LogManager::Level level, const char* message ) override
     {
         // Do nothing
     }
