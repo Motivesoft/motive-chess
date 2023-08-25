@@ -6,6 +6,9 @@
 #include <sstream>
 #include <string>
 
+#define PLOG_DEBUG( ... ) LogManager::getLogger()->log( LogManager::Level::DEBUG, __VA_ARGS__ );
+#define SLOG_DEBUG( LOGGER, CODE ) LogManager::getLogger()->log( LogManager::Level::DEBUG, [&] ( LogManager::LevelLogger& LOGGER ) -> void CODE );
+
 class LogManager
 {
 public:

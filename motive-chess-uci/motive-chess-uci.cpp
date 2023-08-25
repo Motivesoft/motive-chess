@@ -39,6 +39,11 @@ int main( int argc, char** argv )
             logger.write( " and " );
             logger.write( "Dimples" );
         } );
+        PLOG_DEBUG( "Is this OK?" );
+        SLOG_DEBUG( l,
+            {
+                l.stream() << "How about this?";
+            } );
         LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ] ( LogManager::LevelLogger& logger ) -> void
         {
             logger.stream() << "Hello, cruel world. " << "Here we go";
