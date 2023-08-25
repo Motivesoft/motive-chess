@@ -1,0 +1,40 @@
+rn2k2r/ppp2ppp/4p3/3P1b2/P2PN1n1/1Q5P/1P2PPP1/2q1KBNR w Kkq - 1 12 
+
+
+#define L( ... ) LogManager::getLogger()->log( DEBUG, [&] ( LM::LL& l ) -> void { l.write( DEBUG, __VA_ARGS__ } )
+
+
+log( std::string )
+log( "ABC %s", x )
+
+log( x, { x( "ABC %s", x ) } )
+log( x, { x << "ABC " << x; } )
+
+log( std::string, x )    		???????????
+
+
+
+PLOG
+- logs immediately
+- supports ...
+- speciality for std::string
+- gets Logger* from 
+
+
+
+Main features
+- Concrete logger ideally only needs one method, which accepts a string, embellishes it and writes it out
+- Macros for simple access
+
+
+LoggerBase		Logger			ConsoleLogger
+-------------------------------------------------------------
+write(const char*)	log(std::string)
+			log(const char*,...)
+			log(function)
+
+
+LevelLogger - has access to a LoggerBase
+	stream() - creates a std::string and needs to be written to a concrete logger - maybe as c_str
+	write()  - gets a std::string and needs to be written to a concrete logger - maybe as c_str
+	write()  - format,... and needs to be written to a concrete logger
