@@ -6,12 +6,12 @@
 
 void ConsoleLogger::write( LogManager::Level level, const char* message )
 {
-    std::cout << message << std::endl;
+    std::cout << LevelName( level ) << " " << message << std::endl;
 }
 
 // FileLogger
 
 void FileLogger::write( LogManager::Level level, const char* message )
 {
-    stream << message << std::endl;
+    stream << LevelName( level ) << " " << message << std::endl;
 }

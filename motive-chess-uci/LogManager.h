@@ -26,6 +26,32 @@ public:
             // Do nothing
         }
 
+        const char* LevelName( LogManager::Level level ) const
+        {
+            switch ( level )
+            {
+                case LogManager::Level::TRACE:
+                    return "TRACE";
+
+                case LogManager::Level::DEBUG:
+                    return "DEBUG";
+
+                case LogManager::Level::INFO:
+                    return "INFO ";
+
+                case LogManager::Level::WARN:
+                    return "WARN ";
+
+                case LogManager::Level::ERROR:
+                    return "ERROR";
+
+                default:
+                case LogManager::Level::NONE:
+                    return "     ";
+
+            }
+        }
+
     public:
         // TODO consider renaming this to 'log'
         virtual void write( LogManager::Level level, const char* message ) = 0;
@@ -73,48 +99,6 @@ public:
         inline void write( const char* message )
         {
             logger.write( level, message );
-        }
-    };
-
-    class StreamFactory
-    {
-    private:
-        LogManager::Level level;
-        LoggerBase& logger;
-        std::ostringstream* currentStream = nullptr;
-
-        void closeStream()
-        {
-            if ( currentStream != nullptr )
-            {
-                logger.write( level, currentStream->str().c_str() );
-                delete currentStream;
-                currentStream = nullptr;
-            }
-        }
-
-    public:
-        StreamFactory( LogManager::Level level, LogManager::LoggerBase& logger ) :
-            level( level ),
-            logger( logger )
-        {
-
-        }
-
-        virtual ~StreamFactory()
-        {
-            closeStream();
-        }
-
-        std::ostringstream& next()
-        {
-            if ( currentStream != nullptr )
-            {
-                closeStream();
-            }
-
-            currentStream = new std::ostringstream();
-            return *currentStream;
         }
     };
 
@@ -189,15 +173,6 @@ public:
             {
                 LevelLogger logger( level, *this );
                 log_callback( logger );
-            }
-        }
-
-        inline void log( LogManager::Level level, const std::function <void( LogManager::StreamFactory& logger )>& log_callback )
-        {
-            if ( getLevel() <= level )
-            {
-                LogManager::StreamFactory factory( level, *this );
-                log_callback( factory );
             }
         }
     };

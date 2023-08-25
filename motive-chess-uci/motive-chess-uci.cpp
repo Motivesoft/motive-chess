@@ -10,6 +10,7 @@
 
 #include "Engine.h"
 #include "Logger.h"
+#include "LogManager.h"
 #include "Streams.h"
 #include "VersionInfo.h"
 
@@ -27,6 +28,20 @@ int main( int argc, char** argv )
     if ( processCommandLine( argc, argv, &benchmarking, streams ) )
     {
         LOG_DEBUG << "Starting";
+        LogManager::setLogger( new ConsoleLogger( LogManager::Level::DEBUG ) );
+
+        LogManager::getLogger()->log( LogManager::Level::DEBUG, "Starting" );
+        LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ]( LogManager::LevelLogger& logger ) -> void 
+        {
+            logger.write( "Simples" );
+            logger.write( " and " );
+            logger.write( "Dimples" );
+        } );
+        LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ] ( LogManager::LevelLogger& logger ) -> void
+        {
+            logger.stream() << "Hello, cruel world. " << "Here we go";
+            logger.stream() << "Again";
+        } );
 
         // Configure output location for where to post our UCI responses
         Broadcaster broadcaster( streams.getOuputStream() );
