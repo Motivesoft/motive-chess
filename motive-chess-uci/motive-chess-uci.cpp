@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Engine.h"
+#include "Log.h"
 #include "Logger.h"
 #include "LogManager.h"
 #include "Streams.h"
@@ -24,6 +25,15 @@ int main( int argc, char** argv )
     Streams streams;
     bool benchmarking;
 
+    Log::setDestination( new ConsoleLogDestination() );
+
+    Log::Info << "The answer is " << 42 << " or, in hex, " << std::hex << 42 << std::endl;
+    Log::Info( "Hello cruel world" );
+    Log::Info << "The answer is " << 42 << " or, in hex, " << std::hex << 42 << std::endl;
+    Log::Info << "The answer is " << 42 << " or, in hex, " << std::hex << 42 << std::endl;
+    Log::Info( "Hello cruel world" );
+    Log::Info( "Hello cruel world" );
+    Log::Info = Log::Debug;
     // Default setup, may be overridden later
     LogManager::setLogger( new ConsoleLogger() );
 
@@ -51,9 +61,13 @@ int main( int argc, char** argv )
         //    logger.stream() << "Again";
         //} );
 
+        LogManager::setLevel( LogManager::Level::ERROR );
         std::string hello( "Hello world" );
         PLOG_DEBUG( hello );
-        SLOG_DEBUG( l, { l.stream() << hello; } );
+        SLOG_DEBUG( l, 
+                    { 
+                        l.stream() << hello; 
+                    } );
         LogManager::getLogger()->log( LogManager::Level::DEBUG, [&] ( LogManager::LevelLogger& logger ) -> void
         {
             logger << "Hello" << ", dolly. Are you " << 44 << "yet?" << std::endl;

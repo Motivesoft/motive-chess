@@ -156,6 +156,7 @@
     <ClCompile Include="Fen.cpp" />
     <ClCompile Include="GameContext.cpp" />
     <ClCompile Include="GoContext.cpp" />
+    <ClCompile Include="Log.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LogManager.cpp" />
     <ClCompile Include="motive-chess-uci.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Fen.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GoContext.h" />
+    <ClInclude Include="Log.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="LogManager.h" />
     <ClInclude Include="Move.h" />
