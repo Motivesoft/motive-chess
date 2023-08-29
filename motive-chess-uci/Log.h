@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -41,8 +42,6 @@ public:
             // Nothing to do here
         }
 
-        virtual void write( Log::Level level, const char* message ) = 0;
-
         inline Log::Level getLevel()
         {
             return level;
@@ -52,6 +51,8 @@ public:
         {
             this->level = level;
         }
+
+        virtual void write( Log::Level level, const char* message ) = 0;
     };
 
     class Logger
@@ -71,45 +72,28 @@ public:
             // Do nothing
         }
              
-        void operator()( const char* format,... ) const
-        {
-            if ( level >= Log::getDestination()->getLevel() )
-            {
-                // Hazard a guess for a buffer size
-                const size_t initialBuffer = 256;
-                char* buffer = new char[ initialBuffer ];
+        void operator()( const char* format, ... ) const;
 
-                // Attach the varargs
-                va_list args;
-                va_start( args, format );
-
-                // Print the string, but don't overflow the buffer and let it tell us if we need 
-                // a larger buffer
-                size_t size = vsnprintf( buffer, initialBuffer - 1, format, args );
-                if ( size > initialBuffer )
-                {
-                    // Larger buffer required
-                    delete[] buffer;
-                    buffer = new char[ size + 1 ];
-
-                    // Try again
-                    vsnprintf( buffer, size + 1, format, args );
-                }
-
-                // Output the log
-                Log::getDestination()->write( level, buffer );
-                
-                // Housekeeping
-                va_end( args );
-                delete[] buffer;
-            }
-        }
-
-        inline void operator()( std::string& message ) const
+        void operator()( std::string& message ) const
         {
             if ( level >= Log::getDestination()->getLevel() )
             {
                 Log::getDestination()->write( level, message.c_str() );
+            }
+        }
+
+        typedef const std::function<void( const Log::Logger& logger )> LogCallback;
+
+        // Calling syntax:
+        //     Log::Error( [&] ( const Log::Logger& logger )
+        //     {
+        //         logger << "Benchmarking: " << ( benchmarking ? "on" : "off" ) << std::endl;
+        //     } );
+        void operator()( LogCallback& logCallback ) const
+        {
+            if ( level >= Log::getDestination()->getLevel() )
+            {
+                logCallback( *this );
             }
         }
 
@@ -138,13 +122,21 @@ public:
 
         const Logger& operator <<( decltype( std::hex ) manip ) const
         {
-            perThreadBuffer << manip;
+            if ( level >= Log::getDestination()->getLevel() )
+            {
+                perThreadBuffer << manip;
+            }
+
             return *this;
         }
 
         const Logger& operator <<( decltype( std::setw ) manip ) const
         {
-            perThreadBuffer << manip; 
+            if ( level >= Log::getDestination()->getLevel() )
+            {
+                perThreadBuffer << manip;
+            }
+
             return *this;
         }
     };

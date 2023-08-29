@@ -7,6 +7,8 @@
 std::mutex consoleLogMutex;
 thread_local std::stringstream perThreadBuffer;
 
+// Log::Destination
+
 const char* Log::Destination::levelName( Log::Level level )
 {
     switch ( level )
@@ -53,3 +55,40 @@ std::string Log::Destination::timestamp()
 
     return timestamp.str();
 }
+
+// Log::Logger
+
+void Log::Logger::operator()(const char* format, ...) const
+{
+    if ( level >= Log::getDestination()->getLevel() )
+    {
+        // Hazard a guess for a buffer size
+        const size_t initialBuffer = 256;
+        char* buffer = new char[initialBuffer];
+
+        // Attach the varargs
+        va_list args;
+        va_start( args, format );
+
+        // Print the string, but don't overflow the buffer and let it tell us if we need 
+        // a larger buffer
+        size_t size = vsnprintf(buffer, initialBuffer - 1, format, args);
+        if ( size > initialBuffer )
+        {
+            // Larger buffer required
+            delete[] buffer;
+            buffer = new char[ size + 1 ];
+
+            // Try again
+            vsnprintf( buffer, size + 1, format, args );
+        }
+
+        // Output the log
+        Log::getDestination()->write( level, buffer );
+
+        // Housekeeping
+        va_end( args );
+        delete[] buffer;
+    }
+}
+
