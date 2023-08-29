@@ -25,6 +25,9 @@
 /// </summary>
 class Utilities
 {
+private:
+    static std::string lowerSquareNames[ 64 ];
+
 public:
     inline static unsigned short squareToIndex( const std::string& square )
     {
@@ -53,20 +56,15 @@ public:
         return ( rank << 3 ) + ( file & 7 );
     }
 
-    inline static std::string indexToSquare( const unsigned short index, const bool lowercase = true )
+    inline static std::string indexToSquare( const unsigned short index )
     {
         if ( Utilities::isOffboard( index ) )
         {
             // Deliberately off-board
-            return "";
+            return std::string();
         }
 
-        std::stringstream square;
-
-        square << (char)( ( index & 7 ) + ( lowercase ? 'a' : 'A' ) )
-               << (char)( ( ( index >> 3 ) & 7 ) + '1' );
-
-        return square.str();
+        return lowerSquareNames[ index ];
     }
 
     /// <summary>
@@ -99,9 +97,9 @@ public:
         return USHRT_MAX;
     }
 
-    static void dumpBoard( std::array< unsigned char, 64>& pieces, std::string title = "", const std::source_location location = std::source_location::current() );
-    static void dumpBitboard( unsigned long long pieces, std::string title = "", const std::source_location location = std::source_location::current() );
-    static void dump0x88( std::bitset<128> bits, std::string title = "", const std::source_location location = std::source_location::current() );
-    static void dumpBitmask( unsigned long long bits, std::string title = "", const std::source_location location = std::source_location::current() );
+    static void dumpBoard( std::array< unsigned char, 64>& pieces, std::string title = "" );
+    static void dumpBitboard( unsigned long long pieces, std::string title = "" );
+    static void dump0x88( std::bitset<128> bits, std::string title = "" );
+    static void dumpBitmask( unsigned long long bits, std::string title = "" );
 };
 

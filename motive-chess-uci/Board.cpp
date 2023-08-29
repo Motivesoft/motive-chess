@@ -15,7 +15,10 @@ Board Board::makeMove( const Move& move )
 
 void Board::applyMove( const Move& move )
 {
-    Log::Trace << "Apply move: " << move.toString() << std::endl;
+    Log::Trace( [&] ( const Log::Logger& logger )
+    {
+        logger << "Apply move: " << move.toString() << std::endl;
+    } );
 
     if ( move.isNullMove() )
     {

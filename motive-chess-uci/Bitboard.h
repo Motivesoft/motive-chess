@@ -115,8 +115,8 @@ public:
     {
         unsigned long long value = 0xff;
 
-        value <<= (rank * 8);
-
+        value <<= ( ( unsigned long long ) rank << 3 );
+        
         return value;
     }
 
