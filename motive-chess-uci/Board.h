@@ -54,48 +54,48 @@ private:
     unsigned short halfmoveClock;
     unsigned short fullmoveNumber;
 
-    inline void setPiece( unsigned short index, unsigned char piece )
+    inline void setPiece( const unsigned short index, const unsigned char piece )
     {
         pieces[ index ] = piece;
     }
 
-    inline void setPiece( unsigned short file, unsigned short rank, unsigned char piece )
+    inline void setPiece( const unsigned short file, const unsigned short rank, const unsigned char piece )
     {
         setPiece( Utilities::squareToIndex( file, rank ), piece );
     }
 
-    inline void removePiece( unsigned short index )
+    inline void removePiece( const unsigned short index )
     {
         setPiece( index, Piece::emptyPiece() );
     }
 
-    inline void removePiece( unsigned short file, unsigned short rank )
+    inline void removePiece( const unsigned short file, const unsigned short rank )
     {
         removePiece( Utilities::squareToIndex( file, rank ) );
     }
 
-    inline void movePiece( unsigned short indexFrom, unsigned short indexTo )
+    inline void movePiece( const unsigned short indexFrom, const unsigned short indexTo )
     {
         setPiece( indexTo, pieceAt( indexFrom ) );
         removePiece( indexFrom );
     }
 
-    inline bool isEmpty( unsigned short index ) const
+    inline bool isEmpty( const unsigned short index ) const
     {
         return Piece::isEmpty( pieceAt( index ) );
     }
 
-    inline bool isEmpty( unsigned short file, unsigned short rank ) const
+    inline bool isEmpty( const unsigned short file, const unsigned short rank ) const
     {
         return isEmpty( Utilities::squareToIndex( file, rank ) );
     }
 
-    inline unsigned char pieceAt( unsigned short index ) const
+    inline unsigned char pieceAt( const unsigned short index ) const
     {
         return pieces[ index ];
     }
 
-    inline unsigned char pieceAt( unsigned short file, unsigned short rank ) const
+    inline unsigned char pieceAt( const unsigned short file, const unsigned short rank ) const
     {
         return pieceAt( Utilities::squareToIndex( file, rank ) );
     }
@@ -142,6 +142,14 @@ private:
                                     bool supportsCaptures = true );
 
     unsigned long long makePieceBitboard( unsigned char piece );
+
+    void makePieceBitboards( bool isWhite,
+                             unsigned long long& pawn,
+                             unsigned long long& knight,
+                             unsigned long long& bishop,
+                             unsigned long long& rook,
+                             unsigned long long& queen,
+                             unsigned long long& king );
 
 public:
     Board() :
