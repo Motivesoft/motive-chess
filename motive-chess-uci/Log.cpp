@@ -63,7 +63,7 @@ std::string Log::Destination::timestamp()
 
 void Log::Logger::operator()(const char* format, ...) const
 {
-    if ( level >= Log::getDestination()->getLevel() )
+    if ( Log::isIncluded( level ) )
     {
         // Hazard a guess for a buffer size
         const size_t initialBuffer = 256;
@@ -87,7 +87,7 @@ void Log::Logger::operator()(const char* format, ...) const
         }
 
         // Output the log
-        Log::getDestination()->write( level, buffer );
+        write( buffer );
 
         // Housekeeping
         va_end( args );

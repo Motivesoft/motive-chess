@@ -4,7 +4,7 @@
 
 Fen::Fen( std::string position )
 {
-    LOG_TRACE << "Processing FEN string " << position;
+    Log::Trace << "Processing FEN string " << position << std::endl;
 
     std::string::iterator it;
     std::string::iterator end = position.end();
@@ -34,7 +34,7 @@ Fen::Fen( std::string position )
             case 'n':
             case 'p':
             {
-                LOG_TRACE << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")";
+                Log::Trace << "Placing " << *it << " at " << Utilities::indexToSquare( index ) << " (" << index << ")" << std::endl;
                 pieces[ index++ ] = Piece::fromFENString( *it );
                 break;
             }
@@ -51,9 +51,9 @@ Fen::Fen( std::string position )
                 std::stringstream digit;
                 digit << *it;
 
-                LOG_TRACE << "Skipping " << digit.str() << " from " << index;
+                Log::Trace << "Skipping " << digit.str() << " from " << index << std::endl;
                 index += atoi( digit.str().c_str() );
-                LOG_TRACE << " to " << index;
+                Log::Trace << " to " << index << std::endl;
 
                 break;
             }
@@ -62,14 +62,14 @@ Fen::Fen( std::string position )
                 // If we are not currently at the start of the next line, jump to it
                 if ( ( index & 0b0111 ) != 0 )
                 {
-                    LOG_TRACE << "Jumping to end of line from " << index;
+                    Log::Trace << "Jumping to end of line from " << index << std::endl;
                     index = ( index & ~0b0111 ) + 8;
-                    LOG_TRACE << " to " << index;
+                    Log::Trace << " to " << index << std::endl;
                 }
 
-                LOG_TRACE << "Stepping to next line from " << index;
+                Log::Trace << "Stepping to next line from " << index << std::endl;
                 index -= 16;
-                LOG_TRACE << " to " << index;
+                Log::Trace << " to " << index << std::endl;
 
             default:
             case ' ':
@@ -78,7 +78,7 @@ Fen::Fen( std::string position )
 
         if ( *it == ' ' )
         {
-            LOG_TRACE << "Finished board extraction with index at " << index << " (expected at 8)";
+            Log::Trace << "Finished board extraction with index at " << index << " (expected at 8)" << std::endl;
             break;
         }
     }
@@ -94,13 +94,13 @@ Fen::Fen( std::string position )
     {
         activeColor = Piece::getStartingColor();
 
-        LOG_ERROR << "FEN string is missing the active color value. Assuming " << Piece::toColorString( activeColor );
+        Log::Error << "FEN string is missing the active color value. Assuming " << Piece::toColorString( activeColor ) << std::endl;
     }
     else
     {
         activeColor = Piece::colorFrom( activeColorString );
 
-        LOG_TRACE << "Active color: " << Piece::toColorString( activeColor );
+        Log::Trace << "Active color: " << Piece::toColorString( activeColor ) << std::endl;
     }
 
     // Castling rights (whichever still available are presented from KQkq with '-' for none)
@@ -111,13 +111,13 @@ Fen::Fen( std::string position )
     {
         castlingRights = CastlingRights( false );
 
-        LOG_TRACE << "No castling rights";
+        Log::Trace << "No castling rights" << std::endl;
     }
     else
     {
         castlingRights = CastlingRights::fromFENString( castling );
 
-        LOG_TRACE << "Castling rights for " << castling << " are " << castlingRights.toString();
+        Log::Trace << "Castling rights for " << castling << " are " << castlingRights.toString() << std::endl;
     }
 
     // En passant target square or '-' for none
@@ -126,7 +126,7 @@ Fen::Fen( std::string position )
 
     enPassantIndex = enPassantValue == "-" ? Utilities::getOffboardLocation() : Utilities::squareToIndex( enPassantValue );
 
-    LOG_TRACE << "En passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) );
+    Log::Trace << "En passant square: " << ( Utilities::isOffboard( enPassantIndex ) ? "none" : Utilities::indexToSquare( enPassantIndex ) ) << std::endl;
 
     // Halfmove clock
 
@@ -134,7 +134,7 @@ Fen::Fen( std::string position )
 
     halfmoveClock = atoi( halfmoveClockValue.c_str() );
 
-    LOG_TRACE << "Halfmove clock " << halfmoveClock;
+    Log::Trace << "Halfmove clock " << halfmoveClock << std::endl;
 
     // Fullmove number
 
@@ -142,13 +142,13 @@ Fen::Fen( std::string position )
 
     fullmoveNumber = atoi( fullmoveValue.c_str() );
 
-    LOG_TRACE << "Fullmove number " << fullmoveNumber;
+    Log::Trace << "Fullmove number " << fullmoveNumber << std::endl;
 
     // Should be at end now
 
     if ( it != position.end() )
     {
-        LOG_ERROR << "Unexpected data at end of FEN string";
+        Log::Error << "Unexpected data at end of FEN string" << std::endl;
     }
 }
 

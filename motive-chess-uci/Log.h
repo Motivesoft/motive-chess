@@ -61,6 +61,11 @@ public:
     private:
         Log::Level level;
 
+        void write( const char* message ) const
+        {
+            Log::getDestination()->write( level, message );
+        }
+
     public:
         Logger( Log::Level level ) :
             level( level )
@@ -77,9 +82,9 @@ public:
 
         void operator()( std::string& message ) const
         {
-            if ( level >= Log::getDestination()->getLevel() )
+            if ( Log::isIncluded( level ) )
             {
-                Log::getDestination()->write( level, message.c_str() );
+                write( message.c_str() );
             }
         }
 
@@ -92,7 +97,7 @@ public:
         //     } );
         void operator()( LogCallback& logCallback ) const
         {
-            if ( level >= Log::getDestination()->getLevel() )
+            if ( Log::isIncluded( level ) )
             {
                 logCallback( *this );
             }
@@ -102,7 +107,7 @@ public:
         const Logger& operator <<( T value ) const
         {
             // Save all the time we can
-            if ( level >= Log::getDestination()->getLevel() )
+            if ( Log::isIncluded( level ) )
             {
                 perThreadBuffer << value;
             }
@@ -112,9 +117,9 @@ public:
 
         const Logger& operator <<( decltype( std::endl<char, std::char_traits<char>> ) ) const
         {
-            if ( level >= Log::getDestination()->getLevel() )
+            if ( Log::isIncluded( level ) )
             {
-                Log::getDestination()->write( level, perThreadBuffer.str().c_str() );
+                write( perThreadBuffer.str().c_str() );
             }
 
             perThreadBuffer.str( std::string() );
@@ -123,7 +128,7 @@ public:
 
         const Logger& operator <<( decltype( std::hex ) manip ) const
         {
-            if ( level >= Log::getDestination()->getLevel() )
+            if ( Log::isIncluded( level ) )
             {
                 perThreadBuffer << manip;
             }
@@ -133,7 +138,7 @@ public:
 
         const Logger& operator <<( decltype( std::setw ) manip ) const
         {
-            if ( level >= Log::getDestination()->getLevel() )
+            if ( Log::isIncluded( level ) )
             {
                 perThreadBuffer << manip;
             }
@@ -147,6 +152,32 @@ public:
     inline static const Log::Logger Info  = Logger( Log::Level::INFO );
     inline static const Log::Logger Warn  = Logger( Log::Level::WARN );
     inline static const Log::Logger Error = Logger( Log::Level::ERROR );
+    inline static const Log::Logger None = Logger( Log::Level::NONE );
+
+    inline static const Log::Logger& logger( Log::Level level )
+    {
+        switch ( level )
+        {
+            case Log::Level::TRACE:
+                return Log::Trace;
+
+            case Log::Level::DEBUG:
+                return Log::Debug;
+
+            case Log::Level::INFO:
+                return Log::Info;
+
+            case Log::Level::WARN:
+                return Log::Warn;
+
+            case Log::Level::ERROR:
+                return Log::Error;
+
+            case Log::Level::NONE:
+            default:
+                return Log::None;
+        }
+    }
 
     inline static void setDestination( Log::Destination* destination )
     {
@@ -158,9 +189,19 @@ public:
         Log::destination = destination;
     }
 
-    inline static Log::Destination* getDestination()
+    inline static Log::Destination* getDestination() 
     {
         return Log::destination;
+    }
+
+    inline static bool hasDestination()
+    {
+        return Log::destination != nullptr;
+    }
+
+    inline static void shutdown()
+    {
+        setDestination( nullptr );
     }
 
     // Helper methods
@@ -168,7 +209,7 @@ public:
     {
         if ( Log::destination != nullptr )
         {
-            return level >= Log::destination->getLevel();
+            return level >= Log::destination->getLevel() && Log::destination->getLevel() != Log::Level::NONE;
         }
 
         return false;
