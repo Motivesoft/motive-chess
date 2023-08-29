@@ -1,16 +1,16 @@
 #include "Utilities.h"
 
-#include "Logger.h"
+#include "Log.h"
 #include "Piece.h"
 
 void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, std::string title, const std::source_location location )
 {
-    if ( Logger::isExcluded( Logger::Level::DEBUG ) )
+    if ( Log::isExcluded( Log::Level::DEBUG ) )
     {
         return;
     }
 
-    LOG_DEBUG_LOC << "  +---+---+---+---+---+---+---+---+ " << title;
+    Log::Debug << "  +---+---+---+---+---+---+---+---+ " << title << std::endl;
     
     bool squareIsDark;
     for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
@@ -37,12 +37,12 @@ void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, std::string t
             }
         }
 
-        LOG_DEBUG_LOC << 1 + rankIndex / 8 << " " << stream.str() << "|";
+        Log::Debug << 1 + rankIndex / 8 << " " << stream.str() << "|" << std::endl;
 
-        LOG_DEBUG_LOC << "  +---+---+---+---+---+---+---+---+";
+        Log::Debug << "  +---+---+---+---+---+---+---+---+" << std::endl;
     }
 
-    LOG_DEBUG_LOC << "    a   b   c   d   e   f   g   g    ";
+    Log::Debug << "    a   b   c   d   e   f   g   h    " << std::endl;
 }
 
 void Utilities::dumpBitboard( unsigned long long pieces, std::string title, const std::source_location location )

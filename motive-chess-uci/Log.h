@@ -170,6 +170,27 @@ public:
         return Log::destination;
     }
 
+    // Helper methods
+    inline static bool isIncluded( Log::Level level )
+    {
+        if ( Log::destination != nullptr )
+        {
+            return level >= Log::destination->getLevel();
+        }
+
+        return false;
+    }
+
+    inline static bool isExcluded( Log::Level level )
+    {
+        if ( Log::destination != nullptr )
+        {
+            return level < Log::destination->getLevel();
+        }
+
+        return true;
+    }
+
 private:
     inline static Log::Destination* destination = nullptr;
 };
@@ -196,6 +217,12 @@ private:
     std::ofstream stream;
 
 public:
+    FileLogDestination( const std::string& filename, Log::Level level = Log::Level::INFO ) :
+        FileLogDestination( filename.c_str(), level )
+    {
+        stream.open( filename, std::ios::out );
+    }
+
     FileLogDestination( const char* filename, Log::Level level = Log::Level::INFO ) :
         Log::Destination( level )
     {

@@ -10,8 +10,6 @@
 
 #include "Engine.h"
 #include "Log.h"
-#include "Logger.h"
-#include "LogManager.h"
 #include "Streams.h"
 #include "VersionInfo.h"
 
@@ -27,47 +25,10 @@ int main( int argc, char** argv )
 
     Log::setDestination( new ConsoleLogDestination() );
 
-    // Default setup, may be overridden later
-    LogManager::setLogger( new ConsoleLogger() );
-
     // Allow command line processing to cause an exit without further activity
     if ( processCommandLine( argc, argv, &benchmarking, streams ) )
     {
-        LOG_DEBUG << "Starting";
-
-        //LogManager::getLogger()->log( LogManager::Level::DEBUG, "Starting" );
-        //LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ]( LogManager::LevelLogger& logger ) -> void 
-        //{
-        //    logger.write( "Simples" );
-        //    logger.write( " and " );
-        //    logger.write( "Dimples" );
-        //} );
-        //PLOG_DEBUG( "Is this OK?" );
-        //VLOG_DEBUG( "Pi is %f", 3.1415926535897973 );
-        //SLOG_DEBUG( l,
-        //    {
-        //        l.stream() << "How about this?";
-        //    } );
-        //LogManager::getLogger()->log( LogManager::Level::DEBUG, [ & ] ( LogManager::LevelLogger& logger ) -> void
-        //{
-        //    logger.stream() << "Hello, cruel world. " << "Here we go";
-        //    logger.stream() << "Again";
-        //} );
-
-        LogManager::setLevel( LogManager::Level::ERROR );
-        std::string hello( "Hello world" );
-        PLOG_DEBUG( hello );
-        SLOG_DEBUG( l, 
-                    { 
-                        l.stream() << hello; 
-                    } );
-        LogManager::getLogger()->log( LogManager::Level::DEBUG, [&] ( LogManager::LevelLogger& logger ) -> void
-        {
-            logger << "Hello" << ", dolly. Are you " << 44 << "yet?" << std::endl;
-            logger << "Hello" << ", dolly. Are you " << 44 << "yet?" << std::endl;
-        } );
-//        SLOG_DEBUG( 1, { l << "Hello" << ", dolly. Are you " << 42 << "yet?" << std::endl; } );
-        VLOG_DEBUG( hello );
+        Log::Debug( "Starting" );
 
         // Configure output location for where to post our UCI responses
         Broadcaster broadcaster( streams.getOuputStream() );
@@ -212,7 +173,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     {
         logLevel = Logger::Level::TRACE;
 
-        LogManager::getLogger()->setLevel( LogManager::Level::TRACE );
+        Log::getDestination()->setLevel( Log::Level::TRACE );
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-debug" );
@@ -220,7 +181,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     {
         logLevel = Logger::Level::DEBUG;
 
-        LogManager::getLogger()->setLevel( LogManager::Level::DEBUG );
+        Log::getDestination()->setLevel( Log::Level::DEBUG );
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-quiet" );
@@ -228,7 +189,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     {
         logLevel = Logger::Level::ERROR;
 
-        LogManager::getLogger()->setLevel( LogManager::Level::ERROR );
+        Log::getDestination()->setLevel( Log::Level::ERROR );
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-silent" );
@@ -236,7 +197,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     {
         logLevel = Logger::Level::NONE;
 
-        LogManager::setLogger( new NullLogger() );
+        Log::setDestination( new NullLogDestination() );
     }
 
     // Allow control of input and output
@@ -248,9 +209,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
         ++it;
         if ( it != arguments.end() )
         {
-// TODO reinstate this if we need to            streams.setLogFile( *it );
-
-            LogManager::setLogger( new FileLogger( *it, LogManager::getLogger()->getLevel() ) );
+            Log::setDestination( new FileLogDestination( *it, Log::getDestination()->getLevel() ) );
         }
     }
 
