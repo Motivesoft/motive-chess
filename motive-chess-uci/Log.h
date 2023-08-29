@@ -2,6 +2,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -24,6 +25,7 @@ public:
     {
     protected:
         static const char* levelName( Log::Level level );
+        static std::string timestamp();
 
         Log::Level level;
 
@@ -184,6 +186,45 @@ public:
     inline void write( Log::Level level, const char* message ) override
     {
         std::lock_guard<std::mutex> guard( consoleLogMutex );
-        std::cout << levelName( level ) << " " << message << std::endl;
+        std::cout << timestamp() << " " << levelName( level ) << " " << message << std::endl;
+    }
+};
+
+class FileLogDestination : public Log::Destination
+{
+private:
+    std::ofstream stream;
+
+public:
+    FileLogDestination( const char* filename, Log::Level level = Log::Level::INFO ) :
+        Log::Destination( level )
+    {
+        stream.open( filename, std::ios::out );
+    }
+
+    virtual ~FileLogDestination()
+    {
+        stream.flush();
+        stream.close();
+    }
+
+    inline void write( Log::Level level, const char* message ) override
+    {
+        stream << timestamp() << " " << levelName( level ) << " " << message << std::endl;
+    }
+};
+
+class NullLogDestination : public Log::Destination
+{
+public:
+    NullLogDestination() :
+        Log::Destination( Log::Level::NONE )
+    {
+        // Nothing to do here
+    }
+
+    inline void write( Log::Level level, const char* message ) override
+    {
+        // Nothing to do here
     }
 };
