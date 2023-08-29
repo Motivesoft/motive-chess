@@ -19,8 +19,6 @@ unsigned long long Bitboard::indexBitTable[ 64 ];
 
 void Bitboard::buildBitboards()
 {
-    const unsigned long long mask = 1; // 0b0000000000000000000000000000000000000000000000000000000000000001;
-
     std::bitset<128> x88;
     std::bitset<128> pieceSquares;
 
@@ -46,24 +44,24 @@ void Bitboard::buildBitboards()
     // Single square advance
     for ( int loop = 8; loop < 56; loop++ )
     {
-        whitePawnMoves[ loop ] |= mask << ( loop + 8 );
+        whitePawnMoves[ loop ] |= 1ull << ( loop + 8 );
     }
 
     // Add double-square advance to elligible squares
     for ( int loop = 8; loop < 16; loop++ )
     {
-        whitePawnMoves[ loop ] |= mask << ( loop + 16 );
+        whitePawnMoves[ loop ] |= 1ull << ( loop + 16 );
     }
 
     for ( int loop = 55; loop > 7; loop-- )
     {
-        blackPawnMoves[ loop ] |= mask << ( loop - 8 );
+        blackPawnMoves[ loop ] |= 1ull << ( loop - 8 );
     }
 
     // Add double-square advance to elligible squares
     for ( int loop = 55; loop > 47; loop-- )
     {
-        blackPawnMoves[ loop ] |= mask << ( loop - 16 );
+        blackPawnMoves[ loop ] |= 1ull << ( loop - 16 );
     }
 
     // Captures (be wary of the edge of the board)
@@ -74,11 +72,11 @@ void Bitboard::buildBitboards()
         // Set, but with edge detection
         if ( Utilities::indexToFile( loop ) > 0 )
         {
-            whitePawnCaptures[ loop ] |= mask << ( loop + 7 );
+            whitePawnCaptures[ loop ] |= 1ull << ( loop + 7 );
         }
         if ( Utilities::indexToFile( loop ) < 7 )
         {
-            whitePawnCaptures[ loop ] |= mask << ( loop + 9 );
+            whitePawnCaptures[ loop ] |= 1ull << ( loop + 9 );
         }
     }
 
@@ -90,11 +88,11 @@ void Bitboard::buildBitboards()
         // Set, but with edge detection
         if ( Utilities::indexToFile( loop ) > 0 )
         {
-            blackPawnCaptures[ loop ] |= mask << ( loop - 9 );
+            blackPawnCaptures[ loop ] |= 1ull << ( loop - 9 );
         }
         if ( Utilities::indexToFile( loop ) < 7 )
         {
-            blackPawnCaptures[ loop ] |= mask << ( loop - 7 );
+            blackPawnCaptures[ loop ] |= 1ull << ( loop - 7 );
         }
     }
 
@@ -149,8 +147,8 @@ void Bitboard::buildBitboards()
         {
             path -= 9;
           
-            bishopMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            bishopMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
 
         path = index;
@@ -158,8 +156,8 @@ void Bitboard::buildBitboards()
         {
             path += 7;
 
-            bishopMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            bishopMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
 
         path = index;
@@ -167,8 +165,8 @@ void Bitboard::buildBitboards()
         {
             path -= 7;
 
-            bishopMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            bishopMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
 
         path = index;
@@ -176,8 +174,8 @@ void Bitboard::buildBitboards()
         {
             path += 9;
 
-            bishopMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            bishopMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
     }
 
@@ -189,8 +187,8 @@ void Bitboard::buildBitboards()
         {
             path -= 8;
 
-            rookMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            rookMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
 
         path = index;
@@ -198,8 +196,8 @@ void Bitboard::buildBitboards()
         {
             path += 8;
 
-            rookMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            rookMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
 
         path = index;
@@ -207,8 +205,8 @@ void Bitboard::buildBitboards()
         {
             path --;
 
-            rookMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            rookMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
 
         path = index;
@@ -216,8 +214,8 @@ void Bitboard::buildBitboards()
         {
             path ++;
 
-            rookMoves[ index ] |= mask << path;
-            queenMoves[ index ] |= mask << path;
+            rookMoves[ index ] |= 1ull << path;
+            queenMoves[ index ] |= 1ull << path;
         }
     }
 
@@ -261,7 +259,7 @@ void Bitboard::buildBitboards()
     // Table to turn indexes into their bit representation
     for ( unsigned short index = 0; index < 64; index++ )
     {
-        indexBitTable[ index ] = mask << index;
+        indexBitTable[ index ] = 1ull << index;
     }
 }
 

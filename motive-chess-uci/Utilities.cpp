@@ -62,13 +62,12 @@ void Utilities::dumpBitboard( unsigned long long pieces, std::string title )
         logger << "  ABCDEFGH    " << title << std::endl;
         logger << "  --------" << std::endl;
 
-        unsigned long long mask = 1;
         for ( unsigned short rank = 0, rankIndex = 56; rank < 8; rank++, rankIndex -= 8 )
         {
             std::stringstream stream;
             for ( unsigned short index = rankIndex; index < rankIndex + 8; index++ )
             {
-                stream << ( ( pieces & (mask << index) ) ? "." : " " );
+                stream << ( ( pieces & (1ull << index) ) ? "." : " " );
             }
 
             logger << 1 + rankIndex / 8 << "|" << stream.str() << "|" << 1 + rankIndex / 8 << std::endl;
@@ -85,10 +84,9 @@ void Utilities::dumpBitmask( unsigned long long bits, std::string title )
     {
         std::stringstream stream;
 
-        unsigned long long mask = 1;
         for ( int index = 63; index >= 0; index-- )
         {
-            stream << (( bits & (mask << index) ) ? "1" : "0");
+            stream << (( bits & (1ull << index) ) ? "1" : "0");
         }
 
         logger << stream.str() << "    " << title << std::endl;
