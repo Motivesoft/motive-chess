@@ -21,7 +21,7 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input );
 int main( int argc, char** argv )
 {
     Streams streams;
-    bool benchmarking;
+    bool benchmarking = false;
 
     Log::setDestination( new ConsoleLogDestination() );
 
@@ -29,6 +29,17 @@ int main( int argc, char** argv )
     if ( processCommandLine( argc, argv, &benchmarking, streams ) )
     {
         Log::Debug( "Starting" );
+
+    Log::Warn( [&] ( const Log::Logger& logger ) -> void
+    {
+        logger( "Hello" );
+        logger << "and" << " goodbye" << std::endl;
+    } );
+
+    Log::Error( [&] ( const Log::Logger& logger )
+    {
+        logger << "Benchmarking: " << ( benchmarking ? "on" : "off" ) << std::endl;
+    } );
 
         // Configure output location for where to post our UCI responses
         Broadcaster broadcaster( streams.getOuputStream() );

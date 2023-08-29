@@ -12,6 +12,7 @@
 #include <thread>
 
 extern std::mutex consoleLogMutex;
+extern std::mutex fileLogMutex;
 extern thread_local std::stringstream perThreadBuffer;
 
 class Log
@@ -212,7 +213,7 @@ public:
     FileLogDestination( const std::string& filename, Log::Level level = Log::Level::INFO ) :
         FileLogDestination( filename.c_str(), level )
     {
-        stream.open( filename, std::ios::out );
+        // Do nothing. All the action deferred to the other constructor
     }
 
     FileLogDestination( const char* filename, Log::Level level = Log::Level::INFO ) :
@@ -229,7 +230,11 @@ public:
 
     inline void write( Log::Level level, const char* message ) override
     {
+        std::lock_guard<std::mutex> guard( fileLogMutex );
         stream << timestamp() << " " << levelName( level ) << " " << message << std::endl;
+
+        // TODO decide if we want this - might be costly
+        stream.flush();
     }
 };
 

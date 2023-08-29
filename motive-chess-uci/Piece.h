@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "Logger.h"
+#include "Log.h"
 
 /// <summary>
 /// Bit mask for piece to byte:
@@ -180,7 +180,7 @@ public:
                 return BPAWN;
 
             default:
-                LOG_WARN << "Unexpected letter in FEN string: " << value;
+                Log::Warn << "Unexpected letter in FEN string: " << value << std::endl;
                 return NOTHING;
         }
     }
@@ -192,7 +192,7 @@ public:
     /// <returns>The promotion piece, e.g. Piece::WQUEEN</returns>
     static unsigned char promotionPieceFromMoveString( std::string value )
     {
-        LOG_TRACE << "Getting promotion piece from " << value;
+        Log::Warn << "Getting promotion piece from " << value << std::endl;
         if ( value.length() < 5 )
         {
             return Piece::NOTHING;
@@ -227,7 +227,7 @@ public:
                 return color == Piece::WHITE ? Piece::WPAWN : Piece::BPAWN;
         }
 
-        LOG_WARN << "Unexpected letter '" << value[ 4 ] << "' in move string : " << value;
+        Log::Warn << "Unexpected letter '" << value[ 4 ] << "' in move string : " << value << std::endl;
         return Piece::NOTHING;
     }
 
@@ -292,7 +292,7 @@ public:
             return Piece::WHITE;
         }
 
-        LOG_TRACE << "Failed to swap color for " << color;
+        Log::Trace << "Failed to swap color for " << color << std::endl;
         return Piece::NOCOLOR;
     }
 
@@ -307,7 +307,7 @@ public:
             return "black";
         }
 
-        LOG_TRACE << "Failed to get color name for " << color;
+        Log::Trace << "Failed to get color name for " << color << std::endl;
         return "";
     }
 
@@ -322,7 +322,7 @@ public:
             return "b";
         }
 
-        LOG_TRACE << "Failed to get color name for " << color;
+        Log::Trace << "Failed to get color name for " << color << std::endl;
         return "";
     }
 
@@ -344,7 +344,7 @@ public:
                 return Piece::BLACK;
         }
 
-        LOG_TRACE << "Failed to get color from " << color;
+        Log::Trace << "Failed to get color from " << color << std::endl;
         return Piece::NOCOLOR;
     }
 

@@ -4,7 +4,7 @@
 #include <string>
 
 #include "CastlingRights.h"
-#include "Logger.h"
+#include "Log.h"
 #include "Piece.h"
 #include "Utilities.h"
 

@@ -4,8 +4,6 @@
 #include <memory>
 #include <mutex>
 
-#include "Logger.h"
-
 #define Bitboards Bitboard::getInstance()
 
 class Bitboard

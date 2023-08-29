@@ -10,7 +10,7 @@
 #include "Fen.h"
 #include "GameContext.h"
 #include "GoContext.h"
-#include "Logger.h"
+#include "Log.h"
 #include "Registration.h"
 #include "VersionInfo.h"
 

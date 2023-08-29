@@ -4,7 +4,10 @@
 #include <ctime>
 #include <mutex>
 
+// Thread safety features
 std::mutex consoleLogMutex;
+std::mutex fileLogMutex;
+
 thread_local std::stringstream perThreadBuffer;
 
 // Log::Destination

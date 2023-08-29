@@ -1,6 +1,6 @@
 #include "Bitboard.h"
 
-#include "Logger.h"
+#include "Log.h"
 #include "Utilities.h"
 
 std::unique_ptr<Bitboard> Bitboard::instance {};
@@ -26,7 +26,7 @@ void Bitboard::buildBitboards()
 
     unsigned short path;
 
-    LOG_TRACE << "Creating movement bitboards";
+    Log::Trace << "Creating movement bitboards" << std::endl;
 
     // Initialise
     for ( int loop = 0; loop < 64; loop++ )
@@ -256,7 +256,7 @@ void Bitboard::buildBitboards()
         kingMoves[ index ] = bitboardFrom0x88( x88 );
     }
 
-    LOG_TRACE << "Done creating bitboards";
+    Log::Trace << "Done creating bitboards" << std::endl;
 
     // Table to turn indexes into their bit representation
     for ( unsigned short index = 0; index < 64; index++ )
