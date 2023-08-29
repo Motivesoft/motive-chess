@@ -112,7 +112,7 @@ public:
         }
 
         template<typename T>
-        Logger& operator <<( T value )
+        const Logger& operator <<( T value ) const
         {
             // Save all the time we can
             if ( level >= Log::getDestination()->getLevel() )
@@ -123,7 +123,7 @@ public:
             return *this;
         }
 
-        Logger& operator <<( decltype( std::endl<char, std::char_traits<char>> ) )
+        const Logger& operator <<( decltype( std::endl<char, std::char_traits<char>> ) ) const
         {
             if ( level >= Log::getDestination()->getLevel() )
             {
@@ -134,24 +134,24 @@ public:
             return *this;
         }
 
-        Logger& operator <<( decltype( std::hex ) manip )
+        const Logger& operator <<( decltype( std::hex ) manip ) const
         {
             perThreadBuffer << manip;
             return *this;
         }
 
-        Logger& operator <<( decltype( std::setw ) manip )
+        const Logger& operator <<( decltype( std::setw ) manip ) const
         {
             perThreadBuffer << manip; 
             return *this;
         }
     };
 
-    inline static Log::Logger Trace = Logger( Log::Level::TRACE );
-    inline static Log::Logger Debug = Logger( Log::Level::DEBUG );
-    inline static Log::Logger Info  = Logger( Log::Level::INFO );
-    inline static Log::Logger Warn  = Logger( Log::Level::WARN );
-    inline static Log::Logger Error = Logger( Log::Level::ERROR );
+    inline static const Log::Logger Trace = Logger( Log::Level::TRACE );
+    inline static const Log::Logger Debug = Logger( Log::Level::DEBUG );
+    inline static const Log::Logger Info  = Logger( Log::Level::INFO );
+    inline static const Log::Logger Warn  = Logger( Log::Level::WARN );
+    inline static const Log::Logger Error = Logger( Log::Level::ERROR );
 
     inline static void setDestination( Log::Destination* destination )
     {

@@ -28,9 +28,7 @@ int main( int argc, char** argv )
     Log::setDestination( new ConsoleLogDestination() );
 
     Log::Info << "The answer is " << 42 << " or, in hex, " << std::hex << 42 << std::endl;
-//    Log::Info( "Hello %s world%c", "cruel", '!' );
-    Log::Info( "%s %s %s", "Hello", "Cruel", "World");
-    Log::Info( "Hello %d", (unsigned int) 10);
+    Log::Info( "Hello %d%c", (unsigned int) 10, '!');
 
     // Default setup, may be overridden later
     LogManager::setLogger( new ConsoleLogger() );
