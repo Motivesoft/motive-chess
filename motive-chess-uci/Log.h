@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cstdarg>
+#include <cstdio>
 #include <iomanip>
 #include <iostream>
-#include <map>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -56,14 +57,6 @@ public:
     private:
         Log::Level level;
 
-        inline void log( const char* message ) const
-        {
-            if ( level >= Log::getDestination()->getLevel() )
-            {
-                Log::getDestination()->write( level, message );
-            }
-        }
-
     public:
         Logger( Log::Level level ) :
             level( level )
@@ -76,26 +69,67 @@ public:
             // Do nothing
         }
              
-        inline void operator()( const char* message ) const
+        void operator()( const char* format,... ) const
         {
-            log( message );
+            if ( level >= Log::getDestination()->getLevel() )
+            {
+                // Hazard a guess for a buffer size
+                const size_t initialBuffer = 256;
+                char* buffer = new char[ initialBuffer ];
+
+                // Attach the varargs
+                va_list args;
+                va_start( args, format );
+
+                // Print the string, but don't overflow the buffer and let it tell us if we need 
+                // a larger buffer
+                size_t size = vsnprintf( buffer, initialBuffer - 1, format, args );
+                if ( size > initialBuffer )
+                {
+                    // Larger buffer required
+                    delete[] buffer;
+                    buffer = new char[ size + 1 ];
+
+                    // Try again
+                    vsnprintf( buffer, size + 1, format, args );
+                }
+
+                // Output the log
+                Log::getDestination()->write( level, buffer );
+                
+                // Housekeeping
+                va_end( args );
+                delete[] buffer;
+            }
         }
 
         inline void operator()( std::string& message ) const
         {
-            log( message.c_str() );
+            if ( level >= Log::getDestination()->getLevel() )
+            {
+                Log::getDestination()->write( level, message.c_str() );
+            }
         }
 
         template<typename T>
         Logger& operator <<( T value )
         {
-            perThreadBuffer << value;
+            // Save all the time we can
+            if ( level >= Log::getDestination()->getLevel() )
+            {
+                perThreadBuffer << value;
+            }
+
             return *this;
         }
 
         Logger& operator <<( decltype( std::endl<char, std::char_traits<char>> ) )
         {
-            Log::getDestination()->write( level, perThreadBuffer.str().c_str() );
+            if ( level >= Log::getDestination()->getLevel() )
+            {
+                Log::getDestination()->write( level, perThreadBuffer.str().c_str() );
+            }
+
             perThreadBuffer.str( std::string() );
             return *this;
         }
