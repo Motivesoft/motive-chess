@@ -15,13 +15,16 @@ Board Board::makeMove( const Move& move )
 
 void Board::applyMove( const Move& move )
 {
-    LOG_TRACE << "Apply move: " << move.toString();
+    Log::Trace( [&] ( const Log::Logger& logger )
+    {
+        logger << "Apply move: " << move.toString() << std::endl;
+    } );
 
     if ( move.isNullMove() )
     {
         // To be honest, not sure what to do here - return an unchanged board, or an updated one with no move made
         // but other attributes updated as though a move had been made and it was now the other side's go
-        LOG_TRACE << "Ignoring null move";
+        Log::Trace << "Ignoring null move" << std::endl;
         return;
     }
 
@@ -43,13 +46,13 @@ void Board::applyMove( const Move& move )
             {
                 movePiece( Board::A1, Board::D1 );
 
-                LOG_TRACE << "White castling queen side";
+                Log::Trace << "White castling queen side" << std::endl;
             }
             else if ( move.getTo() == Board::G1 )
             {
                 movePiece( Board::H1, Board::F1 );
 
-                LOG_TRACE << "White castling king side";
+                Log::Trace << "White castling king side" << std::endl;
             }
         }
 
@@ -64,13 +67,13 @@ void Board::applyMove( const Move& move )
             {
                 movePiece( Board::A8, Board::D8 );
 
-                LOG_TRACE << "Black castling queen side";
+                Log::Trace << "Black castling queen side" << std::endl;
             }
             else if ( move.getTo() == Board::G8 )
             {
                 movePiece( Board::H8, Board::F8 );
 
-                LOG_TRACE << "Black castling king side";
+                Log::Trace << "Black castling king side" << std::endl;
             }
         }
 
@@ -120,7 +123,7 @@ void Board::applyMove( const Move& move )
         castlingRights.removeWhiteQueensideCastlingRights();
     }
 
-    LOG_TRACE << "Castling set to " << castlingRights.toString();
+    Log::Trace << "Castling set to " << castlingRights.toString() << std::endl;
 
     // Promotions
 
@@ -128,7 +131,7 @@ void Board::applyMove( const Move& move )
     {
         setPiece( move.getTo(), move.getPromotionPiece() );
 
-        LOG_TRACE << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() );
+        Log::Trace << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() ) << std::endl;
     }
 
     // En-passant
@@ -137,7 +140,7 @@ void Board::applyMove( const Move& move )
     {
         if ( Piece::isPawn( movingPiece ) )
         {
-            LOG_TRACE << "Handling en-passant capture at " << Utilities::indexToSquare( enPassantIndex );
+            Log::Trace << "Handling en-passant capture at " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
 
             // An en-passant capture is happening. Remove the enemy pawn
 
@@ -157,7 +160,7 @@ void Board::applyMove( const Move& move )
 
     // Swap whose move it is
     activeColor = Piece::oppositeColor( activeColor );
-    LOG_TRACE << "Active color now " << Piece::toColorString( activeColor );
+    Log::Trace << "Active color now " << Piece::toColorString( activeColor ) << std::endl;
 
     // Clear this but then determine whether this new move sets it again
     enPassantIndex = Utilities::getOffboardLocation();
@@ -170,13 +173,13 @@ void Board::applyMove( const Move& move )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
 
-            LOG_TRACE << "En-passant square: " << Utilities::indexToSquare( enPassantIndex );
+            Log::Trace << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
         }
         else if ( Utilities::indexToRank( move.getFrom() ) == RANK_7 && Utilities::indexToRank( move.getTo() ) == RANK_5 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
 
-            LOG_TRACE << "En-passant square: " << Utilities::indexToSquare( enPassantIndex );
+            Log::Trace << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
         }
     }
 
@@ -185,13 +188,13 @@ void Board::applyMove( const Move& move )
     {
         halfmoveClock++;
 
-        LOG_TRACE << "Adding one to halfmove clock. Now " << halfmoveClock;
+        Log::Trace << "Adding one to halfmove clock. Now " << halfmoveClock << std::endl;
     }
     else
     {
         halfmoveClock = 0;
 
-        LOG_TRACE << "Reset halfmove clock to zero";
+        Log::Trace << "Reset halfmove clock to zero" << std::endl;
     }
 
     // Increment move number
@@ -199,7 +202,7 @@ void Board::applyMove( const Move& move )
     {
         fullmoveNumber++;
 
-        LOG_TRACE << "Full move incrementing to " << fullmoveNumber;
+        Log::Trace << "Full move incrementing to " << fullmoveNumber << std::endl;
     }
 }
 
@@ -568,14 +571,14 @@ std::vector<Move> Board::getMoves()
         }
     }
 
-    if ( Logger::isIncluded( Logger::Level::TRACE ) )
+    Log::Trace( [&] ( const Log::Logger& logger )
     {
-        LOG_TRACE << "Generated moves:";
+        logger << "Generated moves:" << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            LOG_TRACE << ( *it ).toString();
+            logger << ( *it ).toString() << std::endl;
         }
-    }
+    } );
 
     return moves;
 }

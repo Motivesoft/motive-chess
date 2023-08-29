@@ -1,0 +1,4 @@
+12:04:14.673 DEBUG Starting
+12:04:14.677 WARN  Hello
+12:04:14.678 WARN  and goodbye
+12:04:14.678 ERROR Benchmarking: off

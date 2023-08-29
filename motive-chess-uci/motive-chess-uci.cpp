@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "Engine.h"
-#include "Logger.h"
+#include "Log.h"
 #include "Streams.h"
 #include "VersionInfo.h"
 
@@ -21,12 +21,16 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input );
 int main( int argc, char** argv )
 {
     Streams streams;
-    bool benchmarking;
+    bool benchmarking = false;
+
+    // Default logging setup - can be modified later
+
+    Log::setDestination( new ConsoleLogDestination() );
 
     // Allow command line processing to cause an exit without further activity
     if ( processCommandLine( argc, argv, &benchmarking, streams ) )
     {
-        LOG_DEBUG << "Starting";
+        Log::Debug( "Starting" );
 
         // Configure output location for where to post our UCI responses
         Broadcaster broadcaster( streams.getOuputStream() );
@@ -43,7 +47,7 @@ int main( int argc, char** argv )
         {
             input.clear();
 
-            LOG_TRACE << "Raw input: [" << line << "]";
+            Log::Trace << "Raw input: [" << line << "]" << std::endl;
 
             // Tokenize the input into a list of strings
             std::replace( line.begin(), line.end(), '\n', ' ' );
@@ -87,14 +91,14 @@ int main( int argc, char** argv )
             }
         }
 
-        LOG_DEBUG << "Closing";
+        Log::Debug << "Closing" << std::endl;
     }
     else
     {
-        LOG_DEBUG << "Closing after command line processing";
+        Log::Debug << "Closing after command line processing" << std::endl;
     }
 
-    Logger::shutdown();
+    Log::shutdown();
 
     return 0;
 }
@@ -118,7 +122,7 @@ void logSanitizedInput( std::vector<std::string> input )
         sanitized << *it;
     }
 
-    LOG_TRACE << "Cleaned input: [" << sanitized.str() << "]";
+    Log::Trace << "Cleaned input: [" << sanitized.str() << "]" << std::endl;
 }
 
 std::vector<std::string> getUciCommands()
@@ -148,7 +152,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
 {
     // Set initial defaults
     
-    Logger::Level logLevel = Logger::Level::INFO;
+    Log::Level logLevel = Log::Level::INFO;
     
     *benchmarking = false;
 
@@ -169,28 +173,28 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     it = std::find( arguments.begin(), arguments.end(), "-verbose" );
     if ( it != arguments.end() )
     {
-        logLevel = Logger::Level::TRACE;
+        logLevel = Log::Level::TRACE;
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-debug" );
     if ( it != arguments.end() )
     {
-        logLevel = Logger::Level::DEBUG;
+        logLevel = Log::Level::DEBUG;
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-quiet" );
     if ( it != arguments.end() )
     {
-        logLevel = Logger::Level::ERROR;
+        logLevel = Log::Level::ERROR;
     }
+
+    // Allow control of log destination
 
     it = std::find( arguments.begin(), arguments.end(), "-silent" );
     if ( it != arguments.end() )
     {
-        logLevel = Logger::Level::NONE;
+        Log::setDestination( new NullLogDestination() );
     }
-
-    // Allow control of input and output
 
     it = std::find( arguments.begin(), arguments.end(), "-logfile" );
     if ( it != arguments.end() )
@@ -199,13 +203,13 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
         ++it;
         if ( it != arguments.end() )
         {
-            streams.setLogFile( *it );
+            Log::setDestination( new FileLogDestination( *it ) );
         }
     }
 
     // Complete logging setup now we have determined its configuration
 
-    Logger::configure( &streams.getLogStream(), logLevel );
+    Log::getDestination()->setLevel( logLevel );
 
     it = std::find( arguments.begin(), arguments.end(), "-input" );
     if ( it != arguments.end() )
@@ -240,10 +244,10 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     // Informational stuff
 
     // Dump the command line args for posterity.
-    LOG_TRACE << arguments.size() << " command line argument(s)";
+    Log::Trace << arguments.size() << " command line argument(s)" << std::endl;
     for ( it = arguments.begin(); it != arguments.end(); it++ )
     {
-        LOG_TRACE << "  " << *it;
+        Log::Trace << "  " << *it << std::endl;
     }
 
     it = std::find( arguments.begin(), arguments.end(), "-help" );
@@ -297,7 +301,7 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
     std::string command = input[ 0 ];
     input.erase( input.begin() );
 
-    LOG_TRACE << "Processing " << command;
+    Log::Trace << "Processing " << command << std::endl;
 
     if ( command == "uci" )
     {
@@ -349,7 +353,7 @@ bool processUciCommand( Engine& engine, std::vector<std::string> input )
         engine.perftCommand( input );
     }
 
-    LOG_TRACE << "Quit state is " << quit;
+    Log::Trace << "Quit state is " << quit << std::endl;
 
     return !quit;
 }

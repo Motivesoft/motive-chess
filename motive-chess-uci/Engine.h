@@ -10,7 +10,7 @@
 #include "Fen.h"
 #include "GameContext.h"
 #include "GoContext.h"
-#include "Logger.h"
+#include "Log.h"
 #include "Registration.h"
 #include "VersionInfo.h"
 
@@ -58,7 +58,7 @@ private:
     class UciLogger
     {
     public:
-        UciLogger( Engine& engine, Logger::Level level ) :
+        UciLogger( Engine& engine, Log::Level level ) :
             engine( engine ),
             level( level )
         {
@@ -68,10 +68,10 @@ private:
         virtual ~UciLogger()
         {
             // Write the same message to the regular log
-            Logger( level ).log( location ) << "UCI " << os.str();
+            Log::logger( level ) << "UCI " << os.str() << std::endl;
 
             // Log only INFO or above unless in debugging mode
-            if ( level >= Logger::Level::INFO || engine.debugging == Engine::DebugSwitch::ON )
+            if ( level >= Log::Level::INFO || engine.debugging == Engine::DebugSwitch::ON )
             {
                 engine.broadcaster.info( os.str() );
             }
@@ -91,7 +91,7 @@ private:
         std::source_location location;
 
         Engine& engine;
-        Logger::Level level;
+        Log::Level level;
     };
 
     static void thinking( Engine* engine, Board* board, GoContext* context );
@@ -197,7 +197,7 @@ public:
 
     void setBenchmarking( bool benchmarking )
     {
-        LOG_INFO << "Set benchmarking " << ( benchmarking ? "on" : "off" );
+        Log::Info << "Set benchmarking " << ( benchmarking ? "on" : "off" ) << std::endl;
 
         this->benchmarking = benchmarking;
     }

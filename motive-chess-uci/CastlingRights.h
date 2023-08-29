@@ -7,16 +7,20 @@
 class CastlingRights
 {
 private:
-    std::array<bool,4> rights;
+    inline static const unsigned char WHITE_KINGSIDE  = 0b00001000;
+    inline static const unsigned char WHITE_QUEENSIDE = 0b00000100;
+    inline static const unsigned char BLACK_KINGSIDE  = 0b00000010;
+    inline static const unsigned char BLACK_QUEENSIDE = 0b00000001;
+    inline static const unsigned char ALL_RIGHTS      = 0b00001111;
+    inline static const unsigned char NO_RIGHTS       = 0b00000000;
 
-    inline bool canCastle( unsigned short index )
-    {
-        return rights[ index ];
-    }
+    static const std::string castlingFENStrings[ 16 ];
+
+    unsigned char rights;
 
 public:
     CastlingRights( bool initial = true ) :
-        rights { initial, initial, initial, initial }
+        rights { initial ? ALL_RIGHTS : NO_RIGHTS }
     {
 
     }
@@ -57,19 +61,19 @@ public:
             switch ( *it )
             {
                 case 'K':
-                    castlingRights.rights[ 0 ] = true;
+                    castlingRights.rights |= WHITE_KINGSIDE;
                     break;
 
                 case 'Q':
-                    castlingRights.rights[ 1 ] = true;
+                    castlingRights.rights |= WHITE_QUEENSIDE;
                     break;
 
                 case 'k':
-                    castlingRights.rights[ 2 ] = true;
+                    castlingRights.rights |= BLACK_KINGSIDE;
                     break;
 
                 case 'q':
-                    castlingRights.rights[ 3 ] = true;
+                    castlingRights.rights |= BLACK_QUEENSIDE;
                     break;
 
                 default:
@@ -80,35 +84,12 @@ public:
         return castlingRights;
     }
 
-    static std::string toFENString( CastlingRights& castlingRights )
+    static const std::string toFENString( CastlingRights& castlingRights )
     {
-        std::stringstream stream;
-
-        if ( castlingRights.canWhiteCastleKingside() )
-        {
-            stream << "K";
-        }
-        if ( castlingRights.canWhiteCastleQueenside() )
-        {
-            stream << "Q";
-        }
-        if ( castlingRights.canBlackCastleKingside() )
-        {
-            stream << "k";
-        }
-        if ( castlingRights.canBlackCastleQueenside() )
-        {
-            stream << "q";
-        }
-        if ( stream.str().empty() )
-        {
-            stream << "-";
-        }
-
-        return stream.str();
+        return castlingFENStrings[ castlingRights.rights ];
     }
 
-    std::string toString()
+    const std::string toString()
     {
         return toFENString( *this );
     }
@@ -119,49 +100,49 @@ public:
         removeWhiteQueensideCastlingRights();
     }
 
-    void removeWhiteKingsideCastlingRights()
-    {
-        rights[ 0 ] = false;
-    }
-
-    void removeWhiteQueensideCastlingRights()
-    {
-        rights[ 1 ] = false;
-    }
-
     void removeBlackCastlingRights()
     {
         removeBlackKingsideCastlingRights();
         removeBlackQueensideCastlingRights();
     }
 
+    void removeWhiteKingsideCastlingRights()
+    {
+        rights &= ~WHITE_KINGSIDE;
+    }
+
+    void removeWhiteQueensideCastlingRights()
+    {
+        rights &= ~WHITE_QUEENSIDE;
+    }
+
     void removeBlackKingsideCastlingRights()
     {
-        rights[ 2 ] = false;
+        rights &= ~BLACK_KINGSIDE;
     }
 
     void removeBlackQueensideCastlingRights()
     {
-        rights[ 3 ] = false;
+        rights &= ~BLACK_QUEENSIDE;
     }
 
     inline bool canWhiteCastleKingside()
     {
-        return canCastle( 0 );
+        return rights & WHITE_KINGSIDE;
     }
 
     inline bool canWhiteCastleQueenside()
     {
-        return canCastle( 1 );
+        return rights & WHITE_QUEENSIDE;
     }
 
     inline bool canBlackCastleKingside()
     {
-        return canCastle( 2 );
+        return rights & BLACK_KINGSIDE;
     }
 
     inline bool canBlackCastleQueenside()
     {
-        return canCastle( 3 );
+        return rights & BLACK_QUEENSIDE;
     }
 };

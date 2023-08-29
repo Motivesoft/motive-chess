@@ -7,13 +7,14 @@
 #include "Board.h"
 #include "Engine.h"
 #include "GameContext.h"
+#include "Log.h"
 #include "Move.h"
 #include "Utilities.h"
 
-#define UCI_DEBUG Engine::UciLogger( *this, Logger::Level::DEBUG ).log( "" )
-#define UCI_INFO  Engine::UciLogger( *this, Logger::Level::INFO ).log( "" )
-#define UCI_WARN  Engine::UciLogger( *this, Logger::Level::WARN ).log( "Warning - " )
-#define UCI_ERROR Engine::UciLogger( *this, Logger::Level::ERROR ).log( "Error - " )
+#define UCI_DEBUG Engine::UciLogger( *this, Log::Level::DEBUG ).log( "" )
+#define UCI_INFO  Engine::UciLogger( *this, Log::Level::INFO ).log( "" )
+#define UCI_WARN  Engine::UciLogger( *this, Log::Level::WARN ).log( "Warning - " )
+#define UCI_ERROR Engine::UciLogger( *this, Log::Level::ERROR ).log( "Error - " )
 
 void Engine::uciCommand()
 {
@@ -209,10 +210,10 @@ void Engine::ucinewgameCommand()
     {
         ucinewgameReceived = true;
 
-        LOG_TRACE << "Stopping";
+        Log::Trace << "Stopping" << std::endl;
         stopImpl();
 
-        LOG_TRACE << "Releasing game context";
+        Log::Trace << "Releasing game context" << std::endl;
         releaseGameContext();
     }
     else
@@ -230,7 +231,7 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
         ucinewgameExpected = false;
 
         // No ucinewgame, so we need to stop and reinitialise
-        LOG_TRACE << "Preparing for new game";
+        Log::Trace << "Preparing for new game" << std::endl;
         stopImpl();
         releaseGameContext();
     }
@@ -283,14 +284,14 @@ void Engine::positionCommand( std::vector<std::string>& arguments )
         else
         {
             // Assuming missing 'moves' section
-            LOG_WARN << "Unknown or unexpected position argument " << *it;
+            Log::Warn << "Unknown or unexpected position argument " << *it << std::endl;
             break;
         }
     }
 
     if ( !fen.empty() )
     {
-        LOG_DEBUG << "Position with FEN [" << fen << "] and " << moves.size() << " moves";
+        Log::Debug << "Position with FEN [" << fen << "] and " << moves.size() << " moves" << std::endl;
 
         positionImpl( fen, moves );
     }
@@ -579,7 +580,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
 
             if ( it == arguments.end() )
             {
-                LOG_ERROR << "Missing filename";
+                Log::Error << "Missing filename" << std::endl;
             }
             else
             {
@@ -597,11 +598,11 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
 
                 if ( filename.empty() )
                 {
-                    LOG_ERROR << "Empty filename";
+                    Log::Error << "Empty filename" << std::endl;
                     return;
                 }
 
-                LOG_INFO << "Starting perft run from file " << filename;
+                Log::Info << "Starting perft run from file " << filename << std::endl;
 
                 perftFile( filename );
             }
@@ -648,17 +649,17 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
                             expectedDepth = stoi( (*it++).substr( 2 ) );
                             expectedCount = stoi( *it );
 
-                            LOG_TRACE << "Noting expected result for depth " << expectedDepth << " of " << expectedCount;
+                            Log::Trace << "Noting expected result for depth " << expectedDepth << " of " << expectedCount << std::endl;
                             expectedResults.push_back( std::pair<unsigned int, unsigned int>( expectedDepth, expectedCount ) );
                         }
                         else
                         {
-                            LOG_ERROR << "Unexpected result " << *it;
+                            Log::Error << "Unexpected result " << *it << std::endl;
                         }
                     }
                     else
                     {
-                        LOG_ERROR << "Unexpected value " << *it;
+                        Log::Error << "Unexpected value " << *it << std::endl;
                     }
                     break;
 
@@ -666,19 +667,19 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
                     expectedCount = stoi( ( *it ).substr( 1 ) );
                     expectedDepth++;
 
-                    LOG_TRACE << "Noting expected result for depth " << expectedDepth << " of " << expectedCount;
+                    Log::Trace << "Noting expected result for depth " << expectedDepth << " of " << expectedCount << std::endl;
                     expectedResults.push_back( std::pair<unsigned int, unsigned int>( expectedDepth, expectedCount ) );
                     break;
 
                 default:
-                    LOG_ERROR << "Unexpected argument" << *it;
+                    Log::Error << "Unexpected argument" << *it << std::endl;
                     break;
             }
         }
 
         if ( fenString.empty() )
         {
-            LOG_DEBUG << "No FEN string specified; using default";
+            Log::Debug << "No FEN string specified; using default" << std::endl;
 
             fenString = Fen::startingPosition;
         }
@@ -689,18 +690,18 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
 
         if ( expectedResults.empty() )
         {
-            LOG_INFO << "Starting perft run at depth " << depth << " with " << fenString;
+            Log::Info << "Starting perft run at depth " << depth << " with " << fenString << std::endl;
             
             perftDepth( board, depth );
         }
         else
         {
-            LOG_INFO << "Starting perft run with " << fenString;
+            Log::Info << "Starting perft run with " << fenString << std::endl;
 
-            LOG_TRACE << "Expected results:";
+            Log::Trace << "Expected results:" << std::endl;
             for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
             {
-                LOG_TRACE << "  Depth " << ( *it ).first << ". Count " << ( *it ).second;
+                Log::Trace << "  Depth " << ( *it ).first << ". Count " << ( *it ).second << std::endl;
             }
 
             perftRange( board, expectedResults );
@@ -722,7 +723,7 @@ void Engine::perftDepth( Board& board, int depth )
     float elapsed = static_cast<float>( clock() - now ) / CLOCKS_PER_SEC;
     float nps = nodes / elapsed;
 
-    LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)";
+    Log::Info << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)" << std::endl;
 }
 
 void Engine::perftRange( Board& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults )
@@ -741,11 +742,11 @@ void Engine::perftRange( Board& board, std::vector<std::pair<unsigned int, unsig
 
         if ( nodes == count )
         {
-            LOG_INFO << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)";
+            Log::Info << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)" << std::endl;
         }
         else
         {
-            LOG_ERROR << "Total node count at depth " << depth << " is " << nodes << " but expected to be " << count << ". Time " << elapsed << "s (" << nps << " nps)";
+            Log::Error << "Total node count at depth " << depth << " is " << nodes << " but expected to be " << count << ". Time " << elapsed << "s (" << nps << " nps)" << std::endl;
         }
     }
 }
@@ -762,11 +763,11 @@ void Engine::perftFile( std::string& filename )
         {
             if ( line.empty() || line[ 0 ] == '#' )
             {
-                LOG_TRACE << "Skipping empty or comment line";
+                Log::Trace << "Skipping empty or comment line" << std::endl;
                 continue;
             }
 
-            LOG_TRACE << "Read: " << line;
+            Log::Trace << "Read: " << line << std::endl;
 
             // Split the line into tokens
             std::vector<std::string> arguments;
@@ -799,7 +800,7 @@ void Engine::perftFile( std::string& filename )
     }
     else
     {
-        LOG_ERROR << "Failed to read file " << filename;
+        Log::Error << "Failed to read file " << filename << std::endl;
     }
 }
 
@@ -818,7 +819,7 @@ void Engine::stopImpl( ThinkingOutcome thinkingOutcome )
         return;
     }
 
-    LOG_TRACE << "Stopping thinking";
+    Log::Trace << "Stopping thinking" << std::endl;
 
     broadcastThinkingOutcome = ( thinkingOutcome == ThinkingOutcome::BROADCAST );
     
@@ -828,7 +829,7 @@ void Engine::stopImpl( ThinkingOutcome thinkingOutcome )
     // Wait for the thread to stop
     thinkingThread->join();
 
-    LOG_TRACE << "Thread stopped";
+    Log::Trace << "Thread stopped" << std::endl;
 
     // Housekeeping
     delete thinkingThread;
@@ -845,14 +846,14 @@ void Engine::isreadyImpl()
 
 void Engine::debugImpl( Engine::DebugSwitch flag )
 {
-    LOG_INFO << "Setting debug to [" << (flag == DebugSwitch::ON ? "on" : "off") << "]";
+    Log::Info << "Setting debug to [" << (flag == DebugSwitch::ON ? "on" : "off") << "]" << std::endl;
 
     debugging = flag;
 }
 
 void Engine::registerImpl()
 {
-    LOG_INFO << "Register later";
+    Log::Info << "Register later" << std::endl;
 
     broadcaster.registration( Registration::Status::CHECKING );
 
@@ -863,7 +864,7 @@ void Engine::registerImpl()
 
 void Engine::registerImpl( std::string& name, std::string& code )
 {
-    LOG_INFO << "Register with name [" << name << "] and code [" << code << "]";
+    Log::Info << "Register with name [" << name << "] and code [" << code << "]" << std::endl;
 
     broadcaster.registration( Registration::Status::CHECKING );
 
@@ -874,7 +875,7 @@ void Engine::registerImpl( std::string& name, std::string& code )
 
 void Engine::setoptionImpl( std::string& name, std::string& value )
 {
-    LOG_INFO << "SetOption with name [" << name << "] and value [" << value << "]";
+    Log::Info << "SetOption with name [" << name << "] and value [" << value << "]" << std::endl;
 
     // Store the new value
     if ( name == OPTION_BENCH )
@@ -885,20 +886,20 @@ void Engine::setoptionImpl( std::string& name, std::string& value )
 
 void Engine::positionImpl( const std::string& fenString, std::vector<std::string> moves )
 {
-    LOG_INFO << "Processing FEN string " << fenString << " and " << moves.size() << " moves";
+    Log::Info << "Processing FEN string " << fenString << " and " << moves.size() << " moves" << std::endl;
     Fen fen = Fen::fromPosition( fenString );
 
     std::vector< Move > moveList;
     if ( moves.size() > 0 )
     {
-        LOG_DEBUG << "Initial moves:";
+        Log::Debug << "Initial moves:" << std::endl;
 
         for ( std::string move : moves )
         {
             Move m = Move::fromString( move );
 
             moveList.push_back( m );
-            LOG_DEBUG << m.toString();
+            Log::Debug << m.toString() << std::endl;
         }
     }
 
@@ -911,7 +912,7 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
 
 void Engine::goImpl( GoContext* goContext )
 {
-    LOG_INFO << "Go: depth=" << goContext->getDepth();
+    Log::Info << "Go: depth=" << goContext->getDepth() << std::endl;
 
     stopImpl();
 
@@ -935,7 +936,7 @@ void Engine::goImpl( GoContext* goContext )
     thinkingBoard = new Board( initialBoard );
     thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard, goContext );
 
-    LOG_TRACE << "Thread " << thinkingThread->get_id() << " running";
+    Log::Trace << "Thread " << thinkingThread->get_id() << " running" << std::endl;
 }
 
 // Special perft command
@@ -960,7 +961,7 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
             unsigned long moveNodes = perftImpl( depth - 1, tBoard );
             nodes += moveNodes;
 
-            LOG_DEBUG << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString();
+            Log::Debug << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
         }
         else
         {
@@ -1019,7 +1020,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             std::vector<Move> candidateMoves = board->getMoves();
             if ( candidateMoves.empty() )
             {
-                LOG_DEBUG << "No candidate moves";
+                Log::Debug << "No candidate moves" << std::endl;
                 break;
             }
 
@@ -1033,7 +1034,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 if ( candidateMoves.size() == 1 )
                 {
                     // Don't waste clock time analysing a forced move situation
-                    LOG_DEBUG << "Only one move available";
+                    Log::Debug << "Only one move available" << std::endl;
                     readyToMove = true;
                     break;
                 }
@@ -1044,7 +1045,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             // TODO this probably wants to be a better check
             if ( loop++ >= context->getDepth() )
             {
-                LOG_DEBUG << "Reached search depth";
+                Log::Debug << "Reached search depth" << std::endl;
                 readyToMove = true;
                 break;
             }
@@ -1056,18 +1057,18 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         if ( thoughts.getPonderMove().isNullMove() )
         {
-            LOG_DEBUG << "Broadcasting best move: " << thoughts.getBestMove().toString();
+            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << std::endl;
 
             engine->broadcaster.bestmove( thoughts.getBestMove().toString() );
         }
         else
         {
-            LOG_DEBUG << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString();
+            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString() << std::endl;
 
             engine->broadcaster.bestmove( thoughts.getBestMove().toString(), thoughts.getPonderMove().toString() );
         }
     }
 
-    LOG_DEBUG << "Thinking thread terminating";
+    Log::Debug << "Thinking thread terminating" << std::endl;
     delete context;
 }

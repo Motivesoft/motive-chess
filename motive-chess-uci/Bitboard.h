@@ -4,8 +4,6 @@
 #include <memory>
 #include <mutex>
 
-#include "Logger.h"
-
 #define Bitboards Bitboard::getInstance()
 
 class Bitboard
@@ -117,8 +115,8 @@ public:
     {
         unsigned long long value = 0xff;
 
-        value <<= (rank * 8);
-
+        value <<= ( ( unsigned long long ) rank << 3 );
+        
         return value;
     }
 
