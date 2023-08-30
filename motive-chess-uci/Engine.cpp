@@ -954,14 +954,15 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
 
     for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
     {
-        Board tBoard = board.makeMove( *it );
+        Move& move = *it;
+        Board tBoard = board.makeMove( move );
 
         if ( divide )
         {
             unsigned long moveNodes = perftImpl( depth - 1, tBoard );
             nodes += moveNodes;
 
-            Log::Debug << ( *it ).toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
+            Log::Debug << move.toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
         }
         else
         {
