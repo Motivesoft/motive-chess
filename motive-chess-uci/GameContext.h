@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,22 +13,22 @@ class GameContext
 {
 private:
     const Fen fen;
-    const std::vector<Move> moves;
+    const std::vector<std::shared_ptr<Move>> moves;
 
 public:
-    GameContext( Fen fen, std::vector<Move> moves ) :
+    GameContext( Fen fen, std::vector<std::shared_ptr<Move>>& moves ) :
         fen( fen ),
         moves( moves )
     {
 
     }
 
-    const Fen& getFEN()
+    const Fen& getFEN() const
     {
         return fen;
     }
 
-    const std::vector<Move>& getMoves()
+    const std::vector<std::shared_ptr<Move>>& getMoves() const
     {
         return moves;
     }

@@ -1,11 +1,13 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <limits>
 #include <thread>
 #include <vector>
 
 #include "Board.h"
 #include "Engine.h"
+#include "Evaluation.h"
 #include "GameContext.h"
 #include "Log.h"
 #include "Move.h"
@@ -889,17 +891,17 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
     Log::Info << "Processing FEN string " << fenString << " and " << moves.size() << " moves" << std::endl;
     Fen fen = Fen::fromPosition( fenString );
 
-    std::vector< Move > moveList;
+    std::vector<std::shared_ptr<Move>> moveList;
     if ( moves.size() > 0 )
     {
         Log::Debug << "Initial moves:" << std::endl;
 
         for ( std::string move : moves )
         {
-            Move m = Move::fromString( move );
+            std::shared_ptr<Move> m = Move::fromString( move );
 
             moveList.push_back( m );
-            Log::Debug << m.toString() << std::endl;
+            Log::Debug << m->toString() << std::endl;
         }
     }
 
@@ -927,7 +929,7 @@ void Engine::goImpl( GoContext* goContext )
 
     // Construct the position to think from
     Board initialBoard( gameContext->getFEN() );
-    for ( std::vector<Move>::const_iterator it = gameContext->getMoves().begin(); it != gameContext->getMoves().end(); it++ )
+    for ( std::vector<std::shared_ptr<Move>>::const_iterator it = gameContext->getMoves().begin(); it != gameContext->getMoves().end(); it++ )
     {
         initialBoard = initialBoard.makeMove( *it );
     }
@@ -950,19 +952,18 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
         return 1;
     }
 
-    std::vector<Move> moves = board.getMoves();
+    std::vector<std::shared_ptr<Move>> moves = board.getMoves();
 
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+    for ( std::vector<std::shared_ptr<Move>>::const_iterator it = moves.begin(); it != moves.end(); it++ )
     {
-        Move& move = *it;
-        Board tBoard = board.makeMove( move );
+        Board tBoard = board.makeMove( *it );
 
         if ( divide )
         {
             unsigned long moveNodes = perftImpl( depth - 1, tBoard );
             nodes += moveNodes;
 
-            Log::Debug << move.toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
+            Log::Debug << (*it)->toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
         }
         else
         {
@@ -978,22 +979,23 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
 class Thoughts
 {
 private:
-    Move bestMove;
-    Move ponderMove;
+    std::shared_ptr<Move> bestMove;
+    std::shared_ptr<Move> ponderMove;
+
 public:
-    Thoughts( Move bestMove = Move::nullMove, Move ponderMove = Move::nullMove ) :
+    Thoughts( const std::shared_ptr<Move>& bestMove = Move::nullMove, const std::shared_ptr<Move>& ponderMove = Move::nullMove ) :
         bestMove( bestMove ),
         ponderMove( ponderMove )
     {
 
     }
 
-    Move getBestMove()
+    std::shared_ptr<Move> getBestMove() const
     {
         return bestMove;
     }
 
-    Move getPonderMove()
+    std::shared_ptr<Move> getPonderMove() const
     {
         return ponderMove;
     }
@@ -1018,27 +1020,46 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         do
         {
-            std::vector<Move> candidateMoves = board->getMoves();
+            std::vector<std::shared_ptr<Move>> candidateMoves = board->getMoves();
             if ( candidateMoves.empty() )
             {
+                // TODO we need a proper solution to this
                 Log::Debug << "No candidate moves" << std::endl;
                 break;
             }
 
-            if ( thoughts.getBestMove().isNullMove() )
+            if ( candidateMoves.size() == 1 )
             {
-                // TODO don't select target move randomly!
-                int random = std::rand();
-                int randomMove = random % candidateMoves.size();
-                thoughts = Thoughts( candidateMoves[ randomMove ] );
+                // Don't waste clock time analysing a forced move situation
+                thoughts = Thoughts( candidateMoves[ 0 ] );
 
-                if ( candidateMoves.size() == 1 )
+                Log::Debug << "Only one move available" << std::endl;
+
+                readyToMove = true;
+                break;
+            }
+
+            std::shared_ptr<Move> bestMove = Move::nullMove;
+            float bestScore = std::numeric_limits<float>::lowest();
+            for ( std::vector<std::shared_ptr<Move>>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
+            {
+                float score = Evaluation::score( board->makeMove( *it ) );
+
+                if ( score > bestScore )
                 {
-                    // Don't waste clock time analysing a forced move situation
-                    Log::Debug << "Only one move available" << std::endl;
-                    readyToMove = true;
-                    break;
+                    bestScore = score;
+                    bestMove = *it;
                 }
+
+                Log::Debug << "Score for " << ( *it )->toString() << " is " << Evaluation::score( board->makeMove( *it ) ) << std::endl;
+            }
+
+            // If we haven't got a move in mind, establish one
+            if ( thoughts.getBestMove()->isNullMove() )
+            {
+                thoughts = Thoughts( bestMove );
+
+                readyToMove = true;
             }
 
             // TODO do work here
@@ -1056,17 +1077,17 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
     if ( engine->broadcastThinkingOutcome )
     {
-        if ( thoughts.getPonderMove().isNullMove() )
+        if ( thoughts.getPonderMove()->isNullMove() )
         {
-            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << std::endl;
+            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove()->toString() << std::endl;
 
-            engine->broadcaster.bestmove( thoughts.getBestMove().toString() );
+            engine->broadcaster.bestmove( thoughts.getBestMove()->toString() );
         }
         else
         {
-            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString() << std::endl;
+            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove()->toString() << " with ponder: " << thoughts.getPonderMove()->toString() << std::endl;
 
-            engine->broadcaster.bestmove( thoughts.getBestMove().toString(), thoughts.getPonderMove().toString() );
+            engine->broadcaster.bestmove( thoughts.getBestMove()->toString(), thoughts.getPonderMove()->toString() );
         }
     }
 

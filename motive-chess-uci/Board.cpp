@@ -4,7 +4,7 @@
 
 #include "Bitboard.h"
 
-Board Board::makeMove( const Move& move )
+Board Board::makeMove( const std::shared_ptr<Move>& move )
 {
     Board board( *this );
 
@@ -13,14 +13,14 @@ Board Board::makeMove( const Move& move )
     return board;
 }
 
-void Board::applyMove( const Move& move )
+void Board::applyMove( const std::shared_ptr<Move>& move )
 {
     Log::Trace( [&] ( const Log::Logger& logger )
     {
-        logger << "Apply move: " << move.toString() << std::endl;
+        logger << "Apply move: " << move->toString() << std::endl;
     } );
 
-    if ( move.isNullMove() )
+    if ( move->isNullMove() )
     {
         // To be honest, not sure what to do here - return an unchanged board, or an updated one with no move made
         // but other attributes updated as though a move had been made and it was now the other side's go
@@ -29,26 +29,26 @@ void Board::applyMove( const Move& move )
     }
 
     // Store this for later tests
-    unsigned char movingPiece = pieceAt( move.getFrom() ); // Will not be Piece::NOTHING
-    unsigned char capturedPiece = pieceAt( move.getTo() ); // May be Piece::NOTHING
+    unsigned char movingPiece = pieceAt( move->getFrom() ); // Will not be Piece::NOTHING
+    unsigned char capturedPiece = pieceAt( move->getTo() ); // May be Piece::NOTHING
 
     // Make the main part of the move and then check for other actions
 
-    movePiece( move.getFrom(), move.getTo() );
+    movePiece( move->getFrom(), move->getTo() );
 
     // Handle castling - check the piece that has just moved and work it out from there
     // TODO use Move's new knowledge about whether it is a castling move
     if ( movingPiece == Piece::WKING )
     {
-        if ( move.getFrom() == Board::E1 )
+        if ( move->getFrom() == Board::E1 )
         {
-            if ( move.getTo() == Board::C1 )
+            if ( move->getTo() == Board::C1 )
             {
                 movePiece( Board::A1, Board::D1 );
 
                 Log::Trace << "White castling queen side" << std::endl;
             }
-            else if ( move.getTo() == Board::G1 )
+            else if ( move->getTo() == Board::G1 )
             {
                 movePiece( Board::H1, Board::F1 );
 
@@ -61,15 +61,15 @@ void Board::applyMove( const Move& move )
     }
     else if ( movingPiece == Piece::BKING )
     {
-        if ( move.getFrom() == Board::E8 )
+        if ( move->getFrom() == Board::E8 )
         {
-            if ( move.getTo() == Board::C8 )
+            if ( move->getTo() == Board::C8 )
             {
                 movePiece( Board::A8, Board::D8 );
 
                 Log::Trace << "Black castling queen side" << std::endl;
             }
-            else if ( move.getTo() == Board::G8 )
+            else if ( move->getTo() == Board::G8 )
             {
                 movePiece( Board::H8, Board::F8 );
 
@@ -83,11 +83,11 @@ void Board::applyMove( const Move& move )
     else if ( movingPiece == Piece::WROOK )
     {
         // A white rook has moved - work out which and disable its ability to castle
-        if ( move.getFrom() == Board::H1 )
+        if ( move->getFrom() == Board::H1 )
         {
             castlingRights.removeWhiteKingsideCastlingRights();
         }
-        else if ( move.getFrom() == Board::A1 )
+        else if ( move->getFrom() == Board::A1 )
         {
             castlingRights.removeWhiteQueensideCastlingRights();
         }
@@ -95,30 +95,30 @@ void Board::applyMove( const Move& move )
     else if ( movingPiece == Piece::BROOK )
     {
         // A black rook has moved - work out which and disable its ability to castle
-        if ( move.getFrom() == Board::H8 )
+        if ( move->getFrom() == Board::H8 )
         {
             castlingRights.removeBlackKingsideCastlingRights();
         }
-        else if ( move.getFrom() == Board::A8 )
+        else if ( move->getFrom() == Board::A8 )
         {
             castlingRights.removeBlackQueensideCastlingRights();
         }
     }
 
     // If a piece captures a rook, that prevents castling
-    if ( move.getTo() == Board::H8 )
+    if ( move->getTo() == Board::H8 )
     {
         castlingRights.removeBlackKingsideCastlingRights();
     }
-    else if ( move.getTo() == Board::A8 )
+    else if ( move->getTo() == Board::A8 )
     {
         castlingRights.removeBlackQueensideCastlingRights();
     }
-    else if ( move.getTo() == Board::H1 )
+    else if ( move->getTo() == Board::H1 )
     {
         castlingRights.removeWhiteKingsideCastlingRights();
     }
-    else if ( move.getTo() == Board::A1 )
+    else if ( move->getTo() == Board::A1 )
     {
         castlingRights.removeWhiteQueensideCastlingRights();
     }
@@ -127,16 +127,16 @@ void Board::applyMove( const Move& move )
 
     // Promotions
 
-    if ( move.isPromotion() )
+    if ( move->isPromotion() )
     {
-        setPiece( move.getTo(), move.getPromotionPiece() );
+        setPiece( move->getTo(), move->getPromotionPiece() );
 
-        Log::Trace << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() ) << std::endl;
+        Log::Trace << "Handling promotion to " << Piece::toFENString( move->getPromotionPiece() ) << std::endl;
     }
 
     // En-passant
 
-    if ( move.getTo() == enPassantIndex )
+    if ( move->getTo() == enPassantIndex )
     {
         if ( Piece::isPawn( movingPiece ) )
         {
@@ -167,15 +167,15 @@ void Board::applyMove( const Move& move )
 
     if ( Piece::isPawn( movingPiece ) )
     {
-        unsigned short file = Utilities::indexToFile( move.getFrom() );
+        unsigned short file = Utilities::indexToFile( move->getFrom() );
 
-        if ( Utilities::indexToRank( move.getFrom() ) == RANK_2 && Utilities::indexToRank( move.getTo() ) == RANK_4 )
+        if ( Utilities::indexToRank( move->getFrom() ) == RANK_2 && Utilities::indexToRank( move->getTo() ) == RANK_4 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
 
             Log::Trace << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
         }
-        else if ( Utilities::indexToRank( move.getFrom() ) == RANK_7 && Utilities::indexToRank( move.getTo() ) == RANK_5 )
+        else if ( Utilities::indexToRank( move->getFrom() ) == RANK_7 && Utilities::indexToRank( move->getTo() ) == RANK_5 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
 
@@ -344,12 +344,12 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
-std::vector<Move> Board::getMoves()
+std::vector<std::shared_ptr<Move>> Board::getMoves()
 { 
     bool isWhite = Piece::isWhite( activeColor );
 
     // Worker variables
-    std::vector<Move> moves;
+    std::vector<std::shared_ptr<Move>> moves;
 
     unsigned long long mask = 1;
     unsigned short index;
@@ -547,20 +547,21 @@ std::vector<Move> Board::getMoves()
 
     // Make the move and test whether it is really legal, not just pseudo legal
     unsigned long long protectedSquares;
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
+    for ( std::vector<std::shared_ptr<Move>>::iterator it = moves.begin(); it != moves.end(); )
     {
-        Move& move = *it;
+        // TODO is there a performance difference here or should we just use *it throughout?
+        std::shared_ptr<Move>& move = *it;
         Board testBoard = makeMove( move );
 
         // Which suqares are we testing? Just the king for check, or the squares it passes
         // through when castling
-        if ( move.isCastle() )
+        if ( move->isCastle() )
         {
-            if ( move.isKingsideCastle() )
+            if ( move->isKingsideCastle() )
             {
                 protectedSquares = (isWhite ?  0b01110000ull : 0b01110000ull << 56 );
             }
-            else // if ( move.isQueensideCastle() )
+            else // if ( move->isQueensideCastle() )
             {
                 protectedSquares = ( isWhite ? 0b00011100ull : 0b00011100ull << 56 );
             }
@@ -584,9 +585,9 @@ std::vector<Move> Board::getMoves()
     Log::Trace( [&] ( const Log::Logger& logger )
     {
         logger << "Generated moves:" << std::endl;
-        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+        for ( std::vector<std::shared_ptr<Move>>::const_iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            logger << ( *it ).toString() << std::endl;
+            logger << ( *it ).get()->toString() << std::endl;
         }
     } );
 

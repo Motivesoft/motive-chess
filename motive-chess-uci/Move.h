@@ -1,7 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
+#include "Log.h"
 #include "Piece.h"
 
 class Move
@@ -27,7 +29,8 @@ private:
     // handling colorizing the piece
     unsigned char promotion;
 
-    Move( unsigned short from, 
+public:
+    Move( unsigned short from,
           unsigned short to, 
           unsigned char promotion = Piece::emptyPiece(),
           bool castlingKingside = false,
@@ -49,37 +52,38 @@ private:
         flag |= castlingQueenside ? CASTLE_QUEENSIDE : 0;
     }
 
-public:
-    static Move fromString( const std::string& moveString );
+    static std::shared_ptr<Move> fromString( const std::string& moveString );
 
-    static Move createKingsideCastlingMove( unsigned short from, unsigned short to )
+    static std::shared_ptr<Move> createKingsideCastlingMove( unsigned short from, unsigned short to )
     {
-        return Move( from, to, Piece::emptyPiece(), true, false );
+        return std::make_shared<Move>( from, to, Piece::emptyPiece(), true, false );
     }
 
-    static Move createQueensideCastlingMove( unsigned short from, unsigned short to )
+    static std::shared_ptr<Move> createQueensideCastlingMove( unsigned short from, unsigned short to )
     {
-        return Move( from, to, Piece::emptyPiece(), false, true );
+        return std::make_shared<Move>( from, to, Piece::emptyPiece(), false, true );
     }
 
-    static Move createPromotionMove( unsigned short from, unsigned short to, unsigned char promotion )
+    static std::shared_ptr<Move> createPromotionMove( unsigned short from, unsigned short to, unsigned char promotion )
     {
-        return Move( from, to, promotion );
+        return std::make_shared<Move>( from, to, promotion );
     }
 
-    static Move createMove( unsigned short from, unsigned short to )
+    static std::shared_ptr<Move> createMove( unsigned short from, unsigned short to )
     {
-        return Move( from, to );
+        return std::make_shared<Move>( from, to );
     }
 
-    static const Move nullMove;
+    static std::shared_ptr<Move> nullMove;
 
+    // TODO delete these copy ctors (explicitly)?
     Move( Move& move ) :
         from( move.from ),
         to( move.to ),
         flag( move.flag ),
         promotion( move.promotion )
     {
+        Log::Debug << "Move copy ctor" << std::endl;
     }
 
     Move( const Move& move ) :
@@ -88,11 +92,13 @@ public:
         flag( move.flag ),
         promotion( move.promotion )
     {
+        Log::Debug << "Move const copy ctor" << std::endl;
     }
 
+    // TODO delete this
     virtual ~Move()
     {
-
+        Log::Debug << "Move destructor" << std::endl;
     }
 
     bool operator == ( const Move& move ) const

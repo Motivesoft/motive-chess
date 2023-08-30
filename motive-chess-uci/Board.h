@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 
 #include "CastlingRights.h"
 #include "Fen.h"
@@ -107,7 +108,7 @@ private:
     /// Applies move to this board
     /// </summary>
     /// <param name="move">the move</param>
-    void applyMove( const Move& move );
+    void applyMove( const std::shared_ptr<Move>& move );
 
     void validateCastlingRights()
     {
@@ -240,8 +241,10 @@ public:
     /// </summary>
     /// <param name="move">the move</param>
     /// <returns>a new board</returns>
-    Board makeMove( const Move& move );
+    Board makeMove( const std::shared_ptr<Move>& move );
 
-    std::vector<Move> getMoves();
+    std::vector<std::shared_ptr<Move>> getMoves();
+
+    friend class Evaluation;
 };
 
