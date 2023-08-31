@@ -123,7 +123,10 @@ void Board::applyMove( const Move& move )
         castlingRights.removeWhiteQueensideCastlingRights();
     }
 
-    Log::Trace << "Castling set to " << castlingRights.toString() << std::endl;
+    Log::Trace( [&] ( const Log::Logger& logger )
+    {
+        logger << "Castling set to " << castlingRights.toString() << std::endl;
+    } );
 
     // Promotions
 
@@ -131,7 +134,10 @@ void Board::applyMove( const Move& move )
     {
         setPiece( move.getTo(), move.getPromotionPiece() );
 
-        Log::Trace << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() ) << std::endl;
+        Log::Trace( [&] ( const Log::Logger& logger )
+        {
+            logger << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() ) << std::endl;
+        } );
     }
 
     // En-passant
@@ -140,7 +146,10 @@ void Board::applyMove( const Move& move )
     {
         if ( Piece::isPawn( movingPiece ) )
         {
-            Log::Trace << "Handling en-passant capture at " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
+            Log::Trace( [&] ( const Log::Logger& logger )
+            {
+                logger << "Handling en-passant capture at " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
+            } );
 
             // An en-passant capture is happening. Remove the enemy pawn
 
@@ -160,7 +169,11 @@ void Board::applyMove( const Move& move )
 
     // Swap whose move it is
     activeColor = Piece::oppositeColor( activeColor );
-    Log::Trace << "Active color now " << Piece::toColorString( activeColor ) << std::endl;
+
+    Log::Trace( [&] ( const Log::Logger& logger )
+    {
+        logger << "Active color now " << Piece::toColorString( activeColor ) << std::endl;
+    } );
 
     // Clear this but then determine whether this new move sets it again
     enPassantIndex = Utilities::getOffboardLocation();
@@ -173,13 +186,19 @@ void Board::applyMove( const Move& move )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
 
-            Log::Trace << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
+            Log::Trace( [&] ( const Log::Logger& logger )
+            {
+                logger << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
+            } );
         }
         else if ( Utilities::indexToRank( move.getFrom() ) == RANK_7 && Utilities::indexToRank( move.getTo() ) == RANK_5 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
 
-            Log::Trace << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
+            Log::Trace( [&] ( const Log::Logger& logger )
+            {
+                logger << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
+            } );
         }
     }
 
@@ -188,13 +207,19 @@ void Board::applyMove( const Move& move )
     {
         halfmoveClock++;
 
-        Log::Trace << "Adding one to halfmove clock. Now " << halfmoveClock << std::endl;
+        Log::Trace( [&] ( const Log::Logger& logger )
+        {
+            logger << "Adding one to halfmove clock. Now " << halfmoveClock << std::endl;
+        } );
     }
     else
     {
         halfmoveClock = 0;
 
-        Log::Trace << "Reset halfmove clock to zero" << std::endl;
+        Log::Trace( [&] ( const Log::Logger& logger )
+        {
+            logger << "Reset halfmove clock to zero" << std::endl;
+        } );
     }
 
     // Increment move number
@@ -202,7 +227,10 @@ void Board::applyMove( const Move& move )
     {
         fullmoveNumber++;
 
-        Log::Trace << "Full move incrementing to " << fullmoveNumber << std::endl;
+        Log::Trace( [&] ( const Log::Logger& logger )
+        {
+            logger << "Full move incrementing to " << fullmoveNumber << std::endl;
+        } );
     }
 }
 
