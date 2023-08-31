@@ -109,27 +109,7 @@ private:
     /// <param name="move">the move</param>
     void applyMove( const Move& move );
 
-    void validateCastlingRights()
-    {
-        // Some FEN strings in the wild have wrong castling flags. Nip this in the board to
-        // avoid having to consider it during thinking time
-        if ( pieces[ Board::E1 ] != Piece::WKING || pieces[ Board::H1 ] != Piece::WROOK )
-        {
-            castlingRights.removeWhiteKingsideCastlingRights();
-        }
-        if ( pieces[ Board::E1 ] != Piece::WKING || pieces[ Board::A1 ] != Piece::WROOK )
-        {
-            castlingRights.removeWhiteQueensideCastlingRights();
-        }
-        if ( pieces[ Board::E8 ] != Piece::BKING || pieces[ Board::H8 ] != Piece::BROOK )
-        {
-            castlingRights.removeBlackKingsideCastlingRights();
-        }
-        if ( pieces[ Board::E8 ] != Piece::BKING || pieces[ Board::A8 ] != Piece::BROOK )
-        {
-            castlingRights.removeBlackQueensideCastlingRights();
-        }
-    }
+    void validateCastlingRights();
 
     bool failsCheckTests( unsigned long long protectedSquares );
 
@@ -150,6 +130,62 @@ private:
                              unsigned long long& rook,
                              unsigned long long& queen,
                              unsigned long long& king );
+
+    class PieceBitboards
+    {
+    public:
+        std::array<unsigned long long, 8> pieceMask;
+        unsigned long long allPiecesMask;
+
+        PieceBitboards()
+        {
+            pieceMask[ 1 ] = pieceMask[ 2 ] = pieceMask[ 3 ] = pieceMask[ 4 ] = pieceMask[ 5 ] = pieceMask[ 6 ] = 0;
+        }
+
+        void complete()
+        {
+            allPiecesMask = pieceMask[ 1 ] | pieceMask[ 2 ] | pieceMask[ 3 ] | pieceMask[ 4 ] | pieceMask[ 5 ] | pieceMask[ 6 ];
+        }
+
+        // Helper methods - magic numbers below (and above) match Piece representations
+
+        inline unsigned long long pawnMask() const
+        {
+            return pieceMask[ 1 ];
+        }
+
+        inline unsigned long long knightMask() const
+        {
+            return pieceMask[ 2 ];
+        }
+
+        inline unsigned long long bishopMask() const
+        {
+            return pieceMask[ 3 ];
+        }
+
+        inline unsigned long long rookMask() const
+        {
+            return pieceMask[ 4 ];
+        }
+
+        inline unsigned long long queenMask() const
+        {
+            return pieceMask[ 5 ];
+        }
+
+        inline unsigned long long kingMask() const
+        {
+            return pieceMask[ 6 ];
+        }
+
+        inline unsigned long long allMask() const
+        {
+            return allPiecesMask;
+        }
+    };
+
+    void makePieceBitboards( bool isWhite, PieceBitboards& pieceBitboards );
 
 public:
     Board() :
