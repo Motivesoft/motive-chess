@@ -117,7 +117,7 @@ private:
     void positionImpl( const std::string& fen, std::vector<std::string> moves );
     void goImpl( GoContext* goContext );
 
-    unsigned long perftImpl( int depth, Board board, bool divide = false );
+    unsigned long perftImpl( int depth, Board& board, bool divide = false );
 
     void perftDepth( Board& board, int depth );
     void perftRange( Board& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults );

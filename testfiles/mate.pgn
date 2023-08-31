@@ -1,0 +1,20 @@
+[Event "Computer chess game"]
+[Site "G5"]
+[Date "2023.08.30"]
+[Round "?"]
+[White "Motive-chess-uci (Release)"]
+[Black "Motive-chess-uci (Release)"]
+[Result "1-0"]
+[BlackElo "2000"]
+[ECO "A10"]
+[Opening "English"]
+[Time "19:36:43"]
+[WhiteElo "2000"]
+[TimeControl "300"]
+[Termination "normal"]
+[PlyCount "13"]
+[WhiteType "program"]
+[BlackType "program"]
+
+1. c4 h6 2. e4 a6 3. f3 c6 4. h3 f5 5. e5 Ra7 6. Qc2 f4 7. Qg6# 1-0
+

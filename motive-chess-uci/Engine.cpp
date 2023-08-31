@@ -929,7 +929,7 @@ void Engine::goImpl( GoContext* goContext )
     Board initialBoard( gameContext->getFEN() );
     for ( std::vector<Move>::const_iterator it = gameContext->getMoves().begin(); it != gameContext->getMoves().end(); it++ )
     {
-        initialBoard = initialBoard.makeMove( *it );
+        initialBoard.makeMove( *it );
     }
 
     // Use this as the board to work from
@@ -941,7 +941,7 @@ void Engine::goImpl( GoContext* goContext )
 
 // Special perft command
 
-unsigned long Engine::perftImpl( int depth, Board board, bool divide )
+unsigned long Engine::perftImpl( int depth, Board& board, bool divide )
 {
     unsigned long nodes = 0;
 
@@ -955,19 +955,21 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
     for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
     {
         Move& move = *it;
-        Board tBoard = board.makeMove( move );
+        std::unique_ptr<Board::UndoState> undoState = board.makeMove( move );
 
         if ( divide )
         {
-            unsigned long moveNodes = perftImpl( depth - 1, tBoard );
+            unsigned long moveNodes = perftImpl( depth - 1, board );
             nodes += moveNodes;
 
-            Log::Debug << move.toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
+            Log::Debug << move.toString() << " : " << moveNodes << " " << board.toFEN().toString() << std::endl;
         }
         else
         {
-            nodes += perftImpl( depth - 1, tBoard );
+            nodes += perftImpl( depth - 1, board );
         }
+
+        board.unmakeMove( undoState );
     }
 
     return nodes;

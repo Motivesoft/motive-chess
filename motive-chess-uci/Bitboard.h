@@ -22,7 +22,6 @@ private:
     static unsigned long long queenMoves[ 64 ];
     static unsigned long long kingMoves[ 64 ];
 
-    static unsigned long long indexBitTable[ 64 ];
 
     static void buildBitboards();
 
@@ -32,6 +31,7 @@ private:
     static unsigned long long rotate180( unsigned long long x );
 
 public:
+    static unsigned long long indexBitTable[ 64 ];
     static Bitboard* getInstance()
     {
         creationMutex.lock();

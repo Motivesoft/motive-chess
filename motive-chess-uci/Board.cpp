@@ -4,15 +4,6 @@
 
 #include "Bitboard.h"
 
-Board Board::makeMove( const Move& move )
-{
-    Board board( *this );
-
-    board.applyMove( move );
-
-    return board;
-}
-
 void Board::applyMove( const Move& move )
 {
     Log::Trace( [&] ( const Log::Logger& logger )
@@ -358,34 +349,25 @@ std::vector<Move> Board::getMoves()
 
     // Let's make some bitboards
 
-    unsigned long long ownPawns;
-    unsigned long long ownKnights;
-    unsigned long long ownBishops;
-    unsigned long long ownRooks;
-    unsigned long long ownQueens;
-    unsigned long long ownKing;
-    makePieceBitboards( isWhite, ownPawns, ownKnights, ownBishops, ownRooks, ownQueens, ownKing );
+    PieceMasks own;
+    PieceMasks enemy;
 
-    unsigned long long enemyPawns;
-    unsigned long long enemyKnights;
-    unsigned long long enemyBishops;
-    unsigned long long enemyRooks;
-    unsigned long long enemyQueens;
-    unsigned long long enemyKing;
-    makePieceBitboards( !isWhite, enemyPawns, enemyKnights, enemyBishops, enemyRooks, enemyQueens, enemyKing );
+    mPP( isWhite, own );
+    const unsigned long long ownPieces = own.all;
 
-    const unsigned short promotionRank = isWhite ? 7 : 0;
+    mPP( !isWhite, enemy );
+    const unsigned long long enemyPieces = enemy.all;
 
-    const unsigned long long ownPieces = ownPawns | ownKnights | ownBishops | ownRooks | ownQueens | ownKing;
-    const unsigned long long enemyPieces = enemyPawns | enemyKnights | enemyBishops | enemyRooks | enemyQueens | enemyKing;
     const unsigned long long emptySquares = ~( ownPieces | enemyPieces );
     const unsigned long long ownOrEmpty = ownPieces | emptySquares;
     const unsigned long long enemyOrEmpty = enemyPieces | emptySquares;
 
+    const unsigned short promotionRank = isWhite ? 7 : 0;
+
     // Generate possible moves
 
     // Iterate through all pieces by popping them out of the mask
-    pieces = ownPawns;
+    pieces = own.masks[ PieceMasks::PAWN ];
     while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
@@ -425,7 +407,7 @@ std::vector<Move> Board::getMoves()
         }
     }
 
-    pieces = ownKnights;
+    pieces = own.masks[ PieceMasks::KNIGHT ];
     while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
@@ -439,7 +421,7 @@ std::vector<Move> Board::getMoves()
     }
 
     // Tackle bishops and queens together for the move similarities
-    pieces = ownBishops | ownQueens;
+    pieces = own.masks[ PieceMasks::BISHOP ] | own.masks[ PieceMasks::QUEEN ];
     while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
@@ -468,7 +450,7 @@ std::vector<Move> Board::getMoves()
     }
 
     // Tackle rooks and queens together for the move similarities
-    pieces = ownRooks | ownQueens;
+    pieces = own.masks[ PieceMasks::ROOK ] | own.masks[ PieceMasks::QUEEN ];
     while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
@@ -494,7 +476,7 @@ std::vector<Move> Board::getMoves()
         }
     }
 
-    pieces = ownKing;
+    pieces = own.masks[ PieceMasks::KING ];
     while ( Bitboards->getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
@@ -550,7 +532,7 @@ std::vector<Move> Board::getMoves()
     for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
     {
         Move& move = *it;
-        Board testBoard = makeMove( move );
+        std::unique_ptr<UndoState> undoState = makeMove( move );
 
         // Which suqares are we testing? Just the king for check, or the squares it passes
         // through when castling
@@ -567,10 +549,10 @@ std::vector<Move> Board::getMoves()
         }
         else
         {
-            protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+            protectedSquares = makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         }
 
-        if ( testBoard.failsCheckTests( protectedSquares ) )
+        if ( failsCheckTests( protectedSquares ) )
         {
             it = moves.erase( it );
         }
@@ -579,6 +561,8 @@ std::vector<Move> Board::getMoves()
             // Move is fine, go on to the next one
             it++;
         }
+
+        unmakeMove( undoState );
     }
 
     Log::Trace( [&] ( const Log::Logger& logger )
@@ -611,25 +595,14 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
     bool isWhite = Piece::isWhite( activeColor );
 
     // Let's make some bitboards
+    PieceMasks own;
+    PieceMasks enemy;
 
-    unsigned long long enemyPawns;
-    unsigned long long enemyKnights;
-    unsigned long long enemyBishops;
-    unsigned long long enemyRooks;
-    unsigned long long enemyQueens;
-    unsigned long long enemyKing;
-    makePieceBitboards( isWhite, enemyPawns, enemyKnights, enemyBishops, enemyRooks, enemyQueens, enemyKing );
+    mPP( !isWhite, own );
+    const unsigned long long ownPieces = own.all;
 
-    unsigned long long ownPawns;
-    unsigned long long ownKnights;
-    unsigned long long ownBishops;
-    unsigned long long ownRooks;
-    unsigned long long ownQueens;
-    unsigned long long ownKing;
-    makePieceBitboards( !isWhite, ownPawns, ownKnights, ownBishops, ownRooks, ownQueens, ownKing );
-
-    const unsigned long long ownPieces = ownPawns | ownKnights | ownBishops | ownRooks | ownQueens | ownKing;
-    const unsigned long long enemyPieces = enemyPawns | enemyKnights | enemyBishops | enemyRooks | enemyQueens | enemyKing;
+    mPP( isWhite, enemy );
+    const unsigned long long enemyPieces = enemy.all;
 
     // Worker variables
     unsigned short index;
@@ -643,7 +616,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         // Captures are reflections, so can index 'capture' potential pawn is a viable test
         captureMask = Bitboards->getPawnCaptures( index, !isWhite );
 
-        if ( captureMask & enemyPawns )
+        if ( captureMask & enemy.masks[ PieceMasks::PAWN ] )
         {
             return true;
         }
@@ -651,7 +624,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         // Knight
         captureMask = Bitboards->getKnightMoves( index );
 
-        if ( captureMask & enemyKnights )
+        if ( captureMask & enemy.masks[ PieceMasks::KNIGHT ] )
         {
             return true;
         }
@@ -669,14 +642,14 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
             unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
                                                                       Utilities::indexToRank( index ) );
 
-            setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemyPieces, aboveMask, belowMask );
+            setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemy.all, aboveMask, belowMask );
 
             unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( index ),
                                                                           Utilities::indexToRank( index ) );
 
             setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-            if ( setOfMoves & ( enemyBishops | enemyQueens ) )
+            if ( setOfMoves & ( enemy.masks[ PieceMasks::BISHOP ] | enemy.masks[ PieceMasks::QUEEN ] ) )
             {
                 return true;
             }
@@ -700,7 +673,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
             setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-            if ( setOfMoves & ( enemyRooks | enemyQueens ) )
+            if ( setOfMoves & ( enemy.masks[ PieceMasks::ROOK ] | enemy.masks[ PieceMasks::QUEEN ] ) )
             {
                 return true;
             }
@@ -709,7 +682,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         // King
         captureMask = Bitboards->getKingMoves( index );
 
-        if ( captureMask & enemyKing )
+        if ( captureMask & enemy.masks[ PieceMasks::KING ] )
         {
             return true;
         }
@@ -738,52 +711,24 @@ unsigned long long Board::makePieceBitboard( unsigned char piece )
     return bitboard;
 }
 
-void Board::makePieceBitboards( bool isWhite,
-                                unsigned long long& pawn,
-                                unsigned long long& knight,
-                                unsigned long long& bishop,
-                                unsigned long long& rook,
-                                unsigned long long& queen,
-                                unsigned long long& king )
+void Board::mPP( unsigned char isWhite, PieceMasks& pieceMasks )
 {
-    pawn = knight = bishop = rook = queen = king = 0;
-
     unsigned char colorMask = isWhite ? 0b00001000 : 0b00010000;
 
     for ( unsigned short index = 0; index < 64; index++ )
     {
         unsigned char piece = pieceAt( index );
-        if( piece & colorMask )
+
+        if ( piece & colorMask )
         {
-            switch ( piece & 0b00000111 )
-            {
-                case 0b00000001:
-                    pawn |= Bitboards->indexToBit( index );
-                    break;
-
-                case 0b00000010:
-                    knight |= Bitboards->indexToBit( index );
-                    break;
-
-                case 0b00000011:
-                    bishop |= Bitboards->indexToBit( index );
-                    break;
-
-                case 0b00000100:
-                    rook |= Bitboards->indexToBit( index );
-                    break;
-
-                case 0b00000101:
-                    queen |= Bitboards->indexToBit( index );
-                    break;
-
-                case 0b00000110:
-                    king |= Bitboards->indexToBit( index );
-                    break;
-
-                default:
-                    break;
-            }
+            pieceMasks.masks[ piece & 0b00000111 ] |= ( 1ull << index );// Bitboard::indexBitTable[ index ];
         }
     }
+
+    pieceMasks.all = pieceMasks.masks[ PieceMasks::PAWN ] |
+        pieceMasks.masks[ PieceMasks::KNIGHT ] |
+        pieceMasks.masks[ PieceMasks::BISHOP ] |
+        pieceMasks.masks[ PieceMasks::ROOK ] |
+        pieceMasks.masks[ PieceMasks::QUEEN ] |
+        pieceMasks.masks[ PieceMasks::KING ];
 }

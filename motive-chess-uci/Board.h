@@ -7,6 +7,31 @@
 #include "Move.h"
 #include "Piece.h"
 
+class PieceMasks
+{
+public:
+    inline static const unsigned short PAWN = 1;
+    inline static const unsigned short KNIGHT = 2;
+    inline static const unsigned short BISHOP = 3;
+    inline static const unsigned short ROOK = 4;
+    inline static const unsigned short QUEEN = 5;
+    inline static const unsigned short KING = 6;
+
+    unsigned long long masks[ 8 ];
+
+    unsigned long long all;
+
+    PieceMasks()
+    {
+        masks[ PAWN ] = 0;
+        masks[ KNIGHT ] = 0;
+        masks[ BISHOP ] = 0;
+        masks[ ROOK ] = 0;
+        masks[ QUEEN ] = 0;
+        masks[ KING ] = 0;
+    }
+};
+
 class Board
 {
 private:
@@ -143,14 +168,6 @@ private:
 
     unsigned long long makePieceBitboard( unsigned char piece );
 
-    void makePieceBitboards( bool isWhite,
-                             unsigned long long& pawn,
-                             unsigned long long& knight,
-                             unsigned long long& bishop,
-                             unsigned long long& rook,
-                             unsigned long long& queen,
-                             unsigned long long& king );
-
 public:
     Board() :
         pieces( std::array< unsigned char, 64>() ),
@@ -177,17 +194,6 @@ public:
         fullmoveNumber( fullmoveNumber )
     {
         validateCastlingRights();
-    };
-
-    Board( Board& board ) :
-        pieces( board.pieces ),
-        activeColor( board.activeColor ),
-        castlingRights( board.castlingRights ),
-        enPassantIndex( board.enPassantIndex ),
-        halfmoveClock( board.halfmoveClock ),
-        fullmoveNumber( board.fullmoveNumber )
-    {
-        // Plain copy, nothing to do
     };
 
     Board( const Fen& fen ) :
@@ -223,11 +229,6 @@ public:
         return Fen( pieces, activeColor, castlingRights, enPassantIndex, halfmoveClock, fullmoveNumber );
     }
 
-    std::string toFENString()
-    {
-        return Fen( pieces, activeColor, castlingRights, enPassantIndex, halfmoveClock, fullmoveNumber ).toString();
-    }
-
     /// <summary>
     /// Performs an "is this the same position" check, not a precise equality check
     /// </summary>
@@ -235,13 +236,54 @@ public:
     /// <returns>true if the on-board position is the same</returns>
     bool isSamePosition( const Board& board ) const;
 
-    /// <summary>
-    /// Returns a new board, based on the current board but with this move applied
-    /// </summary>
-    /// <param name="move">the move</param>
-    /// <returns>a new board</returns>
-    Board makeMove( const Move& move );
-
     std::vector<Move> getMoves();
-};
 
+    /// <summary>
+    /// Represents the state changed by the last move applied to this board via MakeMove that can undo that move in UndoMove
+    /// </summary>
+    class UndoState
+    {
+    private:
+        std::array<unsigned char, 64> pieces;
+        unsigned char activeColor;
+        CastlingRights castlingRights;
+        unsigned short enPassantIndex;
+        unsigned short halfmoveClock;
+        unsigned short fullmoveNumber;
+
+    public:
+        UndoState( Board& board ) :
+            pieces( board.pieces ),
+            activeColor( board.activeColor ),
+            castlingRights( board.castlingRights ),
+            enPassantIndex( board.enPassantIndex ),
+            halfmoveClock( board.halfmoveClock ),
+            fullmoveNumber( board.fullmoveNumber )
+        {
+
+        }
+
+        friend class Board;
+    };
+
+    std::unique_ptr<UndoState> makeMove( const Move& move )
+    {
+        std::unique_ptr<UndoState> state = std::make_unique<UndoState>( *this );
+
+        applyMove( move );
+
+        return state;
+    }
+
+    void unmakeMove( std::unique_ptr<UndoState>& undoState )
+    {
+        pieces = undoState->pieces;
+        activeColor = undoState->activeColor;
+        castlingRights = undoState->castlingRights;
+        enPassantIndex = undoState->enPassantIndex;
+        halfmoveClock = undoState->halfmoveClock;
+        fullmoveNumber = undoState->fullmoveNumber;
+    }
+
+    void mPP( unsigned char piece, PieceMasks& pieceMasks );
+};

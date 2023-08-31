@@ -10,7 +10,8 @@ private:
     // Flags to describe the move
     inline static const unsigned char FLAG_MASK        = 0b11110000;
 
-    inline static const unsigned char CASTLE_KINGSIDE  = 0b00100000;
+    inline static const unsigned char CASTLE_BIT       = 0b01000000;
+    inline static const unsigned char CASTLE_KINGSIDE  = 0b01000000;
     inline static const unsigned char CASTLE_QUEENSIDE = 0b01100000;
 
     inline static const unsigned char PROMOTION_BIT    = 0b10000000;
@@ -143,7 +144,7 @@ public:
 
     inline bool isCastle() const
     {
-        return isKingsideCastle() || isQueensideCastle();
+        return flag & CASTLE_BIT;
     }
 
     std::string toString() const;
