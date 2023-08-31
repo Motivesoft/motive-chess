@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 
+#include "Bitboard.h"
 #include "Board.h"
 #include "Engine.h"
 #include "GameContext.h"
@@ -21,6 +22,7 @@ void Engine::uciCommand()
     UCI_DEBUG << "Starting engine";
 
     // TODO do any actual initialization/reset here
+    Bitboard::initialize();
 
     VersionInfo* versionInfo = VersionInfo::getVersionInfo();
     if ( versionInfo->isAvailable() )
