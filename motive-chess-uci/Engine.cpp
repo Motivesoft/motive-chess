@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 
+#include "Bitboard.h"
 #include "Board.h"
 #include "Engine.h"
 #include "GameContext.h"
@@ -20,8 +21,6 @@ void Engine::uciCommand()
 {
     UCI_DEBUG << "Starting engine";
 
-    // TODO do any actual initialization/reset here
-
     VersionInfo* versionInfo = VersionInfo::getVersionInfo();
     if ( versionInfo->isAvailable() )
     {
@@ -35,7 +34,6 @@ void Engine::uciCommand()
     listVisibleOptions();
 
     // Send OK
-    initialized = true;
     broadcaster.uciok();
 
     // TODO implement copy protection check
@@ -811,6 +809,12 @@ void Engine::listVisibleOptions()
  
 // Silent implementations - do the work, but do not directly communicate over uci, allowing the 
 // methods to be called from elsewhere
+
+void Engine::initializeImpl()
+{
+    Bitboard::initialize();
+    initialized = true;
+}
 
 void Engine::stopImpl( ThinkingOutcome thinkingOutcome )
 {

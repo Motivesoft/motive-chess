@@ -1,3 +1,4 @@
 uci
 perft file motive-chess-lite.epd
+perft 5
 quit

@@ -3,8 +3,6 @@
 #include "Log.h"
 #include "Utilities.h"
 
-std::unique_ptr<Bitboard> Bitboard::instance {};
-
 unsigned long long Bitboard::whitePawnMoves[ 64 ];
 unsigned long long Bitboard::whitePawnCaptures[ 64 ];
 unsigned long long Bitboard::blackPawnMoves[ 64 ];
@@ -16,6 +14,9 @@ unsigned long long Bitboard::queenMoves[ 64 ];
 unsigned long long Bitboard::kingMoves[ 64 ];
 
 unsigned long long Bitboard::indexBitTable[ 64 ];
+
+unsigned long long Bitboard::diagonalMask[ 64 ];
+unsigned long long Bitboard::antidiagonalMask[ 64 ];
 
 void Bitboard::buildBitboards()
 {
@@ -261,6 +262,17 @@ void Bitboard::buildBitboards()
     {
         indexBitTable[ index ] = 1ull << index;
     }
+
+    // Precomputed masks
+
+    for ( int file = 0; file < 8; file++ )
+    {
+        for ( int rank = 0; rank < 8; rank++ )
+        {
+            diagonalMask[ Utilities::squareToIndex( file, rank ) ] = getDiagonalMaskImpl( file, rank );
+            antidiagonalMask[ Utilities::squareToIndex( file, rank ) ] = getAntiDiagonalMaskImpl( file, rank );
+        }
+    }
 }
 
 unsigned long long Bitboard::bitboardFrom0x88( std::bitset<128>& bits )
@@ -307,4 +319,35 @@ unsigned long long Bitboard::rotate180( unsigned long long x )
     x = ( ( x >> 16 ) & v2 ) | ( ( x & v2 ) << 16 );
     x = ( x >> 32 ) | ( x << 32 );
     return x;
+}
+
+unsigned long long Bitboard::getDiagonalMaskImpl( unsigned short file, unsigned short rank )
+{
+    unsigned long long value = 0;
+
+    unsigned short forigin = ( file == rank ) ? 0 : ( file < rank ) ? 0 : file - rank;
+    unsigned short rorigin = ( file == rank ) ? 0 : ( file < rank ) ? rank - file : 0;
+
+    for ( ; forigin < 8 && rorigin < 8; forigin++, rorigin++ )
+    {
+        value |= 1ull << ( ( rorigin << 3 ) + forigin );
+    }
+
+    return value;
+}
+
+unsigned long long Bitboard::getAntiDiagonalMaskImpl( unsigned short file, unsigned short rank )
+{
+    unsigned long long value = 0;
+
+    // Use short here, not unsigned short, as we need to check for wandering over the left-hand edge
+
+    short rorigin = rank == ( 7 - file ) ? 0 : rank > ( 7 - file ) ? rank - ( 7 - file ) : 0;
+    short forigin = rank == ( 7 - file ) ? 7 : rank > ( 7 - file ) ? 7 : file + rank;
+    for ( ; rorigin < 8 && forigin >= 0; forigin--, rorigin++ )
+    {
+        value |= 1ull << ( ( rorigin << 3 ) + forigin );
+    }
+
+    return value;
 }
