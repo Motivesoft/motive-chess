@@ -1,5 +1,0 @@
-uci
-position fen r3k2r/5Q2/8/8/8/3K4/8/8 b kq - 0 1
-go
-stop
-quit

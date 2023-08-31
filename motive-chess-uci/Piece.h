@@ -192,7 +192,7 @@ public:
     /// <returns>The promotion piece, e.g. Piece::WQUEEN</returns>
     static unsigned char promotionPieceFromMoveString( std::string value )
     {
-        Log::Warn << "Getting promotion piece from " << value << std::endl;
+        Log::Trace << "Getting promotion piece from " << value << std::endl;
         if ( value.length() < 5 )
         {
             return Piece::NOTHING;
