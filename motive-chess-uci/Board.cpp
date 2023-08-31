@@ -398,7 +398,7 @@ std::vector<Move> Board::getMoves()
         unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
         // Masks for specific directions of travel
-        unsigned long long fileMask = Bitboard::getFileMask( Utilities::indexToFile( index ) );
+        unsigned long long fileMask = Bitboard::getFileMask( index );
 
         setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask, false );
 
@@ -478,11 +478,11 @@ std::vector<Move> Board::getMoves()
         unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
         // Masks for specific directions of travel
-        unsigned long long rankMask = Bitboard::getRankMask( Utilities::indexToRank( index ) );
+        unsigned long long rankMask = Bitboard::getRankMask( index );
 
         setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        unsigned long long fileMask = Bitboard::getFileMask( Utilities::indexToFile( index ) );
+        unsigned long long fileMask = Bitboard::getFileMask( index );
         
         setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
@@ -688,11 +688,11 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
             unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
             // Masks for specific directions of travel
-            unsigned long long rankMask = Bitboard::getRankMask( Utilities::indexToRank( index ) );
+            unsigned long long rankMask = Bitboard::getRankMask( index );
 
             setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-            unsigned long long fileMask = Bitboard::getFileMask( Utilities::indexToFile( index ) );
+            unsigned long long fileMask = Bitboard::getFileMask( index );
 
             setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
