@@ -15,7 +15,7 @@ std::string Utilities::lowerSquareNames[ 64 ] =
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
 };
 
-void Utilities::dumpBoard( std::array< unsigned char, 64>& pieces, std::string title )
+void Utilities::dumpBoard( const std::array< unsigned char, 64>& pieces, std::string title )
 {
     Log::Debug( [&] ( const Log::Logger& logger )
     {
@@ -97,7 +97,7 @@ void Utilities::dumpBitmask( unsigned long long bits, std::string title )
 /// Dump an 0x88 board, which is effectively two 8x8 boards side by side
 /// </summary>
 /// <param name="bits">the board</param>
-void Utilities::dump0x88( std::bitset<128> bits, std::string title )
+void Utilities::dump0x88( const std::bitset<128> bits, std::string title )
 {
     Log::Debug( [&] ( const Log::Logger& logger )
     {

@@ -246,6 +246,11 @@ public:
         return (value & COLOR_MASK) == BLACK;
     }
 
+    inline static bool isColor( unsigned char value, unsigned char color )
+    {
+        return ( value & COLOR_MASK ) == color;
+    }
+
     inline static bool isKing( unsigned char value )
     {
         return (value & PIECE_MASK) == KING;

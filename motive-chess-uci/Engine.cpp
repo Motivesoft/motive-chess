@@ -7,6 +7,7 @@
 #include "Bitboard.h"
 #include "Board.h"
 #include "Engine.h"
+#include "Evaluation.h"
 #include "GameContext.h"
 #include "Log.h"
 #include "Move.h"
@@ -1031,25 +1032,60 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             std::vector<Move> candidateMoves = board->getMoves();
             if ( candidateMoves.empty() )
             {
+                // TODO we need to decide what to do here. Return nullmove? something based on win/loss/draw?
                 Log::Debug << "No candidate moves" << std::endl;
                 break;
             }
 
+            if ( candidateMoves.size() == 1 )
+            {
+                // Don't waste clock time analysing a forced move situation
+                thoughts = Thoughts( candidateMoves[ 0 ] );
+
+                Log::Debug << "Only one move available" << std::endl;
+
+                readyToMove = true;
+                break;
+            }
+
+            Move bestMove = Move::nullMove;
+            short bestScore = std::numeric_limits<short>::lowest();
+            for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
+            {
+                short score = Evaluation::score( board->makeMove( *it ) );
+
+                if ( score > bestScore )
+                {
+                    bestScore = score;
+                    bestMove = *it;
+                }
+
+                Log::Debug << "Score for " << (*it).toString() << " is " << score << std::endl;
+            }
+
+            // If we haven't got a move in mind, establish one
             if ( thoughts.getBestMove().isNullMove() )
             {
-                // TODO don't select target move randomly!
-                int random = std::rand();
-                int randomMove = random % candidateMoves.size();
-                thoughts = Thoughts( candidateMoves[ randomMove ] );
+                thoughts = Thoughts( bestMove );
 
-                if ( candidateMoves.size() == 1 )
-                {
-                    // Don't waste clock time analysing a forced move situation
-                    Log::Debug << "Only one move available" << std::endl;
-                    readyToMove = true;
-                    break;
-                }
+                readyToMove = true;
             }
+
+            //if ( thoughts.getBestMove().isNullMove() )
+            //{
+            //    // TODO don't select target move randomly!
+            //    int random = std::rand();
+            //    int randomMove = random % candidateMoves.size();
+            //    thoughts = Thoughts( candidateMoves[ randomMove ] );
+
+            //    if ( candidateMoves.size() == 1 )
+            //    {
+            //        // Don't waste clock time analysing a forced move situation
+            //        Log::Debug << "Only one move available" << std::endl;
+            //        readyToMove = true;
+            //        break;
+            //    }
+            //}
 
             // TODO do work here
 

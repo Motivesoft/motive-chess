@@ -153,6 +153,7 @@
     <ClCompile Include="CastlingRights.cpp" />
     <ClCompile Include="CopyProtection.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Evaluation.cpp" />
     <ClCompile Include="Fen.cpp" />
     <ClCompile Include="GameContext.cpp" />
     <ClCompile Include="GoContext.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="CastlingRights.h" />
     <ClInclude Include="CopyProtection.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="Evaluation.h" />
     <ClInclude Include="Fen.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GoContext.h" />

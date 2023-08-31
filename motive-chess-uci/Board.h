@@ -285,5 +285,7 @@ public:
     Board makeMove( const Move& move );
 
     std::vector<Move> getMoves();
+
+    friend class Evaluation;
 };
 
