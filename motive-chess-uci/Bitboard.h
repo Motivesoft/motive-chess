@@ -4,13 +4,9 @@
 #include <memory>
 #include <mutex>
 
-#define Bitboards Bitboard::getInstance()
-
 class Bitboard
 {
 private:
-    static std::unique_ptr<Bitboard> instance;
-
     static unsigned long long whitePawnMoves[ 64 ];
     static unsigned long long whitePawnCaptures[ 64 ];
     static unsigned long long blackPawnMoves[ 64 ];
@@ -22,87 +18,77 @@ private:
     static unsigned long long queenMoves[ 64 ];
     static unsigned long long kingMoves[ 64 ];
 
-
     static void buildBitboards();
-
-    inline static std::mutex creationMutex;
 
     static unsigned long long bitboardFrom0x88( std::bitset<128>& bits );
     static unsigned long long rotate180( unsigned long long x );
 
-public:
     static unsigned long long indexBitTable[ 64 ];
-    static Bitboard* getInstance()
-    {
-        creationMutex.lock();
-        if ( !instance )
-        {
-            instance = std::make_unique<Bitboard>();
-            buildBitboards();
-        }
-        creationMutex.unlock();
 
-        return instance.get();
+public:
+    static void initialize()
+    {
+        buildBitboards();
     }
 
-    inline unsigned long long getPawnMoves( unsigned short index, bool isWhite )
+    inline static unsigned long long getPawnMoves( unsigned short index, bool isWhite )
     {
         return isWhite ? whitePawnMoves[ index ] : blackPawnMoves[ index ];
     }
 
-    inline unsigned long long getPawnCaptures( unsigned short index, bool isWhite )
+    inline static unsigned long long getPawnCaptures( unsigned short index, bool isWhite )
     {
         return isWhite ? whitePawnCaptures[ index ] : blackPawnCaptures[ index ];
     }
 
-    inline unsigned long long getKnightMoves( unsigned short index )
+    inline static unsigned long long getKnightMoves( unsigned short index )
     {
         return knightMoves[ index ];
     }
 
-    inline unsigned long long getBishopMoves( unsigned short index )
+    inline static unsigned long long getBishopMoves( unsigned short index )
     {
         return bishopMoves[ index ];
     }
 
-    inline unsigned long long getRookMoves( unsigned short index )
+    inline static unsigned long long getRookMoves( unsigned short index )
     {
         return rookMoves[ index ];
     }
 
-    inline unsigned long long getQueenMoves( unsigned short index )
+    inline static unsigned long long getQueenMoves( unsigned short index )
     {
         return queenMoves[ index ];
     }
 
-    inline unsigned long long getKingMoves( unsigned short index )
+    inline static unsigned long long getKingMoves( unsigned short index )
     {
         return kingMoves[ index ];
     }
 
-    inline unsigned long long getWhiteKingsideCastlingMask()
+    inline static unsigned long long getWhiteKingsideCastlingMask()
     {
         //       hgfedcba
         return 0b01100000ull;
     }
 
-    inline unsigned long long getBlackKingsideCastlingMask()
+    inline static unsigned long long getBlackKingsideCastlingMask()
     {
         return getWhiteKingsideCastlingMask() << 56;
     }
 
-    inline unsigned long long getWhiteQueensideCastlingMask()
+    inline static unsigned long long getWhiteQueensideCastlingMask()
     {
         //       hgfedcba
         return 0b00001110ull;
     }
 
-    inline unsigned long long getBlackQueensideCastlingMask()
+    inline static unsigned long long getBlackQueensideCastlingMask()
     {
         return getWhiteQueensideCastlingMask() << 56;
     }
 
-    unsigned long long getFileMask( unsigned short file )
+    static unsigned long long getFileMask( unsigned short file )
     {
         unsigned long long value = 0x0101010101010101;
 
@@ -111,7 +97,7 @@ public:
         return value;
     }
 
-    unsigned long long getRankMask( unsigned short rank )
+    static unsigned long long getRankMask( unsigned short rank )
     {
         unsigned long long value = 0xff;
 
@@ -120,7 +106,7 @@ public:
         return value;
     }
 
-    unsigned long long getDiagonalMask( unsigned short file, unsigned short rank )
+    static unsigned long long getDiagonalMask( unsigned short file, unsigned short rank )
     {
         unsigned long long value = 0;
 
@@ -135,7 +121,7 @@ public:
         return value;
     }
 
-    unsigned long long getAntiDiagonalMask( unsigned short file, unsigned short rank )
+    static unsigned long long getAntiDiagonalMask( unsigned short file, unsigned short rank )
     {
         unsigned long long value = 0;
 
@@ -157,7 +143,7 @@ public:
     /// </summary>
     /// <param name="index">a square</param>
     /// <returns>a bitmask of the squares above 'index'</returns>
-    unsigned long long makeUpperMask( unsigned short index )
+    static unsigned long long makeUpperMask( unsigned short index )
     {
         if ( index == 63 )
         {
@@ -173,7 +159,7 @@ public:
     /// </summary>
     /// <param name="index">a square</param>
     /// <returns>bitmask of the squares below 'index'</returns>
-    unsigned long long makeLowerMask( unsigned short index )
+    static unsigned long long makeLowerMask( unsigned short index )
     {
         return ( 1ull << index ) - 1;
     }
@@ -185,18 +171,18 @@ public:
     /// <param name="from">the lower square index</param>
     /// <param name="to">the upper square index</param>
     /// <returns>an inclusive mask between the two extents</returns>
-    unsigned long long makeMask( unsigned short from, unsigned short to )
+    static unsigned long long makeMask( unsigned short from, unsigned short to )
     {
         return ~makeLowerMask( from ) & ~makeUpperMask( to );
     }
 
-    inline unsigned long long indexToBit( unsigned short index )
+    inline static unsigned long long indexToBit( unsigned short index )
     {
         return indexBitTable[ index ]; 
     }
 
     // When called in a while loop, extracts each bit of source as an unsigned short index
-    inline bool getEachIndexForward( unsigned short* index, unsigned long long& source )
+    inline static bool getEachIndexForward( unsigned short* index, unsigned long long& source )
     {
         unsigned long sourceIndex;
         if ( _BitScanForward64( &sourceIndex, source ) )
@@ -212,7 +198,7 @@ public:
         return false;
     }
 
-    inline bool getEachIndexReverse( unsigned short* index, unsigned long long& source )
+    inline static bool getEachIndexReverse( unsigned short* index, unsigned long long& source )
     {
         unsigned long sourceIndex;
         if ( _BitScanReverse64( &sourceIndex, source ) )

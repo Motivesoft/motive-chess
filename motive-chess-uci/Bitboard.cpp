@@ -3,8 +3,6 @@
 #include "Log.h"
 #include "Utilities.h"
 
-std::unique_ptr<Bitboard> Bitboard::instance {};
-
 unsigned long long Bitboard::whitePawnMoves[ 64 ];
 unsigned long long Bitboard::whitePawnCaptures[ 64 ];
 unsigned long long Bitboard::blackPawnMoves[ 64 ];

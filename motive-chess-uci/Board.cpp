@@ -295,7 +295,7 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
         // The effect of the '&' should be only to remove upper or lower bits 
         // of the mask if they contain blocking pieces, where if they contain capturable
         // enemies we should keep those bits set
-        unsigned long long mask = Bitboards->makeMask( static_cast<unsigned short>( msb ), static_cast<unsigned short>( lsb ) ) & ~absoluteBlockers;
+        unsigned long long mask = Bitboard::makeMask( static_cast<unsigned short>( msb ), static_cast<unsigned short>( lsb ) ) & ~absoluteBlockers;
 
         // Limit this to moves possible when surrounded by friendly pieces
         rayMoves &= mask;
@@ -323,7 +323,7 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
         }
 
         // As we're looking at enemy pieces here, the mask covers everything we need
-        unsigned long long mask = Bitboards->makeMask( static_cast<unsigned short>( msb ), static_cast<unsigned short>( lsb ) );
+        unsigned long long mask = Bitboard::makeMask( static_cast<unsigned short>( msb ), static_cast<unsigned short>( lsb ) );
 
         moves |= ( rayMoves & mask );
     }
@@ -368,19 +368,19 @@ std::vector<Move> Board::getMoves()
 
     // Iterate through all pieces by popping them out of the mask
     pieces = own.masks[ PieceMasks::PAWN ];
-    while ( Bitboards->getEachIndexForward( &index, pieces ) )
+    while ( Bitboard::getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
-        unsigned long long possibleMoves = Bitboards->getPawnMoves( index, isWhite );
-        unsigned long long possibleCaptures = Bitboards->getPawnCaptures( index, isWhite );
+        unsigned long long possibleMoves = Bitboard::getPawnMoves( index, isWhite );
+        unsigned long long possibleCaptures = Bitboard::getPawnCaptures( index, isWhite );
 
-        unsigned long long aboveMask = Bitboards->makeUpperMask( index );
-        unsigned long long belowMask = Bitboards->makeLowerMask( index );
+        unsigned long long aboveMask = Bitboard::makeUpperMask( index );
+        unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
         // Masks for specific directions of travel
-        unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
+        unsigned long long fileMask = Bitboard::getFileMask( Utilities::indexToFile( index ) );
 
         setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask, false );
 
@@ -389,7 +389,7 @@ std::vector<Move> Board::getMoves()
 
         setOfMoves |= possibleCaptures;
 
-        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
+        while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
             // Promotions lead to extra moves
             if ( Utilities::indexToRank( destination ) == promotionRank )
@@ -408,13 +408,13 @@ std::vector<Move> Board::getMoves()
     }
 
     pieces = own.masks[ PieceMasks::KNIGHT ];
-    while ( Bitboards->getEachIndexForward( &index, pieces ) )
+    while ( Bitboard::getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
-        unsigned long long setOfMoves = Bitboards->getKnightMoves( index );
+        unsigned long long setOfMoves = Bitboard::getKnightMoves( index );
         setOfMoves &= enemyOrEmpty;
 
-        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
+        while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
             moves.push_back( Move::createMove( index, destination ) );
         }
@@ -422,28 +422,28 @@ std::vector<Move> Board::getMoves()
 
     // Tackle bishops and queens together for the move similarities
     pieces = own.masks[ PieceMasks::BISHOP ] | own.masks[ PieceMasks::QUEEN ];
-    while ( Bitboards->getEachIndexForward( &index, pieces ) )
+    while ( Bitboard::getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
-        unsigned long long possibleMoves = Bitboards->getBishopMoves( index );
+        unsigned long long possibleMoves = Bitboard::getBishopMoves( index );
 
-        unsigned long long aboveMask = Bitboards->makeUpperMask( index );
-        unsigned long long belowMask = Bitboards->makeLowerMask( index );
+        unsigned long long aboveMask = Bitboard::makeUpperMask( index );
+        unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
         // Masks for specific directions of travel
-        unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
+        unsigned long long diagMask = Bitboard::getDiagonalMask( Utilities::indexToFile( index ),
                                                                   Utilities::indexToRank( index ) );
 
         setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( index ),
+        unsigned long long antiMask = Bitboard::getAntiDiagonalMask( Utilities::indexToFile( index ),
                                                                       Utilities::indexToRank( index ) );
 
         setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
+        while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
             moves.push_back( Move::createMove( index, destination ) );
         }
@@ -451,39 +451,39 @@ std::vector<Move> Board::getMoves()
 
     // Tackle rooks and queens together for the move similarities
     pieces = own.masks[ PieceMasks::ROOK ] | own.masks[ PieceMasks::QUEEN ];
-    while ( Bitboards->getEachIndexForward( &index, pieces ) )
+    while ( Bitboard::getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
         unsigned long long setOfMoves = 0;
 
-        unsigned long long possibleMoves = Bitboards->getRookMoves( index );
+        unsigned long long possibleMoves = Bitboard::getRookMoves( index );
 
-        unsigned long long aboveMask = Bitboards->makeUpperMask( index );
-        unsigned long long belowMask = Bitboards->makeLowerMask( index );
+        unsigned long long aboveMask = Bitboard::makeUpperMask( index );
+        unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
         // Masks for specific directions of travel
-        unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
+        unsigned long long rankMask = Bitboard::getRankMask( Utilities::indexToRank( index ) );
 
         setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
+        unsigned long long fileMask = Bitboard::getFileMask( Utilities::indexToFile( index ) );
         
         setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
+        while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
             moves.push_back( Move::createMove( index, destination ) );
         }
     }
 
     pieces = own.masks[ PieceMasks::KING ];
-    while ( Bitboards->getEachIndexForward( &index, pieces ) )
+    while ( Bitboard::getEachIndexForward( &index, pieces ) )
     {
         // Determine piece moves
-        unsigned long long setOfMoves = Bitboards->getKingMoves( index );
+        unsigned long long setOfMoves = Bitboard::getKingMoves( index );
         setOfMoves &= enemyOrEmpty;
 
-        while ( Bitboards->getEachIndexForward( &destination, setOfMoves ) )
+        while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
             moves.push_back( Move::createMove( index, destination ) );
         }
@@ -497,15 +497,15 @@ std::vector<Move> Board::getMoves()
         {
             kingside = castlingRights.canWhiteCastleKingside();
             queenside = castlingRights.canWhiteCastleQueenside();
-            kingsideMask = Bitboards->getWhiteKingsideCastlingMask();
-            queensideMask = Bitboards->getWhiteQueensideCastlingMask();
+            kingsideMask = Bitboard::getWhiteKingsideCastlingMask();
+            queensideMask = Bitboard::getWhiteQueensideCastlingMask();
         }
         else
         {
             kingside = castlingRights.canBlackCastleKingside();
             queenside = castlingRights.canBlackCastleQueenside();
-            kingsideMask = Bitboards->getBlackKingsideCastlingMask();
-            queensideMask = Bitboards->getBlackQueensideCastlingMask();
+            kingsideMask = Bitboard::getBlackKingsideCastlingMask();
+            queensideMask = Bitboard::getBlackQueensideCastlingMask();
         }
 
         if ( kingside )
@@ -608,13 +608,13 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
     unsigned short index;
     unsigned long long captureMask;
 
-    while ( Bitboards->getEachIndexForward( &index, protectedSquares ) )
+    while ( Bitboard::getEachIndexForward( &index, protectedSquares ) )
     {
         // Is 'square' reachable by this color's pieces
 
         // Pawn
         // Captures are reflections, so can index 'capture' potential pawn is a viable test
-        captureMask = Bitboards->getPawnCaptures( index, !isWhite );
+        captureMask = Bitboard::getPawnCaptures( index, !isWhite );
 
         if ( captureMask & enemy.masks[ PieceMasks::PAWN ] )
         {
@@ -622,7 +622,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         }
 
         // Knight
-        captureMask = Bitboards->getKnightMoves( index );
+        captureMask = Bitboard::getKnightMoves( index );
 
         if ( captureMask & enemy.masks[ PieceMasks::KNIGHT ] )
         {
@@ -633,18 +633,18 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         {
             unsigned long long setOfMoves = 0;
 
-            unsigned long long possibleMoves = Bitboards->getBishopMoves( index );
+            unsigned long long possibleMoves = Bitboard::getBishopMoves( index );
 
-            unsigned long long aboveMask = Bitboards->makeUpperMask( index );
-            unsigned long long belowMask = Bitboards->makeLowerMask( index );
+            unsigned long long aboveMask = Bitboard::makeUpperMask( index );
+            unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
             // Masks for specific directions of travel
-            unsigned long long diagMask = Bitboards->getDiagonalMask( Utilities::indexToFile( index ),
+            unsigned long long diagMask = Bitboard::getDiagonalMask( Utilities::indexToFile( index ),
                                                                       Utilities::indexToRank( index ) );
 
             setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemy.all, aboveMask, belowMask );
 
-            unsigned long long antiMask = Bitboards->getAntiDiagonalMask( Utilities::indexToFile( index ),
+            unsigned long long antiMask = Bitboard::getAntiDiagonalMask( Utilities::indexToFile( index ),
                                                                           Utilities::indexToRank( index ) );
 
             setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
@@ -659,17 +659,17 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         {
             unsigned long long setOfMoves = 0;
 
-            unsigned long long possibleMoves = Bitboards->getRookMoves( index );
+            unsigned long long possibleMoves = Bitboard::getRookMoves( index );
 
-            unsigned long long aboveMask = Bitboards->makeUpperMask( index );
-            unsigned long long belowMask = Bitboards->makeLowerMask( index );
+            unsigned long long aboveMask = Bitboard::makeUpperMask( index );
+            unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
             // Masks for specific directions of travel
-            unsigned long long rankMask = Bitboards->getRankMask( Utilities::indexToRank( index ) );
+            unsigned long long rankMask = Bitboard::getRankMask( Utilities::indexToRank( index ) );
 
             setOfMoves |= movesInARay( possibleMoves, rankMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-            unsigned long long fileMask = Bitboards->getFileMask( Utilities::indexToFile( index ) );
+            unsigned long long fileMask = Bitboard::getFileMask( Utilities::indexToFile( index ) );
 
             setOfMoves |= movesInARay( possibleMoves, fileMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
@@ -680,7 +680,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
         }
 
         // King
-        captureMask = Bitboards->getKingMoves( index );
+        captureMask = Bitboard::getKingMoves( index );
 
         if ( captureMask & enemy.masks[ PieceMasks::KING ] )
         {
@@ -704,7 +704,7 @@ unsigned long long Board::makePieceBitboard( unsigned char piece )
     {
         if ( pieceAt( index ) == piece )
         {
-            bitboard |= Bitboards->indexToBit( index );
+            bitboard |= Bitboard::indexToBit( index );
         }
     }
 
@@ -721,7 +721,7 @@ void Board::mPP( unsigned char isWhite, PieceMasks& pieceMasks )
 
         if ( piece & colorMask )
         {
-            pieceMasks.masks[ piece & 0b00000111 ] |= ( 1ull << index );// Bitboard::indexBitTable[ index ];
+            pieceMasks.masks[ piece & 0b00000111 ] |= Bitboard::indexToBit( index );
         }
     }
 

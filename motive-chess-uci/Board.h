@@ -21,7 +21,8 @@ public:
 
     unsigned long long all;
 
-    PieceMasks()
+    PieceMasks() :
+        all( 0 )
     {
         masks[ PAWN ] = 0;
         masks[ KNIGHT ] = 0;
