@@ -714,14 +714,17 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
 // Helper methods
 void Engine::perftDepth( Board& board, int depth )
 {
-    clock_t now = clock();
-
+    clock_t start = clock();
     unsigned long nodes = perftImpl( depth, board, true );
+    clock_t end = clock();
 
-    float elapsed = static_cast<float>( clock() - now ) / CLOCKS_PER_SEC;
-    float nps = nodes / elapsed;
+    float elapsed = static_cast<float>( end - start ) / CLOCKS_PER_SEC;
+    float nps = elapsed == 0 ? 0 : static_cast<float>( nodes ) / elapsed;
 
-    Log::Info << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)" << std::endl;
+    // This will give 0 if elapsed is close to zero - but not sure what to do with that other than continue
+    unsigned long longNPS = std::lround( nps );
+
+    Log::Info << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << longNPS << " nps)" << std::endl;
 }
 
 void Engine::perftRange( Board& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults )
@@ -731,20 +734,23 @@ void Engine::perftRange( Board& board, std::vector<std::pair<unsigned int, unsig
         unsigned int depth = ( *it ).first;
         unsigned int count = ( *it ).second;
 
-        clock_t now = clock();
-
+        clock_t start = clock();
         unsigned long nodes = perftImpl( depth, board, true );
+        clock_t end = clock();
 
-        float elapsed = static_cast<float>( clock() - now ) / CLOCKS_PER_SEC;
-        float nps = nodes / elapsed;
+        float elapsed = static_cast<float>( end - start ) / CLOCKS_PER_SEC;
+        float nps = elapsed == 0 ? 0 : static_cast<float>( nodes ) / elapsed;
+
+        // This will give 0 if elapsed is close to zero - but not sure what to do with that other than continue
+        unsigned long longNPS = std::lround( nps );
 
         if ( nodes == count )
         {
-            Log::Info << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << nps << " nps)" << std::endl;
+            Log::Info << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << longNPS << " nps)" << std::endl;
         }
         else
         {
-            Log::Error << "Total node count at depth " << depth << " is " << nodes << " but expected to be " << count << ". Time " << elapsed << "s (" << nps << " nps)" << std::endl;
+            Log::Error << "Total node count at depth " << depth << " is " << nodes << " but expected to be " << count << ". Time " << elapsed << "s (" << longNPS << " nps)" << std::endl;
         }
     }
 }
