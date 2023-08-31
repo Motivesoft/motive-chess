@@ -123,6 +123,8 @@ private:
     void perftRange( Board& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults );
     void perftFile( std::string& filename );
 
+    void initializeImpl();
+
     std::vector<std::string> getGoDirectives()
     {
         std::vector<std::string> directives;
@@ -168,6 +170,8 @@ public:
         {
             broadcaster.info( "MotiveChess" );
         }
+
+        initializeImpl();
     }
 
     virtual ~Engine()

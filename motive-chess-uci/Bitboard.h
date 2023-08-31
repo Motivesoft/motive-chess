@@ -102,20 +102,12 @@ public:
 
     inline static unsigned long long getFileMask( unsigned short index )
     {
-        unsigned long long value = 0x0101010101010101;
-
-        value <<= (index & 0b00000111);
-
-        return value;
+        return 0x0101010101010101ull << ( index & 0b00000111 );
     }
 
     inline static unsigned long long getRankMask( unsigned short index )
     {
-        unsigned long long value = 0xff;
-
-        value <<= (index & 0b00111000);
-        
-        return value;
+        return 0x00000000000000FFull << ( index & 0b00111000 );
     }
 
     inline static unsigned long long getDiagonalMask( unsigned short index )
