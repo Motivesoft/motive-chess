@@ -51,7 +51,7 @@ Fen::Fen( std::string position )
                 std::stringstream digit;
                 digit << *it;
 
-                Log::Trace << "Skipping " << digit.str() << " from " << index << std::endl;
+                Log::Trace << "Skipping " << digit.str() << " from " << index;
                 index += atoi( digit.str().c_str() );
                 Log::Trace << " to " << index << std::endl;
 
@@ -62,12 +62,12 @@ Fen::Fen( std::string position )
                 // If we are not currently at the start of the next line, jump to it
                 if ( ( index & 0b0111 ) != 0 )
                 {
-                    Log::Trace << "Jumping to end of line from " << index << std::endl;
+                    Log::Trace << "Jumping to end of line from " << index;
                     index = ( index & ~0b0111 ) + 8;
                     Log::Trace << " to " << index << std::endl;
                 }
 
-                Log::Trace << "Stepping to next line from " << index << std::endl;
+                Log::Trace << "Stepping to next line from " << index;
                 index -= 16;
                 Log::Trace << " to " << index << std::endl;
 

@@ -697,11 +697,14 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
         {
             Log::Info << "Starting perft run with " << fenString << std::endl;
 
-            Log::Trace << "Expected results:" << std::endl;
-            for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
+            Log::Trace( [&] ( const Log::Logger& logger )
             {
-                Log::Trace << "  Depth " << ( *it ).first << ". Count " << ( *it ).second << std::endl;
-            }
+                logger << "Expected results:" << std::endl;
+                for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
+                {
+                    logger << "  Depth " << ( *it ).first << ". Count " << ( *it ).second << std::endl;
+                }
+            } );
 
             perftRange( board, expectedResults );
         }

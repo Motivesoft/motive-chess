@@ -23,7 +23,7 @@ void Board::applyMove( const Move& move )
     if ( move.isNullMove() )
     {
         // To be honest, not sure what to do here - return an unchanged board, or an updated one with no move made
-        // but other attributes updated as though a move had been made and it was now the other side's go
+        // but other attributes updated as though a move had been made and it was now the other side's go?
         Log::Trace << "Ignoring null move" << std::endl;
         return;
     }
@@ -216,10 +216,7 @@ void Board::applyMove( const Move& move )
     {
         halfmoveClock = 0;
 
-        Log::Trace( [&] ( const Log::Logger& logger )
-        {
-            logger << "Reset halfmove clock to zero" << std::endl;
-        } );
+        Log::Trace << "Reset halfmove clock to zero" << std::endl;
     }
 
     // Increment move number
@@ -598,7 +595,7 @@ std::vector<Move> Board::getMoves()
         logger << "Generated moves:" << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            logger << ( *it ).toString() << std::endl;
+            logger << (*it).toString() << std::endl;
         }
     } );
 

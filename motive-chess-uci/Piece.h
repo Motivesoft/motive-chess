@@ -193,6 +193,7 @@ public:
     static unsigned char promotionPieceFromMoveString( std::string value )
     {
         Log::Trace << "Getting promotion piece from " << value << std::endl;
+
         if ( value.length() < 5 )
         {
             return Piece::NOTHING;
@@ -297,7 +298,7 @@ public:
             return Piece::WHITE;
         }
 
-        Log::Trace << "Failed to swap color for " << color << std::endl;
+        Log::Warn << "Failed to swap color for " << color << std::endl;
         return Piece::NOCOLOR;
     }
 
@@ -312,7 +313,7 @@ public:
             return "black";
         }
 
-        Log::Trace << "Failed to get color name for " << color << std::endl;
+        Log::Warn << "Failed to get color name for " << color << std::endl;
         return "";
     }
 
@@ -327,7 +328,7 @@ public:
             return "b";
         }
 
-        Log::Trace << "Failed to get color name for " << color << std::endl;
+        Log::Warn << "Failed to get color name for " << color << std::endl;
         return "";
     }
 
@@ -349,7 +350,7 @@ public:
                 return Piece::BLACK;
         }
 
-        Log::Trace << "Failed to get color from " << color << std::endl;
+        Log::Warn << "Failed to get color from " << color << std::endl;
         return Piece::NOCOLOR;
     }
 
