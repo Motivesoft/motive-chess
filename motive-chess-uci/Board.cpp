@@ -451,13 +451,11 @@ std::vector<Move> Board::getMoves()
         unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
         // Masks for specific directions of travel
-        unsigned long long diagMask = Bitboard::getDiagonalMask( Utilities::indexToFile( index ),
-                                                                  Utilities::indexToRank( index ) );
+        unsigned long long diagMask = Bitboard::getDiagonalMask( index );
 
         setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-        unsigned long long antiMask = Bitboard::getAntiDiagonalMask( Utilities::indexToFile( index ),
-                                                                      Utilities::indexToRank( index ) );
+        unsigned long long antiMask = Bitboard::getAntiDiagonalMask( index );
 
         setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
@@ -666,13 +664,11 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
             unsigned long long belowMask = Bitboard::makeLowerMask( index );
 
             // Masks for specific directions of travel
-            unsigned long long diagMask = Bitboard::getDiagonalMask( Utilities::indexToFile( index ),
-                                                                      Utilities::indexToRank( index ) );
+            unsigned long long diagMask = Bitboard::getDiagonalMask( index );
 
             setOfMoves |= movesInARay( possibleMoves, diagMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
-            unsigned long long antiMask = Bitboard::getAntiDiagonalMask( Utilities::indexToFile( index ),
-                                                                          Utilities::indexToRank( index ) );
+            unsigned long long antiMask = Bitboard::getAntiDiagonalMask( index );
 
             setOfMoves |= movesInARay( possibleMoves, antiMask, ownPieces, enemyPieces, aboveMask, belowMask );
 
