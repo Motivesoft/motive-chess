@@ -131,13 +131,19 @@ private:
                              unsigned long long& queen,
                              unsigned long long& king );
 
+    /// <summary>
+    /// A collection class for all bitmasks for one particular color.
+    /// Arrays and references here assume 8 piece (rather than 6) where 0 and 7 are unused
+    /// The use of indexes 1-6 is intended to tally with the Piece constants for Pawn, Knight, ...
+    /// </summary>
     class PieceBitboards
     {
     public:
-        std::array<unsigned long long, 8> pieceMask;
+        unsigned long long pieceMask[ 8 ];
         unsigned long long allPiecesMask;
 
-        PieceBitboards()
+        PieceBitboards() :
+            allPiecesMask( 0 )
         {
             pieceMask[ 1 ] = pieceMask[ 2 ] = pieceMask[ 3 ] = pieceMask[ 4 ] = pieceMask[ 5 ] = pieceMask[ 6 ] = 0;
         }
@@ -185,7 +191,7 @@ private:
         }
     };
 
-    void makePieceBitboards( bool isWhite, PieceBitboards& pieceBitboards );
+    void makePieceBitboards( bool isWhite, PieceBitboards& ownBitboards, PieceBitboards& enemyBitboards );
 
 public:
     Board() :

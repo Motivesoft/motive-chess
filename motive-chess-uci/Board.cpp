@@ -358,25 +358,9 @@ std::vector<Move> Board::getMoves()
 
     // Let's make some bitboards
 
-    //unsigned long long ownPawns;
-    //unsigned long long ownKnights;
-    //unsigned long long ownBishops;
-    //unsigned long long ownRooks;
-    //unsigned long long ownQueens;
-    //unsigned long long ownKing;
-    //makePieceBitboards( isWhite, ownPawns, ownKnights, ownBishops, ownRooks, ownQueens, ownKing );
     PieceBitboards own;
-    makePieceBitboards( isWhite, own );
-
-    //unsigned long long enemyPawns;
-    //unsigned long long enemyKnights;
-    //unsigned long long enemyBishops;
-    //unsigned long long enemyRooks;
-    //unsigned long long enemyQueens;
-    //unsigned long long enemyKing;
-    //makePieceBitboards( !isWhite, enemyPawns, enemyKnights, enemyBishops, enemyRooks, enemyQueens, enemyKing );
     PieceBitboards enemy;
-    makePieceBitboards( !isWhite, enemy );
+    makePieceBitboards( isWhite, own, enemy );
 
     const unsigned short promotionRank = isWhite ? 7 : 0;
 
@@ -612,25 +596,9 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
     // Let's make some bitboards
 
-    //unsigned long long enemyPawns;
-    //unsigned long long enemyKnights;
-    //unsigned long long enemyBishops;
-    //unsigned long long enemyRooks;
-    //unsigned long long enemyQueens;
-    //unsigned long long enemyKing;
-    //makePieceBitboards( isWhite, enemyPawns, enemyKnights, enemyBishops, enemyRooks, enemyQueens, enemyKing );
-    PieceBitboards enemy;
-    makePieceBitboards( isWhite, enemy );
-
-    //unsigned long long ownPawns;
-    //unsigned long long ownKnights;
-    //unsigned long long ownBishops;
-    //unsigned long long ownRooks;
-    //unsigned long long ownQueens;
-    //unsigned long long ownKing;
-    //makePieceBitboards( !isWhite, ownPawns, ownKnights, ownBishops, ownRooks, ownQueens, ownKing );
     PieceBitboards own;
-    makePieceBitboards( !isWhite, own );
+    PieceBitboards enemy;
+    makePieceBitboards( !isWhite, own, enemy );
 
     // Worker variables
     unsigned short index;
@@ -810,7 +778,8 @@ void Board::makePieceBitboards( bool isWhite,
 }
 
 void Board::makePieceBitboards( bool isWhite,
-                                PieceBitboards& pieceBitboards )
+                                PieceBitboards& ownBitboards,
+                                PieceBitboards& enemyBitboards )
 {
     unsigned char colorMask = isWhite ? 0b00001000 : 0b00010000;
 
@@ -818,11 +787,11 @@ void Board::makePieceBitboards( bool isWhite,
     {
         unsigned char piece = pieceAt( index );
 
-        if ( piece & colorMask )
-        {
-            pieceBitboards.pieceMask[ piece & 0b00000111 ] |= Bitboard::indexToBit( index );
-        }
+        PieceBitboards& bitboards = ( piece & colorMask ) ? ownBitboards : enemyBitboards;
+
+        bitboards.pieceMask[ piece & 0b00000111 ] |= Bitboard::indexToBit( index );
     }
 
-    pieceBitboards.complete();
+    ownBitboards.complete();
+    enemyBitboards.complete();
 }
