@@ -1,0 +1,12 @@
+22:47:15.481 INFO  Set benchmarking off
+22:48:11.336 INFO  Processing FEN string 7k/7p/7Q/8/8/8/8/7K w - - 0 0 and 0 moves
+22:48:16.108 INFO  Go: depth=1
+22:48:35.106 INFO  Go: depth=2
+22:48:37.406 INFO  Go: depth=3
+22:48:57.461 INFO  Go: depth=1
+22:50:15.450 INFO  Go: depth=1
+22:50:26.706 INFO  Go: depth=2
+22:50:49.405 INFO  Go: depth=1
+22:51:02.937 INFO  Processing FEN string rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 and 0 moves
+22:51:05.688 INFO  Go: depth=1
+22:51:07.698 INFO  Go: depth=2

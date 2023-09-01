@@ -18,19 +18,19 @@ private:
     unsigned short halfmoveClock;
     unsigned short fullmoveNumber;
 
-    Fen( std::string position );
+    Fen( const std::string position );
 
     void skipSpace( std::string::iterator& it, std::string::iterator& end );
 
     std::string nextWord( std::string::iterator& it, std::string::iterator& end );
 
 private:
-    Fen( std::array<unsigned char,64>& pieces,
-         unsigned char activeColor,
-         CastlingRights& castlingRights,
-         unsigned short enPassantIndex,
-         unsigned short halfmoveClock,
-         unsigned short fullmoveNumber ) :
+    Fen( const std::array<unsigned char,64>& pieces,
+         const unsigned char activeColor,
+         const CastlingRights& castlingRights,
+         const unsigned short enPassantIndex,
+         const unsigned short halfmoveClock,
+         const unsigned short fullmoveNumber ) :
         pieces( pieces ),
         activeColor( activeColor ),
         castlingRights( castlingRights ),

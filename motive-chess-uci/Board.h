@@ -111,7 +111,7 @@ private:
 
     void validateCastlingRights();
 
-    bool failsCheckTests( unsigned long long protectedSquares );
+    bool failsCheckTests( unsigned long long protectedSquares ) const;
 
     unsigned long long movesInARay( unsigned long long possibleMoves,
                                     unsigned long long rayMask,
@@ -119,17 +119,9 @@ private:
                                     unsigned long long enemyPieces,
                                     unsigned long long aboveMask,
                                     unsigned long long belowMask,
-                                    bool supportsCaptures = true );
+                                    bool supportsCaptures = true ) const;
 
-    unsigned long long makePieceBitboard( unsigned char piece );
-
-    void makePieceBitboards( bool isWhite,
-                             unsigned long long& pawn,
-                             unsigned long long& knight,
-                             unsigned long long& bishop,
-                             unsigned long long& rook,
-                             unsigned long long& queen,
-                             unsigned long long& king );
+    unsigned long long makePieceBitboard( unsigned char piece ) const;
 
     /// <summary>
     /// A collection class for all bitmasks for one particular color.
@@ -191,7 +183,7 @@ private:
         }
     };
 
-    void makePieceBitboards( bool isWhite, PieceBitboards& ownBitboards, PieceBitboards& enemyBitboards );
+    void makePieceBitboards( bool isWhite, PieceBitboards& ownBitboards, PieceBitboards& enemyBitboards ) const;
 
 public:
     Board() :
@@ -232,6 +224,17 @@ public:
         // Plain copy, nothing to do
     };
 
+    Board( const Board& board ) :
+        pieces( board.pieces ),
+        activeColor( board.activeColor ),
+        castlingRights( board.castlingRights ),
+        enPassantIndex( board.enPassantIndex ),
+        halfmoveClock( board.halfmoveClock ),
+        fullmoveNumber( board.fullmoveNumber )
+    {
+        // Plain copy, nothing to do
+    };
+
     Board( const Fen& fen ) :
         pieces( fen.pieces ),
         activeColor( fen.activeColor ),
@@ -248,26 +251,26 @@ public:
         // Do nothing
     }
 
-    bool operator == ( const Board& board )
+    bool operator == ( const Board& board ) const
     {
         // TODO implement other attrs
         return positionMatch( board );
     }
 
-    bool operator != ( const Board& board )
+    bool operator != ( const Board& board ) const
     {
         // TODO implement other attrs
         return !positionMatch( board );
     }
 
-    Fen toFEN()
+    Fen toFEN() const
     {
         return Fen( pieces, activeColor, castlingRights, enPassantIndex, halfmoveClock, fullmoveNumber );
     }
 
-    std::string toFENString()
+    std::string toFENString() const
     {
-        return Fen( pieces, activeColor, castlingRights, enPassantIndex, halfmoveClock, fullmoveNumber ).toString();
+        return toFEN().toString();
     }
 
     /// <summary>
@@ -285,6 +288,49 @@ public:
     Board makeMove( const Move& move );
 
     std::vector<Move> getMoves();
+
+    /// <summary>
+    /// Looks for terminal positions and reports back with details as applied to the current board
+    /// </summary>
+    /// <param name="result">pointer to accept the outcome of a terminal position -1/0/+1</param>
+    /// <returns>true if the position is terminal</returns>
+    bool isTerminal( short* result )
+    {
+        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
+
+        std::vector<Move> moves = getMoves();
+        if ( moves.size() == 0 )
+        {
+            if ( failsCheckTests( king ) )
+            {
+                *result = -1; // activeColor loses
+                return true;
+            }
+            else
+            {
+                *result = 0; // stalemate
+                return true;
+            }
+        }
+        else
+        {
+            for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+            {
+                unsigned long kingIndex;
+                if ( _BitScanForward64( &kingIndex, king ) )
+                {
+                    if ( ( *it ).getTo() == static_cast<unsigned short>( kingIndex ) )
+                    {
+                        *result = 1; // active color can take the opponent's king and therefore, wins
+                        return true;
+                    }
+                }
+            }
+        }
+
+
+        return false;
+    }
 
     friend class Evaluation;
 };

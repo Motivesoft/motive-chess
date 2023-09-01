@@ -1051,6 +1051,24 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 break;
             }
 
+            // Start of minmax/alphabeta/negamax/whatever
+            // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
+
+            Move bestMove = Move::nullMove;
+            short bestScore = std::numeric_limits<short>::lowest();
+            for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
+            {
+                short score = Evaluation::minimax( board->makeMove( *it ), context->getDepth(), -1000, +1000, true );
+
+                if ( score > bestScore )
+                {
+                    bestScore = score;
+                    bestMove = *it;
+                }
+
+                Log::Debug << "Score for " << ( *it ).toString() << " is " << score << std::endl;
+            }
+/*
             Move bestMove = Move::nullMove;
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
@@ -1065,7 +1083,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
                 Log::Debug << "Score for " << (*it).toString() << " is " << score << std::endl;
             }
-
+*/
             // If we haven't got a move in mind, establish one
             if ( thoughts.getBestMove().isNullMove() )
             {
@@ -1073,22 +1091,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
                 readyToMove = true;
             }
-
-            //if ( thoughts.getBestMove().isNullMove() )
-            //{
-            //    // TODO don't select target move randomly!
-            //    int random = std::rand();
-            //    int randomMove = random % candidateMoves.size();
-            //    thoughts = Thoughts( candidateMoves[ randomMove ] );
-
-            //    if ( candidateMoves.size() == 1 )
-            //    {
-            //        // Don't waste clock time analysing a forced move situation
-            //        Log::Debug << "Only one move available" << std::endl;
-            //        readyToMove = true;
-            //        break;
-            //    }
-            //}
 
             // TODO do work here
 
