@@ -17,7 +17,7 @@ void Board::applyMove( const Move& move )
 {
     Log::Trace( [&] ( const Log::Logger& logger )
     {
-        logger << "Apply move: " << move.toString() << std::endl;
+        logger << "Apply move: " << move.toString() << " for " << Piece::toColorString( activeColor ) << std::endl;
     } );
 
     if ( move.isNullMove() )
@@ -80,15 +80,15 @@ void Board::applyMove( const Move& move )
     {
         castlingRights.removeWhiteKingsideCastlingRights();
     }
-    else if ( move.getFrom() == Board::A1 || move.getTo() == Board::A1 )
+    if ( move.getFrom() == Board::A1 || move.getTo() == Board::A1 )
     {
         castlingRights.removeWhiteQueensideCastlingRights();
     }
-    else if ( move.getFrom() == Board::H8 || move.getTo() == Board::H8 )
+    if ( move.getFrom() == Board::H8 || move.getTo() == Board::H8 )
     {
         castlingRights.removeBlackKingsideCastlingRights();
     }
-    else if ( move.getFrom() == Board::A8 || move.getTo() == Board::A8 )
+    if ( move.getFrom() == Board::A8 || move.getTo() == Board::A8 )
     {
         castlingRights.removeBlackQueensideCastlingRights();
     }
@@ -683,6 +683,11 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
 void Board::validateCastlingRights()
 {
+    Log::Trace( [&] ( const Log::Logger& logger )
+    {
+        logger << "Validating castling rights: " << castlingRights.toString() << std::endl;
+    } );
+
     // Some FEN strings in the wild have wrong castling flags. Nip this in the board to
     // avoid having to consider it during thinking time
     PieceBitboards white;
@@ -705,7 +710,7 @@ void Board::validateCastlingRights()
         }
     }
 
-    if ( (black.kingMask() & Bitboard::indexToBit( Board::E8 ) ) == 0 )
+    if ( ( black.kingMask() & Bitboard::indexToBit( Board::E8 ) ) == 0 )
     {
         castlingRights.removeBlackCastlingRights();
     }
@@ -715,11 +720,16 @@ void Board::validateCastlingRights()
         {
             castlingRights.removeBlackKingsideCastlingRights();
         }
-        if ( (black.rookMask() & Bitboard::indexToBit( Board::A8 ) ) == 0 )
+        if ( ( black.rookMask() & Bitboard::indexToBit( Board::A8 ) ) == 0 )
         {
             castlingRights.removeBlackQueensideCastlingRights();
         }
     }
+
+    Log::Trace( [&] ( const Log::Logger& logger )
+    {
+        logger << "Castling rights now: " << castlingRights.toString() << std::endl;
+    } );
 }
 
 /// <summary>
