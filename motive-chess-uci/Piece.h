@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "Log.h"
-
 /// <summary>
 /// Bit mask for piece to byte:
 /// 76543210
@@ -15,12 +13,13 @@
 ///   100 = Rook
 ///   101 = Queen
 ///   110 = King
-/// bit 3 represents color (0=white)
-/// bit 4-7 available for other properties (e.g. has moved, can be en-passanted, ...)
+/// bit 3-4 represent color
+/// bit 4-7 unused/available for other properties (e.g. has moved, can be en-passanted, ...)
 /// </summary>
 class Piece
 {
 private:
+    // Masks
     static const unsigned char COLOR_MASK         = 0b00011000;
     static const unsigned char INVERSE_COLOR_MASK = 0b11100111;
     static const unsigned char PIECE_MASK         = 0b00000111; // Mask
@@ -55,51 +54,7 @@ public:
     static const unsigned char BKNIGHT = 0b00010010; // BLACK   | KNIGHT
     static const unsigned char BPAWN   = 0b00010001; // BLACK   | PAWN  
     
-    static std::string toFENString( const unsigned char value )
-    {
-        switch ( value )
-        {
-            case WKING:
-                return "K";
-
-            case WQUEEN:
-                return "Q";
-
-            case WROOK:
-                return "R";
-
-            case WBISHOP:
-                return "B";
-
-            case WKNIGHT:
-                return "N";
-
-            case WPAWN:
-                return "P";
-
-            case BKING:
-                return "k";
-
-            case BQUEEN:
-                return "q";
-
-            case BROOK:
-                return "r";
-
-            case BBISHOP:
-                return "b";
-
-            case BKNIGHT:
-                return "n";
-
-            case BPAWN:
-                return "p";
-
-            case NOTHING:
-            default:
-                return "";
-        }
-    }
+    static std::string toFENString( const unsigned char value );
 
     /// <summary>
     /// Return a lowercase letter representing the provided piece. Useful for 
@@ -107,130 +62,18 @@ public:
     /// </summary>
     /// <param name="value">the piece letter, colored or not</param>
     /// <returns>a single letter string for the piece, or empty string for no piece</returns>
-    static std::string toMoveString( unsigned char value )
-    {
-        switch ( value & PIECE_MASK )
-        {
-            case KING:
-                return "k";
+    static std::string toMoveString( unsigned char value );
 
-            case QUEEN:
-                return "q";
+    static unsigned char fromFENString( std::string value );
 
-            case ROOK:
-                return "r";
-
-            case BISHOP:
-                return "b";
-
-            case KNIGHT:
-                return "n";
-
-            case PAWN:
-                return "p";
-
-            default:
-                return "";
-        }
-    }
-
-    static unsigned char fromFENString( std::string value )
-    {
-        return fromFENString( value[ 0 ] );
-    }
-
-    static unsigned char fromFENString( char value )
-    {
-        switch ( value )
-        {
-            case 'K':
-                return WKING;
-
-            case 'Q':
-                return WQUEEN;
-
-            case 'R':
-                return WROOK;
-
-            case 'B':
-                return WBISHOP;
-
-            case 'N':
-                return WKNIGHT;
-
-            case 'P':
-                return WPAWN;
-
-            case 'k':
-                return BKING;
-
-            case 'q':
-                return BQUEEN;
-
-            case 'r':
-                return BROOK;
-
-            case 'b':
-                return BBISHOP;
-
-            case 'n':
-                return BKNIGHT;
-
-            case 'p':
-                return BPAWN;
-
-            default:
-                Log::Warn << "Unexpected letter in FEN string: " << value << std::endl;
-                return NOTHING;
-        }
-    }
+    static unsigned char fromFENString( char value );
 
     /// <summary>
     /// Takes a 5 letter move string and returns the promotion piece
     /// </summary>
     /// <param name="value">a promotion move, such as a7a8q</param>
     /// <returns>The promotion piece, e.g. Piece::WQUEEN</returns>
-    static unsigned char promotionPieceFromMoveString( std::string value )
-    {
-        Log::Trace << "Getting promotion piece from " << value << std::endl;
-
-        if ( value.length() < 5 )
-        {
-            return Piece::NOTHING;
-        }
-
-        unsigned char color = value[ 3 ] == '8' ? Piece::WHITE : Piece::BLACK;
-
-        switch ( value[ 4 ] )
-        {
-            case 'k':
-            case 'K':
-                return color == Piece::WHITE ? Piece::WKING : Piece::BKING;
-
-            case 'q':
-            case 'Q':
-                return color == Piece::WHITE ? Piece::WQUEEN : Piece::BQUEEN;
-
-            case 'r':
-            case 'R':
-                return color == Piece::WHITE ? Piece::WROOK : Piece::BROOK;
-
-            case 'b':
-            case 'B':
-                return color == Piece::WHITE ? Piece::WBISHOP : Piece::BBISHOP;
-
-            case 'n':
-            case 'N':
-                return color == Piece::WHITE ? Piece::WKNIGHT : Piece::BKNIGHT;
-
-            case 'p':
-            case 'P':
-                return color == Piece::WHITE ? Piece::WPAWN : Piece::BPAWN;
-        }
-
-        Log::Warn << "Unexpected letter '" << value[ 4 ] << "' in move string : " << value << std::endl;
-        return Piece::NOTHING;
-    }
+    static unsigned char promotionPieceFromMoveString( std::string value );
 
     inline static bool isEmpty( unsigned char value )
     {
@@ -289,73 +132,19 @@ public:
 
     inline static unsigned char oppositeColor( unsigned char color )
     {
-        if ( isWhite( color ) )
-        {
-            return Piece::BLACK;
-        }
-        if ( isBlack( color ) )
-        {
-            return Piece::WHITE;
-        }
-
-        Log::Warn << "Failed to swap color for " << color << std::endl;
-        return Piece::NOCOLOR;
-    }
-
-    static std::string toColorString( unsigned char color )
-    {
-        if ( isWhite( color ) )
-        {
-            return "white";
-        }
-        else if ( isBlack( color ) )
-        {
-            return "black";
-        }
-
-        Log::Warn << "Failed to get color name for " << color << std::endl;
-        return "";
-    }
-
-    static std::string toColorLetter( unsigned char color )
-    {
-        if ( isWhite( color ) )
-        {
-            return "w";
-        }
-        else if ( isBlack( color ) )
-        {
-            return "b";
-        }
-
-        Log::Warn << "Failed to get color name for " << color << std::endl;
-        return "";
-    }
-
-    static unsigned char colorFrom( std::string color )
-    {
-        return colorFrom( color[ 0 ] );
-    }
-
-    static unsigned char colorFrom( unsigned char color )
-    {
-        switch ( color )
-        {
-            case 'w':
-            case 'W':
-                return Piece::WHITE;
-
-            case 'b':
-            case 'B':
-                return Piece::BLACK;
-        }
-
-        Log::Warn << "Failed to get color from " << color << std::endl;
-        return Piece::NOCOLOR;
+        return color ^ COLOR_MASK;
     }
 
     inline static unsigned char getStartingColor()
     {
         return Piece::WHITE;
     }
+
+    static std::string toColorString( unsigned char color );
+
+    static std::string toColorLetter( unsigned char color );
+
+    static unsigned char colorFrom( std::string color );
+
+    static unsigned char colorFrom( unsigned char color );
 };

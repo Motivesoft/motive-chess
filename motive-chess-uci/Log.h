@@ -43,7 +43,7 @@ public:
             // Nothing to do here
         }
 
-        inline Log::Level getLevel()
+        inline Log::Level getLevel() const
         {
             return level;
         }
@@ -51,6 +51,16 @@ public:
         inline void setLevel( Log::Level level )
         {
             this->level = level;
+        }
+
+        inline bool isIncluded( Log::Level level ) const 
+        {
+            return level >= this->level;
+        }
+
+        inline bool isExcluded( Log::Level level ) const
+        {
+            return level < this->level;
         }
 
         virtual void write( Log::Level level, const char* message ) = 0;
@@ -61,18 +71,18 @@ public:
     private:
         Log::Level level;
 
-        void write( const char* message ) const
+        inline void write( const char* message ) const
         {
             Log::getDestination()->write( level, message );
         }
 
-    public:
         Logger( Log::Level level ) :
             level( level )
         {
             // Do nothing
         }
 
+    public:
         virtual ~Logger()
         {
             // Do nothing
@@ -117,12 +127,31 @@ public:
 
         const Logger& operator <<( decltype( std::endl<char, std::char_traits<char>> ) ) const
         {
+            static const std::string blank;
+
             if ( Log::isIncluded( level ) )
             {
                 write( perThreadBuffer.str().c_str() );
+
+                // This should probably be done outside of this if-block because there is a chance of
+                // some stale content in this case:
+                // 
+                // Log::setLevel( Debug );
+                // Log::Debug << "Hello";
+                // Log::setLevel( Error );
+                // Log::Debug << std::endl;
+                // Log::setLevel( Debug );
+                //
+                // If this becomes problematic, comment this line of code and uncomment the lines below
+                perThreadBuffer.str( blank );
             }
 
-            perThreadBuffer.str( std::string() );
+            // Uncomment to clear the buffer more diligently - which, of course, will take extra time
+            //if ( !perThreadBuffer.str().empty() )
+            //{
+            //    perThreadBuffer.str( blank );
+            //}
+
             return *this;
         }
 
@@ -145,6 +174,8 @@ public:
 
             return *this;
         }
+
+        friend class Log;
     };
 
     inline static const Log::Logger Trace = Logger( Log::Level::TRACE );
@@ -152,7 +183,6 @@ public:
     inline static const Log::Logger Info  = Logger( Log::Level::INFO );
     inline static const Log::Logger Warn  = Logger( Log::Level::WARN );
     inline static const Log::Logger Error = Logger( Log::Level::ERROR );
-    inline static const Log::Logger None = Logger( Log::Level::NONE );
 
     inline static const Log::Logger& logger( Log::Level level )
     {
@@ -175,7 +205,8 @@ public:
 
             case Log::Level::NONE:
             default:
-                return Log::None;
+                Log::Error( "Logger does not exist. Returning alternative." );
+                return Log::Error;
         }
     }
 
@@ -207,22 +238,22 @@ public:
     // Helper methods
     inline static bool isIncluded( Log::Level level )
     {
-        if ( Log::destination != nullptr )
+        if ( Log::destination == nullptr )
         {
-            return level >= Log::destination->getLevel() && Log::destination->getLevel() != Log::Level::NONE;
+            return false;
         }
 
-        return false;
+        return Log::destination->isIncluded( level );
     }
 
     inline static bool isExcluded( Log::Level level )
     {
-        if ( Log::destination != nullptr )
+        if ( Log::destination == nullptr )
         {
-            return level < Log::destination->getLevel();
+            return true;
         }
 
-        return true;
+        return Log::destination->isExcluded( level );
     }
 
 private:
@@ -272,6 +303,7 @@ public:
     inline void write( Log::Level level, const char* message ) override
     {
         std::lock_guard<std::mutex> guard( fileLogMutex );
+
         stream << timestamp() << " " << levelName( level ) << " " << message << std::endl;
 
         // TODO decide if we want this - might be costly
