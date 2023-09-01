@@ -10,13 +10,13 @@ Move Move::fromString( const std::string& moveString )
     // Contains a promotion?
     if ( moveString.length() > 4 )
     {
-        return Move( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
-                     Utilities::squareToIndex( moveString.substr( 2, 2 ) ),
-                     Piece::promotionPieceFromMoveString( moveString ) );
+        return createPromotionMove( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
+                                    Utilities::squareToIndex( moveString.substr( 2, 2 ) ),
+                                    Piece::promotionPieceFromMoveString( moveString ) );
     }
 
-    return Move( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
-                 Utilities::squareToIndex( moveString.substr( 2, 2 ) ) );
+    return createMove( Utilities::squareToIndex( moveString.substr( 0, 2 ) ),
+                       Utilities::squareToIndex( moveString.substr( 2, 2 ) ) );
 }
 
 std::string Move::toString() const

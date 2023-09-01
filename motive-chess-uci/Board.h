@@ -245,7 +245,7 @@ public:
 
     virtual ~Board()
     {
-
+        // Do nothing
     }
 
     bool operator == ( const Board& board )

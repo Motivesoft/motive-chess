@@ -52,9 +52,24 @@ public:
     static const unsigned char BROOK   = 0b00010100; // BLACK   | ROOK  
     static const unsigned char BBISHOP = 0b00010011; // BLACK   | BISHOP
     static const unsigned char BKNIGHT = 0b00010010; // BLACK   | KNIGHT
-    static const unsigned char BPAWN   = 0b00010001; // BLACK   | PAWN  
-    
-    static std::string toFENString( const unsigned char value );
+    static const unsigned char BPAWN   = 0b00010001; // BLACK   | PAWN
+
+    inline static const unsigned char WPROMOTION[]
+    {
+        WQUEEN, WROOK, WBISHOP, WKNIGHT
+    };
+
+    inline static const unsigned char BPROMOTION[]
+    {
+        BQUEEN, BROOK, BBISHOP, BKNIGHT
+    };
+
+    inline static const unsigned short numberOfPromotionPieces = 4;
+
+    inline static const unsigned char* getPromotionPieces( const unsigned char color )
+    {
+        return isWhite( color ) ? WPROMOTION : BPROMOTION;
+    }
 
     /// <summary>
     /// Return a lowercase letter representing the provided piece. Useful for 
@@ -147,4 +162,6 @@ public:
     static unsigned char colorFrom( std::string color );
 
     static unsigned char colorFrom( unsigned char color );
+
+    static std::string toFENString( const unsigned char value );
 };

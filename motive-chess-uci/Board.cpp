@@ -38,89 +38,59 @@ void Board::applyMove( const Move& move )
 
     // Handle castling - check the piece that has just moved and work it out from there
     // TODO use Move's new knowledge about whether it is a castling move
-    if ( movingPiece == Piece::WKING )
+    if ( Piece::isKing( movingPiece ) )
     {
+        // There is some assumption here as we are not actually testing the piece colors, just the board locations
+        // Even if (eg) the black king has made it to E1 and gets caught up in this code inaccurately, it still means
+        // white can't castle because its king must be elsewhere...
+
         if ( move.getFrom() == Board::E1 )
         {
             if ( move.getTo() == Board::C1 )
             {
                 movePiece( Board::A1, Board::D1 );
-
-                Log::Trace << "White castling queen side" << std::endl;
             }
             else if ( move.getTo() == Board::G1 )
             {
                 movePiece( Board::H1, Board::F1 );
-
-                Log::Trace << "White castling king side" << std::endl;
             }
-        }
 
-        // White king has moved - no more castling
-        castlingRights.removeWhiteCastlingRights();
-    }
-    else if ( movingPiece == Piece::BKING )
-    {
-        if ( move.getFrom() == Board::E8 )
+            // White king has moved - no more castling
+            castlingRights.removeWhiteCastlingRights();
+        }
+        else if ( move.getFrom() == Board::E8 )
         {
             if ( move.getTo() == Board::C8 )
             {
                 movePiece( Board::A8, Board::D8 );
-
-                Log::Trace << "Black castling queen side" << std::endl;
             }
             else if ( move.getTo() == Board::G8 )
             {
                 movePiece( Board::H8, Board::F8 );
-
-                Log::Trace << "Black castling king side" << std::endl;
             }
-        }
 
-        // Black king has moved - no more castling
-        castlingRights.removeBlackCastlingRights();
-    }
-    else if ( movingPiece == Piece::WROOK )
-    {
-        // A white rook has moved - work out which and disable its ability to castle
-        if ( move.getFrom() == Board::H1 )
-        {
-            castlingRights.removeWhiteKingsideCastlingRights();
-        }
-        else if ( move.getFrom() == Board::A1 )
-        {
-            castlingRights.removeWhiteQueensideCastlingRights();
-        }
-    }
-    else if ( movingPiece == Piece::BROOK )
-    {
-        // A black rook has moved - work out which and disable its ability to castle
-        if ( move.getFrom() == Board::H8 )
-        {
-            castlingRights.removeBlackKingsideCastlingRights();
-        }
-        else if ( move.getFrom() == Board::A8 )
-        {
-            castlingRights.removeBlackQueensideCastlingRights();
+            // Black king has moved - no more castling
+            castlingRights.removeBlackCastlingRights();
         }
     }
 
-    // If a piece captures a rook, that prevents castling
-    if ( move.getTo() == Board::H8 )
-    {
-        castlingRights.removeBlackKingsideCastlingRights();
-    }
-    else if ( move.getTo() == Board::A8 )
-    {
-        castlingRights.removeBlackQueensideCastlingRights();
-    }
-    else if ( move.getTo() == Board::H1 )
+    // if any piece has moved from or to (eg) H1, then white kingside castling is prevented, so we don't need
+    // more detailed tests here
+    if ( move.getFrom() == Board::H1 || move.getTo() == Board::H1 )
     {
         castlingRights.removeWhiteKingsideCastlingRights();
     }
-    else if ( move.getTo() == Board::A1 )
+    else if ( move.getFrom() == Board::A1 || move.getTo() == Board::A1 )
     {
         castlingRights.removeWhiteQueensideCastlingRights();
+    }
+    else if ( move.getFrom() == Board::H8 || move.getTo() == Board::H8 )
+    {
+        castlingRights.removeBlackKingsideCastlingRights();
+    }
+    else if ( move.getFrom() == Board::A8 || move.getTo() == Board::A8 )
+    {
+        castlingRights.removeBlackQueensideCastlingRights();
     }
 
     Log::Trace( [&] ( const Log::Logger& logger )
@@ -424,10 +394,11 @@ std::vector<Move> Board::getMoves()
             if ( Utilities::indexToRank( destination ) == promotionRank )
             {
                 // Promote to...
-                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WQUEEN : Piece::BQUEEN ) );
-                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WROOK : Piece::BROOK ) );
-                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WBISHOP : Piece::BBISHOP ) );
-                moves.push_back( Move::createPromotionMove( index, destination, isWhite ? Piece::WKNIGHT : Piece::BKNIGHT ) );
+                const unsigned char* promotionPieces = Piece::getPromotionPieces( activeColor );
+                for ( unsigned int loop = 0; loop < Piece::numberOfPromotionPieces; loop++ )
+                {
+                    moves.push_back( Move::createPromotionMove( index, destination, promotionPieces[ loop ] ) );
+                }
             }
             else
             {
@@ -714,21 +685,40 @@ void Board::validateCastlingRights()
 {
     // Some FEN strings in the wild have wrong castling flags. Nip this in the board to
     // avoid having to consider it during thinking time
-    if ( pieces[ Board::E1 ] != Piece::WKING || pieces[ Board::H1 ] != Piece::WROOK )
+    PieceBitboards white;
+    PieceBitboards black;
+    makePieceBitboards( true, white, black );
+
+    if ( ( white.kingMask() & Bitboard::indexToBit( Board::E1 ) ) == 0 )
     {
-        castlingRights.removeWhiteKingsideCastlingRights();
+        castlingRights.removeWhiteCastlingRights();
     }
-    if ( pieces[ Board::E1 ] != Piece::WKING || pieces[ Board::A1 ] != Piece::WROOK )
+    else
     {
-        castlingRights.removeWhiteQueensideCastlingRights();
+        if ( ( white.rookMask() & Bitboard::indexToBit( Board::H1 ) ) == 0 )
+        {
+            castlingRights.removeWhiteKingsideCastlingRights();
+        }
+        if ( ( white.rookMask() & Bitboard::indexToBit( Board::A1 ) ) == 0 )
+        {
+            castlingRights.removeWhiteQueensideCastlingRights();
+        }
     }
-    if ( pieces[ Board::E8 ] != Piece::BKING || pieces[ Board::H8 ] != Piece::BROOK )
+
+    if ( (black.kingMask() & Bitboard::indexToBit( Board::E8 ) ) == 0 )
     {
-        castlingRights.removeBlackKingsideCastlingRights();
+        castlingRights.removeBlackCastlingRights();
     }
-    if ( pieces[ Board::E8 ] != Piece::BKING || pieces[ Board::A8 ] != Piece::BROOK )
+    else
     {
-        castlingRights.removeBlackQueensideCastlingRights();
+        if ( ( black.rookMask() & Bitboard::indexToBit( Board::H8 ) ) == 0 )
+        {
+            castlingRights.removeBlackKingsideCastlingRights();
+        }
+        if ( (black.rookMask() & Bitboard::indexToBit( Board::A8 ) ) == 0 )
+        {
+            castlingRights.removeBlackQueensideCastlingRights();
+        }
     }
 }
 
