@@ -1,0 +1,5 @@
+uci
+perft file motive-chess.epd
+perft file stock.epd
+perft 6
+quit
