@@ -1021,6 +1021,12 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     // Test this repeatedly for interuptions
     engine->continueThinking = true;
 
+    unsigned short depth = context->getDepth();
+    if ( depth == 0 )
+    {
+        depth = 1;
+    }
+
     // OK, beging the thinking process - we have to test flags, but make sure we have a candidate move
     // before being interrupted - unless we are quitting
 
@@ -1059,7 +1065,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
                 Log::Debug << "Root examination of " << ( *it ).toString() << std::endl;
-                short score = Evaluation::minimax( board->makeMove( *it ).dumpBoard( (*it).toString() ), context->getDepth(), -1000, +1000, false );
+                short score = Evaluation::minimax( board->makeMove( *it ).dumpBoard( (*it).toString() ), depth - 1, -1000, +1000, false );
 
                 if ( score > bestScore )
                 {
@@ -1097,7 +1103,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             // TODO do work here
 
             // TODO this probably wants to be a better check
-            if ( loop++ >= context->getDepth() )
+            if ( --depth == 0 )
             {
                 Log::Debug << "Reached search depth" << std::endl;
                 readyToMove = true;
