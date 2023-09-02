@@ -550,7 +550,7 @@ std::vector<Move> Board::getMoves()
             protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         }
 
-        if ( testBoard.failsCheckTests( protectedSquares ) )
+        if ( testBoard.failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
         {
             it = moves.erase( it );
         }
@@ -582,19 +582,17 @@ std::vector<Move> Board::getMoves()
 /// </summary>
 /// <param name="protectedSquares">bitmask of square or squares to test</param>
 /// <returns>true if a square is under attack</returns>
-bool Board::failsCheckTests( unsigned long long protectedSquares ) const
+bool Board::failsCheckTests( unsigned long long protectedSquares, bool asWhite ) const
 {
     // If any of the protected squares are attacked by this player, the test fails and should return true immediately
     // This will be called after making our move and so the state should be as though the opponent was about to play
     // This takes a mask as it might be up to three squares we need to check, during a castling operation
 
-    bool isWhite = Piece::isWhite( activeColor );
-
     // Let's make some bitboards
 
     PieceBitboards own;
     PieceBitboards enemy;
-    makePieceBitboards( !isWhite, own, enemy );
+    makePieceBitboards( !asWhite, own, enemy );
 
     // Worker variables
     unsigned short index;
@@ -606,7 +604,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares ) const
 
         // Pawn
         // Captures are reflections, so can index 'capture' potential pawn is a viable test
-        captureMask = Bitboard::getPawnCaptures( index, !isWhite );
+        captureMask = Bitboard::getPawnCaptures( index, !asWhite );
 
         if ( captureMask & enemy.pawnMask() )
         {

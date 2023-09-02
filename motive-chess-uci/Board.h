@@ -111,7 +111,7 @@ private:
 
     void validateCastlingRights();
 
-    bool failsCheckTests( unsigned long long protectedSquares ) const;
+    bool failsCheckTests( unsigned long long protectedSquares, bool asWhite ) const;
 
     unsigned long long movesInARay( unsigned long long possibleMoves,
                                     unsigned long long rayMask,
@@ -296,12 +296,13 @@ public:
     /// <returns>true if the position is terminal</returns>
     bool isTerminal( short* result )
     {
-        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
+        Utilities::dumpBoard( pieces );
 
         std::vector<Move> moves = getMoves();
         if ( moves.size() == 0 )
         {
-            if ( failsCheckTests( king ) )
+            unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
+            if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
             {
                 *result = -1; // activeColor loses
                 return true;
@@ -314,20 +315,13 @@ public:
         }
         else
         {
-            for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+            unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::BKING : Piece::WKING );
+            if ( failsCheckTests( king, Piece::isWhite( activeColor ) ) )
             {
-                unsigned long kingIndex;
-                if ( _BitScanForward64( &kingIndex, king ) )
-                {
-                    if ( ( *it ).getTo() == static_cast<unsigned short>( kingIndex ) )
-                    {
-                        *result = 1; // active color can take the opponent's king and therefore, wins
-                        return true;
-                    }
-                }
+                *result = 1; // We can take the opponent's king and therefore, win
+                return true;
             }
         }
-
 
         return false;
     }
