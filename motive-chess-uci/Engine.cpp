@@ -1022,10 +1022,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     engine->continueThinking = true;
 
     unsigned short depth = context->getDepth();
-    if ( depth == 0 )
-    {
-        depth = 1;
-    }
 
     // OK, beging the thinking process - we have to test flags, but make sure we have a candidate move
     // before being interrupted - unless we are quitting
@@ -1038,7 +1034,24 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         do
         {
-            std::vector<Move> candidateMoves = board->getMoves();
+            std::vector<Move> candidateMoves;
+
+            // DO NOT COMMIT LIKE THIS
+            
+            // Reinstate this
+            candidateMoves = board->getMoves();
+             
+            // Expected move is b6b8 for w
+            // position fen 7k / R7 / KR6 / 8 / 8 / 8 / 8 / 8 w - -
+            //candidateMoves.push_back( Move::fromString( "b6b8" ) );
+            //candidateMoves.push_back( Move::fromString( "b6g6" ) );
+
+            // Expected move is a6a7 at depth 1, and a6c6 at depth 2 or higher. Never a6b6
+            // position fen r7/p7/Q7/K7/8/8/8/8 w - -
+            //candidateMoves.push_back( Move::fromString( "a6a7" ) );
+            //candidateMoves.push_back( Move::fromString( "a6b6" ) );
+            //candidateMoves.push_back( Move::fromString( "a6c6" ) );
+
             if ( candidateMoves.empty() )
             {
                 // TODO we need to decide what to do here. Return nullmove? something based on win/loss/draw?
@@ -1046,7 +1059,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 break;
             }
 
-            if ( candidateMoves.size() == 1 )
+            if ( candidateMoves.size() == 1 || depth == 0 )
             {
                 // Don't waste clock time analysing a forced move situation
                 thoughts = Thoughts( candidateMoves[ 0 ] );
@@ -1065,7 +1078,11 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
                 Log::Debug << "Root examination of " << ( *it ).toString() << std::endl;
-                short score = Evaluation::minimax( board->makeMove( *it ).dumpBoard( (*it).toString() ), depth - 1, -1000, +1000, false );
+                short score = Evaluation::minimax( board->makeMove( *it ).dumpBoard( ( *it ).toString() ),
+                                                   depth,
+                                                   std::numeric_limits<short>::lowest(),
+                                                   std::numeric_limits<short>::max(),
+                                                   true );
 
                 if ( score > bestScore )
                 {

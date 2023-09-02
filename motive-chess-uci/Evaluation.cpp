@@ -58,7 +58,7 @@ short Evaluation::scorePosition( Board board )
 
             if ( !Piece::isColor( piece, board.activeColor ) )
             {
-                score += advancement[ Utilities::indexToRank( index ) ] * pawnAdvancementFile[ Utilities::indexToFile( index ) ];
+//                score += advancement[ Utilities::indexToRank( index ) ] * pawnAdvancementFile[ Utilities::indexToFile( index ) ];
             }
         }
     }
@@ -85,14 +85,26 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     {
         Log::Debug << spaces.substr( 0, depth ) << "Detected terminal position: " << score << std::endl;
 
-        // Why? Win, Loss or Stalemate
-        return score == 0 ? 0 : score * 1000;
+        // Why? Win (+1), Loss (-1) or Stalemate (0)
+        if ( score == 0 )
+        {
+            return 0;
+        }
+        else if ( maximising )
+        {
+            return score > 0 ? std::numeric_limits<short>::lowest() : std::numeric_limits<short>::max();
+        }
+        else
+        {
+            return score < 0 ? std::numeric_limits<short>::lowest() : std::numeric_limits<short>::max();
+        }
     }
 
     if ( depth == 0 )
     {
+        score = scorePosition( board );
         Log::Debug << spaces.substr( 0, depth ) << "Depth 0, scoring position: " << score << std::endl;
-        return scorePosition( board );
+        return score;
     }
 
     if ( maximising )
