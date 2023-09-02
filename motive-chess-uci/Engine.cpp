@@ -902,7 +902,7 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
 {
     Log::Info << "Processing FEN string " << fenString << " and " << moves.size() << " moves" << std::endl;
     Fen fen = Fen::fromPosition( fenString );
-
+    
     std::vector< Move > moveList;
     if ( moves.size() > 0 )
     {
@@ -1058,7 +1058,8 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
-                short score = Evaluation::minimax( board->makeMove( *it ), context->getDepth(), -1000, +1000, true );
+                Log::Debug << "Root examination of " << ( *it ).toString() << std::endl;
+                short score = Evaluation::minimax( board->makeMove( *it ).dumpBoard( (*it).toString() ), context->getDepth(), -1000, +1000, false );
 
                 if ( score > bestScore )
                 {
@@ -1090,6 +1091,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 thoughts = Thoughts( bestMove );
 
                 readyToMove = true;
+                engine->continueThinking = false;
             }
 
             // TODO do work here

@@ -730,6 +730,36 @@ void Board::validateCastlingRights()
     } );
 }
 
+bool Board::isTerminal( short* result )
+{
+    std::vector<Move> moves = getMoves();
+    if ( moves.size() == 0 )
+    {
+        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
+        if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
+        {
+            *result = -1; // activeColor loses
+            return true;
+        }
+        else
+        {
+            *result = 0; // stalemate
+            return true;
+        }
+    }
+    else
+    {
+        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::BKING : Piece::WKING );
+        if ( failsCheckTests( king, Piece::isWhite( activeColor ) ) )
+        {
+            *result = 1; // We can take the opponent's king and therefore, win
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /// <summary>
 /// Create a bitmask of locations of a specific piece type and color
 /// </summary>

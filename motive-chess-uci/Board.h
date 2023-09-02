@@ -294,36 +294,16 @@ public:
     /// </summary>
     /// <param name="result">pointer to accept the outcome of a terminal position -1/0/+1</param>
     /// <returns>true if the position is terminal</returns>
-    bool isTerminal( short* result )
+    bool isTerminal( short* result );
+
+    /// <summary>
+    /// Convenience method to print the current board to the log
+    /// </summary>
+    /// <param name="title">a title for the log</param>
+    Board& dumpBoard( std::string title = "" )
     {
-        Utilities::dumpBoard( pieces );
-
-        std::vector<Move> moves = getMoves();
-        if ( moves.size() == 0 )
-        {
-            unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
-            if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
-            {
-                *result = -1; // activeColor loses
-                return true;
-            }
-            else
-            {
-                *result = 0; // stalemate
-                return true;
-            }
-        }
-        else
-        {
-            unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::BKING : Piece::WKING );
-            if ( failsCheckTests( king, Piece::isWhite( activeColor ) ) )
-            {
-                *result = 1; // We can take the opponent's king and therefore, win
-                return true;
-            }
-        }
-
-        return false;
+        Utilities::dumpBoard( pieces, title );
+        return *this;
     }
 
     friend class Evaluation;
