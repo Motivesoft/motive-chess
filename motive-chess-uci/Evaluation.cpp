@@ -94,13 +94,23 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         {
             return 0;
         }
-        else if ( maximising )
-        {
-            return score > 0 ? std::numeric_limits<short>::lowest() : std::numeric_limits<short>::max();
-        }
         else
         {
-            return score < 0 ? std::numeric_limits<short>::lowest() : std::numeric_limits<short>::max();
+            // Give it a critially large value, but not quite at lowest/highest...
+            score = score < 0 ? std::numeric_limits<short>::lowest() + 1000 : std::numeric_limits<short>::max() - 1000;
+
+            // Adjusting the return with the depth means that it'll chase shorter lines to terminal positions rather
+            // than just settling for a forced mate being something it can commit to at any time
+            if ( score < 0 )
+            {
+                score -= depth;
+            }
+            else
+            {
+                score += depth;
+            }
+
+            return score;
         }
     }
 
