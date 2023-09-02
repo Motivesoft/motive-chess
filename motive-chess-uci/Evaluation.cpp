@@ -35,8 +35,6 @@ short Evaluation::pawnAdvancementFile[] =
 /// <returns>a centipawn score</returns>
 short Evaluation::scorePosition( Board board )
 {
-    //Utilities::dumpBoard( board.pieces );
-
     short score = 0;
 
     // Piece differential
@@ -44,7 +42,6 @@ short Evaluation::scorePosition( Board board )
     {
         unsigned char piece = board.pieceAt( index );
 
-//        score += ( Piece::isColor( piece, board.activeColor ) ? -pieceWeights[ piece & 0b00000111 ] : pieceWeights[ piece & 0b00000111 ] );
         // Score this from one player's perspective, always
         score += ( Piece::isWhite( piece ) ? pieceWeights[ piece & 0b00000111 ] : -pieceWeights[ piece & 0b00000111 ] );
     }
@@ -87,8 +84,6 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     short score = 0;
     if ( board.isTerminal( &score ) )
     {
-        Log::Debug << space << "Detected terminal position: " << score << std::endl;
-
         // Why? Win (+1), Loss (-1) or Stalemate (0)
         if ( score == 0 )
         {
@@ -97,7 +92,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         else
         {
             // Give it a critially large value, but not quite at lowest/highest...
-            score = score < 0 ? std::numeric_limits<short>::lowest() + 1000 : std::numeric_limits<short>::max() - 1000;
+            score = score < 0 ? std::numeric_limits<short>::lowest() + 500 : std::numeric_limits<short>::max() - 500;
 
             // Adjusting the return with the depth means that it'll chase shorter lines to terminal positions rather
             // than just settling for a forced mate being something it can commit to at any time
@@ -117,22 +112,18 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     if ( depth == 0 )
     {
         score = scorePosition( board );
-        //Log::Debug << space << "Depth 0, scoring position: " << score << std::endl;
         return score;
     }
 
     if ( maximising )
     {
-        Log::Debug << space << "Maximising at depth " << depth << std::endl;
         score = std::numeric_limits<short>::lowest();
         std::vector<Move> moves = board.getMoves();
 
-        Log::Debug << space << "Move count: " << moves.size() << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            Log::Debug << space << "Move: " << (*it).toString() << std::endl;
             short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
-            Log::Debug << space << "  - eval: " << evaluation << std::endl;
+
             if ( evaluation > score )
             {
                 score = evaluation;
@@ -147,21 +138,17 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             }
         }
 
-        Log::Debug << space << "Done maximising at depth " << depth << " with score " << score << std::endl;
         return score;
     }
     else
     {
-        Log::Debug << space << "Minimising at depth " << depth << std::endl;
         score = std::numeric_limits<short>::max();
         std::vector<Move> moves = board.getMoves();
 
-        Log::Debug << space << "Move count: " << moves.size() << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            Log::Debug << space << "Move: " << (*it).toString() << std::endl;
             short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
-            Log::Debug << space << "  - eval: " << evaluation << std::endl;
+
             if ( evaluation < score )
             {
                 score = evaluation;
@@ -176,7 +163,6 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             }
         }
 
-        Log::Debug << space << "Done minimising at depth " << depth << " with score " << score << std::endl;
         return score;
     }
 }
