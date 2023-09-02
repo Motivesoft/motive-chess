@@ -1039,7 +1039,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             // DO NOT COMMIT LIKE THIS
             
             // Reinstate this
-            candidateMoves = board->getMoves();
+            //candidateMoves = board->getMoves();
              
             // Expected move is b6b8 for w
             // position fen 7k / R7 / KR6 / 8 / 8 / 8 / 8 / 8 w - -
@@ -1047,10 +1047,10 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             //candidateMoves.push_back( Move::fromString( "b6g6" ) );
 
             // Expected move is a6a7 at depth 1, and a6c6 at depth 2 or higher. Never a6b6
-            // position fen r7/p7/Q7/K7/8/8/8/8 w - -
-            //candidateMoves.push_back( Move::fromString( "a6a7" ) );
-            //candidateMoves.push_back( Move::fromString( "a6b6" ) );
-            //candidateMoves.push_back( Move::fromString( "a6c6" ) );
+            // position fen r6k/p7/Q7/K7/8/8/8/8 w - -
+            candidateMoves.push_back( Move::fromString( "a6a7" ) );
+            candidateMoves.push_back( Move::fromString( "a6b6" ) );
+            candidateMoves.push_back( Move::fromString( "a6c6" ) );
 
             if ( candidateMoves.empty() )
             {
@@ -1073,6 +1073,10 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             // Start of minmax/alphabeta/negamax/whatever
             // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
 
+            Log::Debug << "Starting from: " << std::endl;
+            board->dumpBoard();
+            Log::Debug << "Scoring: " << Evaluation::scorePosition( *board ) << std::endl << std::endl << std::endl;
+
             Move bestMove = Move::nullMove;
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
@@ -1082,7 +1086,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                                                    depth,
                                                    std::numeric_limits<short>::lowest(),
                                                    std::numeric_limits<short>::max(),
-                                                   true );
+                                                   false );
 
                 if ( score > bestScore )
                 {

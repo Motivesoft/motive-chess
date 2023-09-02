@@ -44,7 +44,9 @@ short Evaluation::scorePosition( Board board )
     {
         unsigned char piece = board.pieceAt( index );
 
-        score += ( Piece::isColor( piece, board.activeColor ) ? -pieceWeights[ piece & 0b00000111 ] : pieceWeights[ piece & 0b00000111 ] );
+//        score += ( Piece::isColor( piece, board.activeColor ) ? -pieceWeights[ piece & 0b00000111 ] : pieceWeights[ piece & 0b00000111 ] );
+        // Score this from one player's perspective, always
+        score += ( Piece::isWhite( piece ) ? pieceWeights[ piece & 0b00000111 ] : -pieceWeights[ piece & 0b00000111 ] );
     }
 
     // Placement
@@ -69,6 +71,8 @@ short Evaluation::scorePosition( Board board )
 short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, short betaInput, bool maximising )
 {
     static const std::string spaces( "                                                                                                                  " );
+    
+    std::string space = spaces.substr( 0, depth * 2 );
 
     // Make some working values so we are not "editing" method parameters
     short alpha = alphaInput;
@@ -83,7 +87,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     short score = 0;
     if ( board.isTerminal( &score ) )
     {
-        Log::Debug << spaces.substr( 0, depth ) << "Detected terminal position: " << score << std::endl;
+        Log::Debug << space << "Detected terminal position: " << score << std::endl;
 
         // Why? Win (+1), Loss (-1) or Stalemate (0)
         if ( score == 0 )
@@ -103,22 +107,22 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     if ( depth == 0 )
     {
         score = scorePosition( board );
-        Log::Debug << spaces.substr( 0, depth ) << "Depth 0, scoring position: " << score << std::endl;
+        //Log::Debug << space << "Depth 0, scoring position: " << score << std::endl;
         return score;
     }
 
     if ( maximising )
     {
-        Log::Debug << spaces.substr( 0, depth ) << "Maximising at depth " << depth << std::endl;
+        Log::Debug << space << "Maximising at depth " << depth << std::endl;
         score = std::numeric_limits<short>::lowest();
         std::vector<Move> moves = board.getMoves();
 
-        Log::Debug << spaces.substr( 0, depth ) << "Move count: " << moves.size() << std::endl;
+        Log::Debug << space << "Move count: " << moves.size() << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            Log::Debug << spaces.substr( 0, depth ) << "Move: " << (*it).toString() << std::endl;
+            Log::Debug << space << "Move: " << (*it).toString() << std::endl;
             short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
-            Log::Debug << spaces.substr( 0, depth ) << "  - eval: " << evaluation << std::endl;
+            Log::Debug << space << "  - eval: " << evaluation << std::endl;
             if ( evaluation > score )
             {
                 score = evaluation;
@@ -133,21 +137,21 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             }
         }
 
-        Log::Debug << spaces.substr( 0, depth ) << "Done maximising at depth " << depth << " with score " << score << std::endl;
+        Log::Debug << space << "Done maximising at depth " << depth << " with score " << score << std::endl;
         return score;
     }
     else
     {
-        Log::Debug << spaces.substr( 0, depth ) << "Minimising at depth " << depth << std::endl;
+        Log::Debug << space << "Minimising at depth " << depth << std::endl;
         score = std::numeric_limits<short>::max();
         std::vector<Move> moves = board.getMoves();
 
-        Log::Debug << spaces.substr( 0, depth ) << "Move count: " << moves.size() << std::endl;
+        Log::Debug << space << "Move count: " << moves.size() << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            Log::Debug << spaces.substr( 0, depth ) << "Move: " << (*it).toString() << std::endl;
+            Log::Debug << space << "Move: " << (*it).toString() << std::endl;
             short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
-            Log::Debug << spaces.substr( 0, depth ) << "  - eval: " << evaluation << std::endl;
+            Log::Debug << space << "  - eval: " << evaluation << std::endl;
             if ( evaluation < score )
             {
                 score = evaluation;
@@ -162,7 +166,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             }
         }
 
-        Log::Debug << spaces.substr( 0, depth ) << "Done minimising at depth " << depth << " with score " << score << std::endl;
+        Log::Debug << space << "Done minimising at depth " << depth << " with score " << score << std::endl;
         return score;
     }
 }
