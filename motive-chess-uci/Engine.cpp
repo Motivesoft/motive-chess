@@ -1034,24 +1034,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         do
         {
-            std::vector<Move> candidateMoves;
-
-            // DO NOT COMMIT LIKE THIS
-            
-            // Reinstate this
-            candidateMoves = board->getMoves();
-           
-            // Expected move is b6b8 for w
-            // position fen 7k / R7 / KR6 / 8 / 8 / 8 / 8 / 8 w - -
-            //candidateMoves.push_back( Move::fromString( "b6b8" ) );
-            //candidateMoves.push_back( Move::fromString( "b6b1" ) );
-            //candidateMoves.push_back( Move::fromString( "b6g6" ) );
-
-            // Expected move is a6a7 at depth 1, and a6c6 at depth 2 or higher. Never a6b6
-            // position fen r6k/p7/Q7/K7/8/8/8/8 w - -
-            //candidateMoves.push_back( Move::fromString( "a6a7" ) );
-            //candidateMoves.push_back( Move::fromString( "a6b6" ) );
-            //candidateMoves.push_back( Move::fromString( "a6c6" ) );
+            std::vector<Move> candidateMoves = board->getMoves();
 
             // Philidor's Mate
             // position fen 4r2k/2pRP1pp/2p5/p4pN1/2Q3n1/q5P1/P3PP1P/6K1 w - -
@@ -1085,6 +1068,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
+                // TODO remove the dumpBoard() here
                 short score = Evaluation::minimax( board->makeMove( *it ).dumpBoard( ( *it ).toString() ),
                                                    depth,
                                                    std::numeric_limits<short>::lowest(),
