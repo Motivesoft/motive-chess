@@ -920,7 +920,7 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
             Move m = Move::fromString( move );
 
             moveList.push_back( m );
-            Log::Debug << m.toString() << std::endl;
+            Log::Debug << "  " << m.toString() << std::endl;
         }
     }
 
