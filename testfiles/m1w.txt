@@ -1,0 +1,5 @@
+uci
+position fen 7k/R7/KR6/8/8/8/8/8 w - -
+go searchmoves b6b1 b6b8 b6g6 depth 1
+stop
+quit
