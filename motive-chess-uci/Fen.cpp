@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "Fen.h"
+#include "Utilities.h"
 
 Fen::Fen( std::string position )
 {
@@ -227,4 +228,9 @@ std::string Fen::toString()
     fenString << " " << fullmoveNumber;
 
     return fenString.str();
+}
+
+void Fen::dumpBoard( const std::string title ) const
+{
+    Utilities::dumpBoard( pieces, title );
 }

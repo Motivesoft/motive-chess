@@ -6,6 +6,7 @@
 #include "Fen.h"
 #include "Move.h"
 #include "Piece.h"
+#include "Utilities.h"
 
 class Board
 {

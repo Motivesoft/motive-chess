@@ -907,6 +907,9 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
     Log::Info << "Processing FEN string " << fenString << " and " << moves.size() << " moves" << std::endl;
     Fen fen = Fen::fromPosition( fenString );
     
+    Log::Debug << "Position:" << std::endl;
+    fen.dumpBoard();
+
     std::vector< Move > moveList;
     if ( moves.size() > 0 )
     {
@@ -1032,15 +1035,15 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
     Thoughts thoughts;
 
+    // TODO This is debug code. Remove when we're happy to lose it
+    Log::Debug << "Current position scoring: " << Evaluation::scorePosition( *board ) << std::endl << std::endl << std::endl;
+
     unsigned int loop = 0;
     while ( engine->continueThinking && !engine->quitting )
     {
         do
         {
             std::vector<Move> candidateMoves = board->getMoves();
-
-            // Philidor's Mate
-            // position fen 4r2k/2pRP1pp/2p5/p4pN1/2Q3n1/q5P1/P3PP1P/6K1 w - -
 
             // Filter the moves down to the requested 'searchmoves' subset, if there is one
             if ( !context->getSearchMoves().empty() )
@@ -1079,10 +1082,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
             // Start of minmax/alphabeta/negamax/whatever
             // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
-
-            Log::Debug << "Starting from: " << std::endl;
-            board->dumpBoard();
-            Log::Debug << "Scoring: " << Evaluation::scorePosition( *board ) << std::endl << std::endl << std::endl;
 
             Move bestMove = Move::nullMove;
             short bestScore = std::numeric_limits<short>::lowest();
