@@ -297,6 +297,11 @@ public:
     /// <returns>true if the position is terminal</returns>
     bool isTerminal( short* result );
 
+    inline unsigned char getActiveColor()
+    {
+        return activeColor;
+    }
+
     /// <summary>
     /// Convenience method to print the current board to the log
     /// </summary>

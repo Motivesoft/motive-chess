@@ -1036,10 +1036,11 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     Thoughts thoughts;
 
     // TODO This is debug code. Remove when we're happy to lose it
-    Log::Debug << "Current position scoring: " << Evaluation::scorePosition( *board ) << std::endl << std::endl << std::endl;
+    Log::Debug << "Current position scoring: " << Evaluation::scorePosition( *board, board->getActiveColor() ) << std::endl;
 
     unsigned int loop = 0;
-    while ( engine->continueThinking && !engine->quitting )
+    //while ( engine->continueThinking && !engine->quitting )
+    while ( !engine->quitting && (engine->continueThinking || thoughts.getBestMove().isNullMove() ))
     {
         do
         {
@@ -1088,11 +1089,13 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
                 // TODO remove the dumpBoard() here
-                short score = Evaluation::minimax( board->makeMove( *it ).dumpBoard( ( *it ).toString() ),
+                Log::Debug << "Considering " << ( *it ).toString() << std::endl;
+                short score = Evaluation::minimax( board->makeMove( *it ),
                                                    depth,
                                                    std::numeric_limits<short>::lowest(),
                                                    std::numeric_limits<short>::max(),
-                                                   false );
+                                                   false, 
+                                                   board->getActiveColor() );
 
                 if ( score > bestScore )
                 {
@@ -1100,7 +1103,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                     bestMove = *it;
                 }
 
-                Log::Debug << "Score for " << ( *it ).toString() << " is " << score << std::endl;
+                Log::Debug << "--Score for " << ( *it ).toString() << " is " << score << std::endl;
             }
 
             // If we haven't got a move in mind, establish one
@@ -1113,8 +1116,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
                 engine->continueThinking = false;
             }
-
-            // TODO do work here
 
             // TODO this probably wants to be a better check
             if ( --depth == 0 )

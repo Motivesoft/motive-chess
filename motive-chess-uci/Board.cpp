@@ -738,12 +738,14 @@ bool Board::isTerminal( short* result )
         unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
         if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
         {
-            *result = Piece::isWhite( activeColor ) ? -1 : +1; // activeColor loses
+            *result = -1; // activeColor loses
+            Log::Debug << "LOSS  Returning "<<*result<<". Active color is " << Piece::toColorString( activeColor ) << std::endl;
             return true;
         }
         else
         {
             *result = 0; // stalemate
+            Log::Debug << "DRAW Returning " << *result << ". Active color is " << Piece::toColorString( activeColor ) << std::endl;
             return true;
         }
     }
@@ -752,7 +754,8 @@ bool Board::isTerminal( short* result )
         unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::BKING : Piece::WKING );
         if ( failsCheckTests( king, Piece::isWhite( activeColor ) ) )
         {
-            *result = Piece::isWhite( activeColor ) ? +1 : -1; // We can take the opponent's king and therefore, win
+            *result = +1; // We can take the opponent's king and therefore, win
+            Log::Debug << "WIN Returning " << *result << ". Active color is " << Piece::toColorString( activeColor ) << std::endl;
             return true;
         }
     }

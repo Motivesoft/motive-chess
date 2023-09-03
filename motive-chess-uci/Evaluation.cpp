@@ -33,7 +33,7 @@ short Evaluation::pawnAdvancementFile[] =
 /// </summary>
 /// <param name="board">the board</param>
 /// <returns>a centipawn score</returns>
-short Evaluation::scorePosition( Board board )
+short Evaluation::scorePosition( Board board, unsigned char color )
 {
     short score = 0;
 
@@ -43,7 +43,7 @@ short Evaluation::scorePosition( Board board )
         unsigned char piece = board.pieceAt( index );
 
         // Score this from one player's perspective, always
-        score += ( Piece::isWhite( piece ) ? pieceWeights[ piece & 0b00000111 ] : -pieceWeights[ piece & 0b00000111 ] );
+        score += ( Piece::isColor( piece, color ) ? pieceWeights[ piece & 0b00000111 ] : -pieceWeights[ piece & 0b00000111 ] );
     }
 
     // Placement
@@ -65,7 +65,7 @@ short Evaluation::scorePosition( Board board )
     return score;
 }
 
-short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, short betaInput, bool maximising )
+short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, short betaInput, bool maximising, unsigned char color )
 {
     static const std::string spaces( "                                                                                                                  " );
     
@@ -85,6 +85,12 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     if ( board.isTerminal( &score ) )
     {
         // Why? Win (+1), Loss (-1) or Stalemate (0)
+        Log::Debug << "Score: " << score << " Active color: " << Piece::toColorString( board.getActiveColor() ) << " Provided color: " << Piece::toColorString( color ) << std::endl;
+        if ( board.getActiveColor() != color )
+        {
+            score = -score;
+        } 
+        Log::Debug << "Score (corrected): " << score << std::endl;
         if ( score == 0 )
         {
             return 0;
@@ -92,7 +98,8 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         else
         {
             // Give it a critially large value, but not quite at lowest/highest...
-            score = score < 0 ? std::numeric_limits<short>::lowest() + 500 : std::numeric_limits<short>::max() - 500;
+            // so we have some wiggle room so we can make one winning line seem preferable to another
+            score = score < 0 ? std::numeric_limits<short>::lowest() + 1000 : std::numeric_limits<short>::max() - 1000;
 
             // Adjusting the return with the depth means that it'll chase shorter lines to terminal positions rather
             // than just settling for a forced mate being something it can commit to at any time
@@ -111,7 +118,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
 
     if ( depth == 0 )
     {
-        score = scorePosition( board );
+        score = scorePosition( board, color );
         return score;
     }
 
@@ -122,7 +129,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
 
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
+            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising, color );
 
             if ( evaluation > score )
             {
@@ -147,7 +154,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
 
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
+            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising, color );
 
             if ( evaluation < score )
             {

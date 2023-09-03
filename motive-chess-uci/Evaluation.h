@@ -12,8 +12,8 @@ private:
     static short pawnAdvancementFile[ 8 ];
 
 public:
-    static short scorePosition( Board board );
+    static short scorePosition( Board board, unsigned char color );
 
-    static short minimax( Board board, unsigned short depth, short alpha, short beta, bool maximising );
+    static short minimax( Board board, unsigned short depth, short alpha, short beta, bool maximising, unsigned char color );
 };
 
