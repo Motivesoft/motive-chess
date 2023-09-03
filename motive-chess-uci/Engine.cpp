@@ -1083,26 +1083,14 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
                 Log::Debug << "Score for " << ( *it ).toString() << " is " << score << std::endl;
             }
-/*
-            Move bestMove = Move::nullMove;
-            short bestScore = std::numeric_limits<short>::lowest();
-            for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
-            {
-                short score = Evaluation::score( board->makeMove( *it ) );
 
-                if ( score > bestScore )
-                {
-                    bestScore = score;
-                    bestMove = *it;
-                }
-
-                Log::Debug << "Score for " << (*it).toString() << " is " << score << std::endl;
-            }
-*/
             // If we haven't got a move in mind, establish one
             if ( thoughts.getBestMove().isNullMove() )
             {
                 thoughts = Thoughts( bestMove );
+
+                Log::Debug << "Preparing to make move" << std::endl;
+                board->makeMove( bestMove ).dumpBoard( bestMove.toString() );
 
                 readyToMove = true;
                 engine->continueThinking = false;
