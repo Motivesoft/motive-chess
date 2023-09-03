@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Board.h"
+#include "Move.h"
 
 class Evaluation
 {
@@ -11,6 +12,8 @@ private:
     static short pawnAdvancementFile[ 8 ];
 
 public:
-    static short score( const Board& board );
+    static short scorePosition( Board board );
+
+    static short minimax( Board board, unsigned short depth, short alpha, short beta, bool maximising );
 };
 

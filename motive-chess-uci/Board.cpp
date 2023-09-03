@@ -268,7 +268,7 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
                                        unsigned long long enemyPieces,
                                        unsigned long long aboveMask,
                                        unsigned long long belowMask,
-                                       bool supportsCaptures )
+                                       bool supportsCaptures ) const
 {
     unsigned long long moves = 0;
     unsigned long long rayMoves = possibleMoves & rayMask;
@@ -550,7 +550,7 @@ std::vector<Move> Board::getMoves()
             protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         }
 
-        if ( testBoard.failsCheckTests( protectedSquares ) )
+        if ( testBoard.failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
         {
             it = moves.erase( it );
         }
@@ -582,19 +582,17 @@ std::vector<Move> Board::getMoves()
 /// </summary>
 /// <param name="protectedSquares">bitmask of square or squares to test</param>
 /// <returns>true if a square is under attack</returns>
-bool Board::failsCheckTests( unsigned long long protectedSquares )
+bool Board::failsCheckTests( unsigned long long protectedSquares, bool asWhite ) const
 {
     // If any of the protected squares are attacked by this player, the test fails and should return true immediately
     // This will be called after making our move and so the state should be as though the opponent was about to play
     // This takes a mask as it might be up to three squares we need to check, during a castling operation
 
-    bool isWhite = Piece::isWhite( activeColor );
-
     // Let's make some bitboards
 
     PieceBitboards own;
     PieceBitboards enemy;
-    makePieceBitboards( !isWhite, own, enemy );
+    makePieceBitboards( !asWhite, own, enemy );
 
     // Worker variables
     unsigned short index;
@@ -606,7 +604,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares )
 
         // Pawn
         // Captures are reflections, so can index 'capture' potential pawn is a viable test
-        captureMask = Bitboard::getPawnCaptures( index, !isWhite );
+        captureMask = Bitboard::getPawnCaptures( index, !asWhite );
 
         if ( captureMask & enemy.pawnMask() )
         {
@@ -732,12 +730,42 @@ void Board::validateCastlingRights()
     } );
 }
 
+bool Board::isTerminal( short* result )
+{
+    std::vector<Move> moves = getMoves();
+    if ( moves.size() == 0 )
+    {
+        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
+        if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
+        {
+            *result = Piece::isWhite( activeColor ) ? -1 : +1; // activeColor loses
+            return true;
+        }
+        else
+        {
+            *result = 0; // stalemate
+            return true;
+        }
+    }
+    else
+    {
+        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::BKING : Piece::WKING );
+        if ( failsCheckTests( king, Piece::isWhite( activeColor ) ) )
+        {
+            *result = Piece::isWhite( activeColor ) ? +1 : -1; // We can take the opponent's king and therefore, win
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /// <summary>
 /// Create a bitmask of locations of a specific piece type and color
 /// </summary>
 /// <param name="piece">the piece</param>
 /// <returns>the bitboard for that piece type and color</returns>
-unsigned long long Board::makePieceBitboard( unsigned char piece )
+unsigned long long Board::makePieceBitboard( unsigned char piece ) const
 {
     unsigned long long bitboard = 0;
 
@@ -753,58 +781,8 @@ unsigned long long Board::makePieceBitboard( unsigned char piece )
 }
 
 void Board::makePieceBitboards( bool isWhite,
-                                unsigned long long& pawn,
-                                unsigned long long& knight,
-                                unsigned long long& bishop,
-                                unsigned long long& rook,
-                                unsigned long long& queen,
-                                unsigned long long& king )
-{
-    pawn = knight = bishop = rook = queen = king = 0;
-
-    unsigned char colorMask = isWhite ? 0b00001000 : 0b00010000;
-
-    for ( unsigned short index = 0; index < 64; index++ )
-    {
-        unsigned char piece = pieceAt( index );
-        if( piece & colorMask )
-        {
-            switch ( piece & 0b00000111 )
-            {
-                case 0b00000001:
-                    pawn |= Bitboard::indexToBit( index );
-                    break;
-
-                case 0b00000010:
-                    knight |= Bitboard::indexToBit( index );
-                    break;
-
-                case 0b00000011:
-                    bishop |= Bitboard::indexToBit( index );
-                    break;
-
-                case 0b00000100:
-                    rook |= Bitboard::indexToBit( index );
-                    break;
-
-                case 0b00000101:
-                    queen |= Bitboard::indexToBit( index );
-                    break;
-
-                case 0b00000110:
-                    king |= Bitboard::indexToBit( index );
-                    break;
-
-                default:
-                    break;
-            }
-        }
-    }
-}
-
-void Board::makePieceBitboards( bool isWhite,
                                 PieceBitboards& ownBitboards,
-                                PieceBitboards& enemyBitboards )
+                                PieceBitboards& enemyBitboards ) const
 {
     unsigned char colorMask = isWhite ? 0b00001000 : 0b00010000;
 

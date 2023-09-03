@@ -1,5 +1,9 @@
 #include "Evaluation.h"
 
+#include <vector>
+
+#include "Board.h"
+#include "Move.h"
 #include "Log.h"
 #include "Utilities.h"
 
@@ -29,10 +33,8 @@ short Evaluation::pawnAdvancementFile[] =
 /// </summary>
 /// <param name="board">the board</param>
 /// <returns>a centipawn score</returns>
-short Evaluation::score( const Board& board )
+short Evaluation::scorePosition( Board board )
 {
-    Utilities::dumpBoard( board.pieces );
-
     short score = 0;
 
     // Piece differential
@@ -40,7 +42,8 @@ short Evaluation::score( const Board& board )
     {
         unsigned char piece = board.pieceAt( index );
 
-        score += ( Piece::isColor( piece, board.activeColor ) ? -pieceWeights[ piece & 0b00000111 ] : pieceWeights[ piece & 0b00000111 ] );
+        // Score this from one player's perspective, always
+        score += ( Piece::isWhite( piece ) ? pieceWeights[ piece & 0b00000111 ] : -pieceWeights[ piece & 0b00000111 ] );
     }
 
     // Placement
@@ -48,16 +51,118 @@ short Evaluation::score( const Board& board )
     {
         unsigned char piece = board.pieceAt( index );
 
-        if ( (piece & 0b00000111) == 0b00000001 ) // PAWN
+        if ( ( piece & 0b00000111 ) == 0b00000001 ) // PAWN
         {
             auto& advancement = Piece::isWhite( piece ) ? pawnAdvancementWhite : pawnAdvancementBlack;
 
             if ( !Piece::isColor( piece, board.activeColor ) )
             {
-                score += advancement[ Utilities::indexToRank( index ) ] * pawnAdvancementFile[ Utilities::indexToFile( index ) ];
+//                score += advancement[ Utilities::indexToRank( index ) ] * pawnAdvancementFile[ Utilities::indexToFile( index ) ];
             }
         }
     }
 
     return score;
+}
+
+short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, short betaInput, bool maximising )
+{
+    static const std::string spaces( "                                                                                                                  " );
+    
+    std::string space = spaces.substr( 0, depth * 2 );
+
+    // Make some working values so we are not "editing" method parameters
+    short alpha = alphaInput;
+    short beta = betaInput;
+
+    // If is win, return max
+    // If is loss, return lowest
+    // If draw, return 0
+    // otherwise iterate
+
+    // Simple win semantics
+    short score = 0;
+    if ( board.isTerminal( &score ) )
+    {
+        // Why? Win (+1), Loss (-1) or Stalemate (0)
+        if ( score == 0 )
+        {
+            return 0;
+        }
+        else
+        {
+            // Give it a critially large value, but not quite at lowest/highest...
+            score = score < 0 ? std::numeric_limits<short>::lowest() + 500 : std::numeric_limits<short>::max() - 500;
+
+            // Adjusting the return with the depth means that it'll chase shorter lines to terminal positions rather
+            // than just settling for a forced mate being something it can commit to at any time
+            if ( score < 0 )
+            {
+                score -= depth;
+            }
+            else
+            {
+                score += depth;
+            }
+
+            return score;
+        }
+    }
+
+    if ( depth == 0 )
+    {
+        score = scorePosition( board );
+        return score;
+    }
+
+    if ( maximising )
+    {
+        score = std::numeric_limits<short>::lowest();
+        std::vector<Move> moves = board.getMoves();
+
+        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+        {
+            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
+
+            if ( evaluation > score )
+            {
+                score = evaluation;
+            }
+            if ( evaluation > alpha )
+            {
+                alpha = evaluation;
+            }
+            if ( beta <= alpha )
+            {
+                break;
+            }
+        }
+
+        return score;
+    }
+    else
+    {
+        score = std::numeric_limits<short>::max();
+        std::vector<Move> moves = board.getMoves();
+
+        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+        {
+            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising );
+
+            if ( evaluation < score )
+            {
+                score = evaluation;
+            }
+            if ( evaluation < alpha )
+            {
+                alpha = evaluation;
+            }
+            if ( beta <= alpha )
+            {
+                break;
+            }
+        }
+
+        return score;
+    }
 }

@@ -15,28 +15,25 @@
 
 std::vector<std::string> getUciCommands();
 void logSanitizedInput( std::vector<std::string> input );
-bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& streams );
+bool processCommandLine( int argc, char** argv, Streams& streams );
 bool processUciCommand( Engine& engine, std::vector<std::string> input );
 
 int main( int argc, char** argv )
 {
     Streams streams;
-    bool benchmarking = false;
 
     // Default logging setup - can be modified later
 
     Log::setDestination( new ConsoleLogDestination() );
 
     // Allow command line processing to cause an exit without further activity
-    if ( processCommandLine( argc, argv, &benchmarking, streams ) )
+    if ( processCommandLine( argc, argv, streams ) )
     {
         Log::Debug( "Starting" );
 
         // Configure output location for where to post our UCI responses
         Broadcaster broadcaster( streams.getOuputStream() );
         Engine engine( broadcaster );
-
-        engine.setBenchmarking( benchmarking );
 
         // Initialize list of UCI commands
         std::vector<std::string> uci = getUciCommands();
@@ -148,13 +145,11 @@ std::vector<std::string> getUciCommands()
     return uci;
 }
 
-bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& streams )
+bool processCommandLine( int argc, char** argv, Streams& streams )
 {
     // Set initial defaults
     
     Log::Level logLevel = Log::Level::INFO;
-    
-    *benchmarking = false;
 
     // Process switches
 
@@ -235,12 +230,6 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
 
     // Now check for other instructions
 
-    it = std::find( arguments.begin(), arguments.end(), "-bench" );
-    if ( it != arguments.end() )
-    {
-        *benchmarking = true;
-    }
-
     // Informational stuff
 
     // Dump the command line args for posterity.
@@ -254,16 +243,15 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
     if ( it != arguments.end() )
     {
         std::cout << std::endl << "Supported command line arguments..." << std::endl;
+        std::cout << std::endl << "Information (application exits immediately):" << std::endl;
+        std::cout << "  -help    - this help" << std::endl;
+        std::cout << "  -version - version information" << std::endl;
+        std::cout << std::endl << std::endl << "Configuration options" << std::endl << std::endl;
         std::cout << std::endl << "Logging:" << std::endl;
         std::cout << "  -silent  - no logging" << std::endl;
         std::cout << "  -quiet   - minimal logging" << std::endl;
         std::cout << "  -debug   - detailed logging" << std::endl;
         std::cout << "  -verbose - trace logging" << std::endl;
-        std::cout << std::endl << "Information (application exits immediately):" << std::endl;
-        std::cout << "  -help    - this help" << std::endl;
-        std::cout << "  -version - version information" << std::endl;
-        std::cout << std::endl << "Configuration:" << std::endl;
-        std::cout << "  -bench   - run in benchmark mode" << std::endl;
         std::cout << std::endl << "Debug options:" << std::endl;
         std::cout << "  -input <file>   - read input from file rather than stdin" << std::endl;
         std::cout << "  -output <file>  - write output to file rather than stdout" << std::endl;
