@@ -1033,8 +1033,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     Thoughts thoughts;
 
     unsigned int loop = 0;
-    bool readyToMove = false;
-    while ( !readyToMove && !engine->quitting )
+    while ( engine->continueThinking && !engine->quitting )
     {
         do
         {
@@ -1063,6 +1062,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             {
                 // TODO we need to decide what to do here. Return nullmove? something based on win/loss/draw?
                 Log::Info << "No candidate moves" << ( context->getSearchMoves().empty() ? "" : " match with searchmove list" ) << std::endl;
+                engine->continueThinking = false;
                 break;
             }
 
@@ -1073,7 +1073,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
 
                 Log::Debug << "Only one move available" << std::endl;
 
-                readyToMove = true;
+                engine->continueThinking = false;
                 break;
             }
 
@@ -1112,7 +1112,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 Log::Debug << "Preparing to make move" << std::endl;
                 board->makeMove( bestMove ).dumpBoard( bestMove.toString() );
 
-                readyToMove = true;
                 engine->continueThinking = false;
             }
 
@@ -1122,7 +1121,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             if ( --depth == 0 )
             {
                 Log::Debug << "Reached search depth" << std::endl;
-                readyToMove = true;
+                engine->continueThinking = false;
                 break;
             }
         }
