@@ -3,10 +3,12 @@
 #include <string>
 #include <vector>
 
+#include "Move.h"
+
 class GoContext
 {
 private:
-    std::vector<std::string> searchMoves;
+    std::vector<Move> searchMoves;
     bool ponder;
     unsigned int wtime;
     unsigned int btime;
@@ -20,7 +22,7 @@ private:
     bool infinite;
 
 public:
-    GoContext( std::vector<std::string> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite ) :
+    GoContext( std::vector<Move> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite ) :
         searchMoves( searchMoves ),
         ponder( ponder ),
         wtime( wtime ),
@@ -59,9 +61,14 @@ public:
 
     }
 
-    inline unsigned int getDepth()
+    inline unsigned int getDepth() const
     {
         return depth;
+    }
+
+    inline std::vector<Move>& getSearchMoves()
+    {
+        return searchMoves;
     }
 };
 

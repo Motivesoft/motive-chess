@@ -304,7 +304,7 @@ void Engine::goCommand( std::vector<std::string>& arguments )
 {
     UCI_DEBUG << "Received go";
 
-    std::vector<std::string> searchMoves;
+    std::vector<Move> searchMoves;
     bool ponder = false;
     unsigned int wtime = 0;
     unsigned int btime = 0;
@@ -325,17 +325,21 @@ void Engine::goCommand( std::vector<std::string>& arguments )
         {
             std::vector<std::string> directives = getGoDirectives();
 
-            for ( ; it != arguments.end(); it++ )
+            // Capture the next few strings as moves unless they are other 'go' keywords
+            for ( ; ++it != arguments.end(); )
             {
                 if ( std::find( directives.begin(), directives.end(), *it ) != directives.end() )
                 {
+                    // Recognised keyword, break out of this loop and process below
                     break;
                 }
 
-                searchMoves.push_back( *it );
+                searchMoves.push_back( Move::fromString( *it ) );
             }
         }
-        else if ( *it == "ponder" )
+        
+        // Don't 'else' this with searchmoves as it may have moved the iterator along to one of the following
+        if ( *it == "ponder" )
         {
             ponder = true;
         }
@@ -1039,10 +1043,26 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             // Philidor's Mate
             // position fen 4r2k/2pRP1pp/2p5/p4pN1/2Q3n1/q5P1/P3PP1P/6K1 w - -
 
+            // Filter the moves down to the requested 'searchmoves' subset, if there is one
+            if ( !context->getSearchMoves().empty() )
+            {
+                for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); )
+                {
+                    if( std::find( context->getSearchMoves().begin(), context->getSearchMoves().end(), *it ) == context->getSearchMoves().end() )
+                    {
+                        it = candidateMoves.erase( it );
+                    }
+                    else
+                    {
+                        it++;
+                    }
+                }
+            }
+
             if ( candidateMoves.empty() )
             {
                 // TODO we need to decide what to do here. Return nullmove? something based on win/loss/draw?
-                Log::Debug << "No candidate moves" << std::endl;
+                Log::Info << "No candidate moves" << ( context->getSearchMoves().empty() ? "" : " match with searchmove list" ) << std::endl;
                 break;
             }
 
