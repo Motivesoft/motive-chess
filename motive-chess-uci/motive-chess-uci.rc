@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,1,0
- PRODUCTVERSION 1,0,1,0
+ FILEVERSION 1,0,1,1
+ PRODUCTVERSION 1,0,1,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Motivesoft"
             VALUE "FileDescription", "MotiveChess, a chess engine that supports UCI"
-            VALUE "FileVersion", "1.0.1.0"
+            VALUE "FileVersion", "1.0.1.1"
             VALUE "InternalName", "motive-chess-uci.exe"
             VALUE "LegalCopyright", "Copyright Motivesoft (C) 2023"
             VALUE "OriginalFilename", "motive-chess-uci.exe"
             VALUE "ProductName", "MotiveChess"
-            VALUE "ProductVersion", "1.0.1.0"
+            VALUE "ProductVersion", "1.0.1.1"
         END
     END
     BLOCK "VarFileInfo"
