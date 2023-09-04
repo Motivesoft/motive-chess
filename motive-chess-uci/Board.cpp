@@ -547,7 +547,7 @@ std::vector<Move> Board::getMoves()
         }
         else
         {
-            protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+            protectedSquares = testBoard.makePieceBitboard( Piece::ownKingPiece( activeColor) );
         }
 
         if ( testBoard.failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
@@ -563,7 +563,6 @@ std::vector<Move> Board::getMoves()
 
     Log::Trace( [&] ( const Log::Logger& logger )
     {
-        logger << "Generated moves:" << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
             logger << (*it).toString() << ". Promotion? " << ( *it ).isPromotion() << ". Castling? " << ( *it ).isCastling() << std::endl;
@@ -735,7 +734,7 @@ bool Board::isTerminal( short* result )
     std::vector<Move> moves = getMoves();
     if ( moves.size() == 0 )
     {
-        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
+        unsigned long long king = makePieceBitboard( Piece::ownKingPiece( activeColor ) );
         if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
         {
             *result = -1; // activeColor loses
@@ -751,7 +750,7 @@ bool Board::isTerminal( short* result )
     }
     else
     {
-        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::BKING : Piece::WKING );
+        unsigned long long king = makePieceBitboard( Piece::enemyKingPiece( activeColor ) );
         if ( failsCheckTests( king, Piece::isWhite( activeColor ) ) )
         {
             *result = +1; // We can take the opponent's king and therefore, win
