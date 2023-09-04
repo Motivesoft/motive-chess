@@ -1089,7 +1089,11 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
                 // TODO remove the dumpBoard() here
-                Log::Debug << "Considering " << ( *it ).toString() << std::endl;
+                Log::Debug( [&] ( const Log::Logger& logger) 
+                {
+                    logger << "Considering " << ( *it ).toString() << std::endl;
+                } ); 
+
                 short score = Evaluation::minimax( board->makeMove( *it ),
                                                    depth,
                                                    std::numeric_limits<short>::lowest(),
@@ -1103,7 +1107,10 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                     bestMove = *it;
                 }
 
-                Log::Debug << "--Score for " << ( *it ).toString() << " is " << score << std::endl;
+                Log::Debug( [&] ( const Log::Logger& logger )
+                {
+                    logger << "--Score for " << ( *it ).toString() << " is " << score << std::endl;
+                } ); 
             }
 
             // If we haven't got a move in mind, establish one
@@ -1111,8 +1118,11 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             {
                 thoughts = Thoughts( bestMove );
 
-                Log::Debug << "Preparing to make move" << std::endl;
-                board->makeMove( bestMove ).dumpBoard( bestMove.toString() );
+                Log::Debug( [&] ( const Log::Logger& logger )
+                {
+                    logger << "Preparing to make move" << std::endl;
+                    board->makeMove( bestMove ).dumpBoard( bestMove.toString() );
+                } );
 
                 engine->continueThinking = false;
             }

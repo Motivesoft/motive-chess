@@ -85,18 +85,24 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     if ( board.isTerminal( &score ) )
     {
         // Why? Win (+1), Loss (-1) or Stalemate (0)
-        Log::Debug << "Score: " << score << " Active color: " << Piece::toColorString( board.getActiveColor() ) << " Provided color: " << Piece::toColorString( color ) << std::endl;
-        if ( board.getActiveColor() != color )
-        {
-            score = -score;
-        } 
-        Log::Debug << "Score (corrected): " << score << std::endl;
         if ( score == 0 )
         {
+            Log::Debug << "Score : 0" << std::endl;
             return 0;
         }
         else
         {
+            if ( board.getActiveColor() != color )
+            {
+                score = -score;
+            } 
+
+            Log::Debug( [&] ( const Log::Logger logger )
+            {
+                logger << "Score: " << score << " Active color: " << Piece::toColorString( board.getActiveColor() ) << " Provided color: " << Piece::toColorString( color ) << std::endl;
+            } );
+            
+
             // Give it a critially large value, but not quite at lowest/highest...
             // so we have some wiggle room so we can make one winning line seem preferable to another
             score = score < 0 ? std::numeric_limits<short>::lowest() + 1000 : std::numeric_limits<short>::max() - 1000;
