@@ -56,12 +56,12 @@ public:
 
     inline static const unsigned char WPROMOTION[]
     {
-        WQUEEN, WROOK, WBISHOP, WKNIGHT
+        WKNIGHT, WBISHOP, WROOK, WQUEEN
     };
 
     inline static const unsigned char BPROMOTION[]
     {
-        BQUEEN, BROOK, BBISHOP, BKNIGHT
+        BKNIGHT, BBISHOP, BROOK, BQUEEN
     };
 
     inline static const unsigned short numberOfPromotionPieces = 4;

@@ -102,11 +102,11 @@ void Board::applyMove( const Move& move )
 
     if ( move.isPromotion() )
     {
-        setPiece( move.getTo(), move.getPromotionPiece() );
+        setPiece( move.getTo(), move.getPromotionPiece( activeColor ) );
 
         Log::Trace( [&] ( const Log::Logger& logger )
         {
-            logger << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() ) << std::endl;
+            logger << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece( activeColor ) ) << std::endl;
         } );
     }
 
@@ -534,7 +534,7 @@ std::vector<Move> Board::getMoves()
 
         // Which squares are we testing? Just the king for check, or the squares it passes
         // through when castling
-        if ( move.isCastle() )
+        if ( move.isCastling() )
         {
             if ( move.isKingsideCastle() )
             {
@@ -566,7 +566,7 @@ std::vector<Move> Board::getMoves()
         logger << "Generated moves:" << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            logger << (*it).toString() << std::endl;
+            logger << (*it).toString() << ". Promotion? " << ( *it ).isPromotion() << ". Castling? " << ( *it ).isCastling() << std::endl;
         }
     } );
 
