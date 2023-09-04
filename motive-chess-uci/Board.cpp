@@ -532,7 +532,7 @@ std::vector<Move> Board::getMoves()
         Move& move = *it;
         Board testBoard = makeMove( move );
 
-        // Which suqares are we testing? Just the king for check, or the squares it passes
+        // Which squares are we testing? Just the king for check, or the squares it passes
         // through when castling
         if ( move.isCastle() )
         {

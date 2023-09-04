@@ -1118,11 +1118,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             {
                 thoughts = Thoughts( bestMove );
 
-                Log::Debug( [&] ( const Log::Logger& logger )
-                {
-                    logger << "Preparing to make move" << std::endl;
-                    board->makeMove( bestMove ).dumpBoard( bestMove.toString() );
-                } );
+                Log::Info << "Preparing to make move" << std::endl;
 
                 engine->continueThinking = false;
             }
