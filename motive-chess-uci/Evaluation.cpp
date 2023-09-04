@@ -127,7 +127,8 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         score = std::numeric_limits<short>::lowest();
         std::vector<Move> moves = board.getMoves();
 
-        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+        int count = 0;
+        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++, count++ )
         {
             short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising, color );
 
@@ -141,6 +142,10 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             }
             if ( beta <= alpha )
             {
+                Log::Debug( [&] ( const Log::Logger& logger )
+                {
+                    logger << "Exiting maximising after " << count << "/" << moves.size() << " moves considered" << std::endl;
+                } );
                 break;
             }
         }
@@ -152,7 +157,8 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         score = std::numeric_limits<short>::max();
         std::vector<Move> moves = board.getMoves();
 
-        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+        int count = 0;
+        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++, count++ )
         {
             short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising, color );
 
@@ -166,6 +172,10 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             }
             if ( beta <= alpha )
             {
+                Log::Debug( [&] ( const Log::Logger& logger )
+                {
+                    logger << "Exiting minimising after " << count << "/" << moves.size() << " moves considered" << std::endl;
+                } );
                 break;
             }
         }
