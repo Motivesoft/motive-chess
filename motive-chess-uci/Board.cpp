@@ -397,12 +397,27 @@ std::vector<Move> Board::getMoves()
                 const unsigned char* promotionPieces = Piece::getPromotionPieces( activeColor );
                 for ( unsigned int loop = 0; loop < Piece::numberOfPromotionPieces; loop++ )
                 {
-                    moves.push_back( Move::createPromotionMove( index, destination, promotionPieces[ loop ] ) );
+                    Move::Builder builder = Move::createBuilder( index, destination );
+                    builder.setPromotion( promotionPieces[ loop ] );
+                    if ( !isEmpty( destination ) )
+                    {
+                        builder.setCapture();
+                    }
+                    moves.push_back( builder.build() );
                 }
             }
             else
             {
-                moves.push_back( Move::createMove( index, destination ) );
+                Move::Builder builder = Move::createBuilder( index, destination );
+                if ( destination == enPassantIndex )
+                {
+                    builder.setEnPassantCapture();
+                }
+                else if ( !isEmpty( destination ) )
+                {
+                    builder.setCapture();
+                }
+                moves.push_back( builder.build() );
             }
         }
     }
@@ -416,7 +431,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
     }
 
@@ -443,7 +463,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
     }
 
@@ -470,7 +495,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
     }
 
@@ -483,7 +513,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
 
         bool kingside;
@@ -511,7 +546,7 @@ std::vector<Move> Board::getMoves()
             if ( ( kingsideMask & emptySquares ) == kingsideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                moves.push_back( Move::createKingsideCastlingMove( index, index + 2 ) );
+                moves.push_back( Move::createBuilder( index, index + 2 ).setKingsideCastling().build() );
             }
         }
 
@@ -520,7 +555,7 @@ std::vector<Move> Board::getMoves()
             if ( ( queensideMask & emptySquares ) == queensideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                moves.push_back( Move::createQueensideCastlingMove( index, index - 2 ) );
+                moves.push_back( Move::createBuilder( index, index - 2 ).setQueensideCastling().build() );
             }
         }
     }
