@@ -1082,9 +1082,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 break;
             }
 
-            // Start of minmax/alphabeta/negamax/whatever
-            // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
-
             // Sort moves - this is a bit coarse grained
             std::sort( candidateMoves.begin(), candidateMoves.end(), [&] (Move a, Move b)
             {
@@ -1103,11 +1100,13 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 return false;
             } );
 
+            // Start of minmax/alphabeta/negamax/whatever
+            // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
+
             Move bestMove = Move::nullMove;
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
-                // TODO remove the dumpBoard() here
                 Log::Debug( [&] ( const Log::Logger& logger) 
                 {
                     logger << "Considering " << ( *it ).toString() << std::endl;

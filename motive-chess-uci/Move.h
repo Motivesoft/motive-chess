@@ -112,26 +112,6 @@ public:
 
     static Move fromString( const std::string& moveString );
 
-    //static Move createKingsideCastlingMove( unsigned short from, unsigned short to )
-    //{
-    //    return Move( from, to, Piece::emptyPiece(), true, false );
-    //}
-
-    //static Move createQueensideCastlingMove( unsigned short from, unsigned short to )
-    //{
-    //    return Move( from, to, Piece::emptyPiece(), false, true );
-    //}
-
-    //static Move createPromotionMove( unsigned short from, unsigned short to, unsigned char promotion )
-    //{
-    //    return Move( from, to, promotion );
-    //}
-
-    //static Move createMove( unsigned short from, unsigned short to )
-    //{
-    //    return Move( from, to );
-    //}
-
     static const Move nullMove;
 
     Move( Move& move ) :
