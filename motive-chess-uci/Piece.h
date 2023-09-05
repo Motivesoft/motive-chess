@@ -40,7 +40,6 @@ private:
 
     static const unsigned char NOTHING = 0b00000000; // NOCOLOR | NOPIECE
 
-public:
     static const unsigned char WKING   = 0b00001110; // WHITE   | KING  
     static const unsigned char WQUEEN  = 0b00001101; // WHITE   | QUEEN 
     static const unsigned char WROOK   = 0b00001100; // WHITE   | ROOK  
@@ -56,14 +55,15 @@ public:
 
     inline static const unsigned char WPROMOTION[]
     {
-        WQUEEN, WROOK, WBISHOP, WKNIGHT
+        WKNIGHT, WBISHOP, WROOK, WQUEEN
     };
 
     inline static const unsigned char BPROMOTION[]
     {
-        BQUEEN, BROOK, BBISHOP, BKNIGHT
+        BKNIGHT, BBISHOP, BROOK, BQUEEN
     };
 
+public:
     inline static const unsigned short numberOfPromotionPieces = 4;
 
     inline static const unsigned char* getPromotionPieces( const unsigned char color )
@@ -164,4 +164,14 @@ public:
     static unsigned char colorFrom( unsigned char color );
 
     static std::string toFENString( const unsigned char value );
+
+    inline static unsigned char ownKingPiece( unsigned char color )
+    {
+        return color == WHITE ? WKING : BKING;
+    }
+
+    inline static unsigned char enemyKingPiece( unsigned char color )
+    {
+        return color == WHITE ? BKING : WKING;
+    }
 };

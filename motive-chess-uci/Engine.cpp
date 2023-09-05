@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -1081,6 +1082,24 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 break;
             }
 
+            // Sort moves - this is a bit coarse grained
+            std::sort( candidateMoves.begin(), candidateMoves.end(), [&] (Move a, Move b)
+            {
+                if ( a.isCapture() != b.isCapture() ) // includes en passant
+                {
+                    return a.isCapture();
+                }
+                if ( a.isPromotion() != b.isPromotion() )
+                {
+                    return a.isPromotion();
+                }
+                if ( a.isCastling() != b.isCastling() )
+                {
+                    return a.isCastling();
+                }
+                return false;
+            } );
+
             // Start of minmax/alphabeta/negamax/whatever
             // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
 
@@ -1088,7 +1107,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
-                // TODO remove the dumpBoard() here
                 Log::Debug( [&] ( const Log::Logger& logger) 
                 {
                     logger << "Considering " << ( *it ).toString() << std::endl;
@@ -1118,8 +1136,6 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             {
                 thoughts = Thoughts( bestMove );
 
-                Log::Info << "Preparing to make move" << std::endl;
-
                 engine->continueThinking = false;
             }
 
@@ -1138,13 +1154,13 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         if ( thoughts.getPonderMove().isNullMove() )
         {
-            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << std::endl;
+            Log::Info << "Broadcasting best move: " << thoughts.getBestMove().toString() << std::endl;
 
             engine->broadcaster.bestmove( thoughts.getBestMove().toString() );
         }
         else
         {
-            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString() << std::endl;
+            Log::Info << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString() << std::endl;
 
             engine->broadcaster.bestmove( thoughts.getBestMove().toString(), thoughts.getPonderMove().toString() );
         }

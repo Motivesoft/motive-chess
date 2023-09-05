@@ -102,11 +102,11 @@ void Board::applyMove( const Move& move )
 
     if ( move.isPromotion() )
     {
-        setPiece( move.getTo(), move.getPromotionPiece() );
+        setPiece( move.getTo(), move.getPromotionPiece( activeColor ) );
 
         Log::Trace( [&] ( const Log::Logger& logger )
         {
-            logger << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece() ) << std::endl;
+            logger << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece( activeColor ) ) << std::endl;
         } );
     }
 
@@ -397,12 +397,27 @@ std::vector<Move> Board::getMoves()
                 const unsigned char* promotionPieces = Piece::getPromotionPieces( activeColor );
                 for ( unsigned int loop = 0; loop < Piece::numberOfPromotionPieces; loop++ )
                 {
-                    moves.push_back( Move::createPromotionMove( index, destination, promotionPieces[ loop ] ) );
+                    Move::Builder builder = Move::createBuilder( index, destination );
+                    builder.setPromotion( promotionPieces[ loop ] );
+                    if ( !isEmpty( destination ) )
+                    {
+                        builder.setCapture();
+                    }
+                    moves.push_back( builder.build() );
                 }
             }
             else
             {
-                moves.push_back( Move::createMove( index, destination ) );
+                Move::Builder builder = Move::createBuilder( index, destination );
+                if ( destination == enPassantIndex )
+                {
+                    builder.setEnPassantCapture();
+                }
+                else if ( !isEmpty( destination ) )
+                {
+                    builder.setCapture();
+                }
+                moves.push_back( builder.build() );
             }
         }
     }
@@ -416,7 +431,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
     }
 
@@ -443,7 +463,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
     }
 
@@ -470,7 +495,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
     }
 
@@ -483,7 +513,12 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            moves.push_back( Move::createMove( index, destination ) );
+            Move::Builder builder = Move::createBuilder( index, destination );
+            if ( !isEmpty( destination ) )
+            {
+                builder.setCapture();
+            }
+            moves.push_back( builder.build() );
         }
 
         bool kingside;
@@ -511,7 +546,7 @@ std::vector<Move> Board::getMoves()
             if ( ( kingsideMask & emptySquares ) == kingsideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                moves.push_back( Move::createKingsideCastlingMove( index, index + 2 ) );
+                moves.push_back( Move::createBuilder( index, index + 2 ).setKingsideCastling().build() );
             }
         }
 
@@ -520,7 +555,7 @@ std::vector<Move> Board::getMoves()
             if ( ( queensideMask & emptySquares ) == queensideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                moves.push_back( Move::createQueensideCastlingMove( index, index - 2 ) );
+                moves.push_back( Move::createBuilder( index, index - 2 ).setQueensideCastling().build() );
             }
         }
     }
@@ -534,7 +569,7 @@ std::vector<Move> Board::getMoves()
 
         // Which squares are we testing? Just the king for check, or the squares it passes
         // through when castling
-        if ( move.isCastle() )
+        if ( move.isCastling() )
         {
             if ( move.isKingsideCastle() )
             {
@@ -547,7 +582,7 @@ std::vector<Move> Board::getMoves()
         }
         else
         {
-            protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
+            protectedSquares = testBoard.makePieceBitboard( Piece::ownKingPiece( activeColor) );
         }
 
         if ( testBoard.failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
@@ -563,10 +598,9 @@ std::vector<Move> Board::getMoves()
 
     Log::Trace( [&] ( const Log::Logger& logger )
     {
-        logger << "Generated moves:" << std::endl;
         for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            logger << (*it).toString() << std::endl;
+            logger << (*it).toString() << ". Promotion? " << ( *it ).isPromotion() << ". Castling? " << ( *it ).isCastling() << std::endl;
         }
     } );
 
@@ -735,7 +769,7 @@ bool Board::isTerminal( short* result )
     std::vector<Move> moves = getMoves();
     if ( moves.size() == 0 )
     {
-        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::WKING : Piece::BKING );
+        unsigned long long king = makePieceBitboard( Piece::ownKingPiece( activeColor ) );
         if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
         {
             *result = -1; // activeColor loses
@@ -751,7 +785,7 @@ bool Board::isTerminal( short* result )
     }
     else
     {
-        unsigned long long king = makePieceBitboard( Piece::isWhite( activeColor ) ? Piece::BKING : Piece::WKING );
+        unsigned long long king = makePieceBitboard( Piece::enemyKingPiece( activeColor ) );
         if ( failsCheckTests( king, Piece::isWhite( activeColor ) ) )
         {
             *result = +1; // We can take the opponent's king and therefore, win
