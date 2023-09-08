@@ -135,7 +135,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         for( size_t loop = 0; loop < moves->count(); loop++ )
         {
             Move* move = ( *moves )[ loop ];
-            short evaluation = minimax( board.makeMove( *move ), depth - 1, alpha, beta, !maximising, color );
+            short evaluation = minimax( board.makeMove( move ), depth - 1, alpha, beta, !maximising, color );
 
             if ( evaluation > score )
             {
@@ -165,7 +165,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         for( size_t loop = 0; loop < moves->count(); loop++ )
         {
             Move* move = ( *moves )[ loop ];
-            short evaluation = minimax( board.makeMove( *move ), depth - 1, alpha, beta, !maximising, color );
+            short evaluation = minimax( board.makeMove( move ), depth - 1, alpha, beta, !maximising, color );
 
             if ( evaluation < score )
             {

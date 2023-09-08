@@ -12,9 +12,9 @@
 #include <thread>
 
 #ifdef _DEBUG
-    #define LOG_TRACE( lambda ) Log::Trace( lambda )
-#else
-    #define LOG_TRACE( lambda )
+#define LOG_TRACE( lambda ) Log::Trace( lambda )
+#else // NDEBUG
+#define LOG_TRACE( lambda )
 #endif
 
 extern std::mutex consoleLogMutex;

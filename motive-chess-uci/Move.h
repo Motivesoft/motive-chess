@@ -56,6 +56,7 @@ private:
     Move( unsigned short from, unsigned short to, unsigned short additionalBits = 0 ) :
         moveBits( from | (to << 6) | additionalBits )
     {
+        Log::Trace( "Constructor" );
     }
 
 public:
@@ -100,16 +101,18 @@ public:
     Move( Move& move ) :
         moveBits( move.moveBits )
     {
+        Log::Trace( "CopyConstructor" );
     }
 
     Move( const Move& move ) :
         moveBits( move.moveBits )
     {
+        Log::Trace( "ConstCopyConstructor" );
     }
 
     virtual ~Move()
     {
-
+        Log::Trace( "Destructor" );
     }
 
     inline bool operator == ( const Move& move ) const

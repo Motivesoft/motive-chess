@@ -952,7 +952,7 @@ void Engine::goImpl( GoContext* goContext )
     for( size_t loop = 0; loop < gameContext->getMoves().size(); loop++ )
     {
         Move move = gameContext->getMoves()[ loop ];
-        initialBoard = initialBoard.makeMove( move );
+        initialBoard = initialBoard.makeMove( &move );
     }
 
     // Use this as the board to work from
@@ -978,7 +978,7 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
     for( size_t loop = 0; loop < moves->count(); loop++ )
     {
         Move* move = (*moves)[ loop ];
-        Board tBoard = board.makeMove( *move );
+        Board tBoard = board.makeMove( move );
 
         if ( divide )
         {
@@ -1129,7 +1129,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                     logger << "Considering " << move->toString() << std::endl;
                 } ); 
 
-                short score = Evaluation::minimax( board->makeMove( *move ),
+                short score = Evaluation::minimax( board->makeMove( move ),
                                                    depth,
                                                    std::numeric_limits<short>::lowest(),
                                                    std::numeric_limits<short>::max(),
