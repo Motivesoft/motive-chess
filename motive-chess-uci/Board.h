@@ -288,7 +288,7 @@ public:
     /// <returns>a new board</returns>
     Board makeMove( const Move& move );
 
-    std::vector<Move> getMoves();
+    std::unique_ptr<MoveArray> getMoves();
 
     /// <summary>
     /// Looks for terminal positions and reports back with details as applied to the current board

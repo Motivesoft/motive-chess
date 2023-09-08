@@ -1,7 +1,9 @@
 #pragma once
 
+#include <assert.h>
 #include <string>
 
+#include "Log.h"
 #include "Piece.h"
 
 class Move
@@ -42,77 +44,58 @@ private:
     // 0-63 to   - bits 6-B
     // flags     - bits C-F
 
-
     // TODO improve the constructor and factory methods here, maybe?
-    Move( unsigned short from,
-          unsigned short to,
-          unsigned char promotion = Piece::emptyPiece(),
-          bool castlingKingside = false,
-          bool castlingQueenside = false );
+    //Move( unsigned short from,
+    //      unsigned short to,
+    //      unsigned char promotion = Piece::emptyPiece(),
+    //      bool castlingKingside = false,
+    //      bool castlingQueenside = false );
 
-    Move( unsigned short moveBits ) :
-        moveBits( moveBits )
+    static Move nullMove;
+
+    Move( unsigned short from, unsigned short to, unsigned short additionalBits = 0 ) :
+        moveBits( from | (to << 6) | additionalBits )
     {
-        // Nothing to do
     }
 
 public:
-    class Builder
+    inline static Move* createMove( unsigned short from, unsigned short to, bool capture = false, bool epCapture = false )
     {
-    private:
-        unsigned short moveBits;
-
-    public:
-        Builder( unsigned short from, unsigned short to ) :
-            moveBits( 0 )
-        {
-            moveBits |= from;
-            moveBits |= ( to << 6 );
-        }
-        Builder& setKingsideCastling()
-        {
-            // Reset anything already set into flags
-            moveBits = CASTLE_KINGSIDE | (moveBits & SQUARES_MASK);
-            return *this;
-        }
-        Builder& setQueensideCastling()
-        {
-            // Reset anything already set into flags
-            moveBits = CASTLE_QUEENSIDE | ( moveBits & SQUARES_MASK );
-            return *this;
-        }
-        Builder& setPromotion( unsigned char promotion )
-        {
-            moveBits |= Piece::isQueen( promotion ) ? PROMOTE_QUEEN : 0;
-            moveBits |= Piece::isRook( promotion ) ? PROMOTE_ROOK : 0;
-            moveBits |= Piece::isBishop( promotion ) ? PROMOTE_BISHOP : 0;
-            moveBits |= Piece::isKnight( promotion ) ? PROMOTE_KNIGHT : 0;
-            return *this;
-        }
-        Builder& setCapture()
-        {
-            moveBits |= CAPTURE_MASK;
-            return *this;
-        }
-        Builder& setEnPassantCapture()
-        {
-            moveBits |= EP_CAPTURE_MASK;
-            return *this;
-        }
-        Move build()
-        {
-            return Move( moveBits );
-        }
-    };
-
-    static Move::Builder createBuilder( unsigned short from, unsigned short to )
+        return new Move( from, to, (unsigned short) ( capture ? CAPTURE_MASK : 0 ) | ( epCapture ? EP_CAPTURE_MASK : 0 ) );
+    }
+    inline static Move* createKingsideCastlingMove( unsigned short kingIndex )
     {
-        return Builder( from, to );
+        return new Move( kingIndex, kingIndex + 2, CASTLE_KINGSIDE );
+    }
+    inline static Move* createQueensideCastlingMove( unsigned short kingIndex )
+    {
+        return new Move( kingIndex, kingIndex - 2, CASTLE_QUEENSIDE );
+    }
+    inline static Move* createKnightPromotionMove( unsigned short from, unsigned short to, bool capture = false )
+    {
+        return new Move( from, to, PROMOTE_KNIGHT | (unsigned short) (capture ? CAPTURE_MASK : 0) );
+    }
+    inline static Move* createBishopPromotionMove( unsigned short from, unsigned short to, bool capture = false )
+    {
+        return new Move( from, to, PROMOTE_BISHOP | (unsigned short) ( capture ? CAPTURE_MASK : 0 ) );
+    }
+    inline static Move* createRookPromotionMove( unsigned short from, unsigned short to, bool capture = false )
+    {
+        return new Move( from, to, PROMOTE_ROOK | (unsigned short) ( capture ? CAPTURE_MASK : 0 ) );
+    }
+    inline static Move* createQueenPromotionMove( unsigned short from, unsigned short to, bool capture = false )
+    {
+        return new Move( from, to, PROMOTE_QUEEN | (unsigned short) ( capture ? CAPTURE_MASK : 0 ) );
     }
 
-    static Move fromString( const std::string& moveString );
+    inline static Move* getNullMove()
+    {
+        return &nullMove;
+    }
 
-    static const Move nullMove;
+    static Move* fromString( const std::string& moveString );
+
+    std::string toString() const;
 
     Move( Move& move ) :
         moveBits( move.moveBits )
@@ -198,7 +181,85 @@ public:
     {
         return (moveBits & EP_CAPTURE_MASK) == EP_CAPTURE_MASK;
     }
-
-    std::string toString() const;
 };
 
+/// <summary>
+/// Lightweight container for Moves, based on a perceived maximum number of possible moves in a single position and
+/// using a pre-allocated array
+/// Future enhancements may use  Move pointer or unique_ptr instead of the object itself
+/// </summary>
+/// <typeparam name="T"></typeparam>
+//template<typename T> 
+class MoveArray
+{
+private:
+    inline static const size_t CAPACITY = 256;
+
+    Move* moves[ CAPACITY ];
+    size_t moveCount;
+
+public:
+    MoveArray() :
+        moveCount( 0 ),
+        moves {}
+    {
+
+    }
+
+    ~MoveArray()
+    {
+        for ( size_t loop = 0; loop < moveCount; loop++ )
+        {
+            delete moves[ loop ];
+        }
+    }
+
+    size_t count()
+    {
+        return moveCount;
+    }
+
+    void add( Move* move )
+    {
+        assert( moveCount < CAPACITY );
+        moves[ moveCount++ ] = move;
+    }
+
+    void remove( size_t index )
+    {
+        assert( index < moveCount );
+        delete moves[ index ];
+
+        // Don't move all of the elements down the list, just fill in the gap with the one from the end
+        // That means that any removals will likely change the list ordering, which is fine if we don't 
+        // care or we know we won't be removing things once we are happy with the list and so we can then
+        // correctly order it with impugnity - basically, this is a bespoke collection, not a general one
+        if ( index < moveCount - 1 )
+        {
+            moves[ index ] = moves[ moveCount - 1 ];
+        }
+
+        moveCount--;
+    }
+
+    inline Move* operator[]( size_t index )
+    {
+        assert( index < moveCount );
+        return moves[ index ];
+    }
+
+    inline bool empty()
+    {
+        return moveCount == 0;
+    }
+
+    inline Move** begin()
+    {
+        return std::begin( moves );
+    }
+
+    inline Move** end()
+    {
+        return &moves[ moveCount ];
+    }
+};

@@ -335,7 +335,7 @@ void Engine::goCommand( std::vector<std::string>& arguments )
                     break;
                 }
 
-                searchMoves.push_back( Move::fromString( *it ) );
+                searchMoves.push_back( *Move::fromString( *it ) );
             }
         }
         
@@ -468,7 +468,7 @@ void Engine::goCommand( std::vector<std::string>& arguments )
     if ( !parseError )
     {
         // Be aware that this gets deleted elsewhere - TODO do something about this eventually?
-        GoContext* goContext = new GoContext( searchMoves, ponder, wtime, btime, winc, binc, movestogo, depth, nodes, mate, movetime, infinite );
+        GoContext* goContext = new GoContext( searchMoves, ponder, wtime, btime, winc, binc, movestogo, depth, nodes, mate, movetime, infinite);
 
         goImpl( goContext );
     }
@@ -702,7 +702,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
         {
             Log::Info << "Starting perft run with " << fenString << std::endl;
 
-            Log::Trace( [&] ( const Log::Logger& logger )
+            LOG_TRACE( [&] ( const Log::Logger& logger )
             {
                 logger << "Expected results:" << std::endl;
                 for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
@@ -911,17 +911,17 @@ void Engine::positionImpl( const std::string& fenString, std::vector<std::string
     Log::Debug << "Position:" << std::endl;
     fen.dumpBoard();
 
-    std::vector< Move > moveList;
+    std::vector<Move> moveList;
     if ( moves.size() > 0 )
     {
         Log::Debug << "Initial moves:" << std::endl;
 
         for ( std::string move : moves )
         {
-            Move m = Move::fromString( move );
+            Move* m = Move::fromString( move );
 
-            moveList.push_back( m );
-            Log::Debug << "  " << m.toString() << std::endl;
+            moveList.push_back( *m );
+            Log::Debug << "  " << m->toString() << std::endl;
         }
     }
 
@@ -949,9 +949,10 @@ void Engine::goImpl( GoContext* goContext )
 
     // Construct the position to think from
     Board initialBoard( gameContext->getFEN() );
-    for ( std::vector<Move>::const_iterator it = gameContext->getMoves().begin(); it != gameContext->getMoves().end(); it++ )
+    for( size_t loop = 0; loop < gameContext->getMoves().size(); loop++ )
     {
-        initialBoard = initialBoard.makeMove( *it );
+        Move move = gameContext->getMoves()[ loop ];
+        initialBoard = initialBoard.makeMove( move );
     }
 
     // Use this as the board to work from
@@ -972,19 +973,19 @@ unsigned long Engine::perftImpl( int depth, Board board, bool divide )
         return 1;
     }
 
-    std::vector<Move> moves = board.getMoves();
+    std::unique_ptr<MoveArray> moves = board.getMoves();
 
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+    for( size_t loop = 0; loop < moves->count(); loop++ )
     {
-        Move& move = *it;
-        Board tBoard = board.makeMove( move );
+        Move* move = (*moves)[ loop ];
+        Board tBoard = board.makeMove( *move );
 
         if ( divide )
         {
             unsigned long moveNodes = perftImpl( depth - 1, tBoard );
             nodes += moveNodes;
 
-            Log::Debug << move.toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
+            Log::Debug << move->toString() << " : " << moveNodes << " " << tBoard.toFENString() << std::endl;
         }
         else
         {
@@ -1002,12 +1003,13 @@ class Thoughts
 private:
     Move bestMove;
     Move ponderMove;
-public:
-    Thoughts( Move bestMove = Move::nullMove, Move ponderMove = Move::nullMove ) :
-        bestMove( bestMove ),
-        ponderMove( ponderMove )
-    {
 
+public:
+    Thoughts( Move* bestMove = Move::getNullMove(), Move* ponderMove = Move::getNullMove()) :
+        bestMove( *bestMove ),
+        ponderMove( *ponderMove )
+    {
+        // Uses copy constructor for move
     }
 
     Move getBestMove()
@@ -1045,25 +1047,38 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         do
         {
-            std::vector<Move> candidateMoves = board->getMoves();
+            std::unique_ptr<MoveArray> candidateMoves = board->getMoves();
 
             // Filter the moves down to the requested 'searchmoves' subset, if there is one
             if ( !context->getSearchMoves().empty() )
             {
-                for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); )
+                for ( size_t loop = 0; loop < candidateMoves->count(); )
                 {
-                    if( std::find( context->getSearchMoves().begin(), context->getSearchMoves().end(), *it ) == context->getSearchMoves().end() )
+                    Move* candidateMove = ( *candidateMoves )[ loop ];
+
+                    bool found = false;
+                    for ( size_t searchLoop = 0; searchLoop < context->getSearchMoves().size(); searchLoop++ )
                     {
-                        it = candidateMoves.erase( it );
+                        Move searchMove = context->getSearchMoves()[ loop ];
+                        if ( searchMove == *candidateMove )
+                        {
+                            found = true;
+                        }
+                    }
+
+                    // Remove the candidate move if it is not in the list of search moves
+                    if ( found )
+                    {
+                        loop++;
                     }
                     else
                     {
-                        it++;
+                        candidateMoves->remove( loop );
                     }
                 }
             }
 
-            if ( candidateMoves.empty() )
+            if ( candidateMoves->empty() )
             {
                 // TODO we need to decide what to do here. Return nullmove? something based on win/loss/draw?
                 Log::Info << "No candidate moves" << ( context->getSearchMoves().empty() ? "" : " match with searchmove list" ) << std::endl;
@@ -1071,10 +1086,10 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 break;
             }
 
-            if ( candidateMoves.size() == 1 || depth == 0 )
+            if ( candidateMoves->count() == 1 || depth == 0 )
             {
                 // Don't waste clock time analysing a forced move situation
-                thoughts = Thoughts( candidateMoves[ 0 ] );
+                thoughts = Thoughts( (*candidateMoves)[ 0 ] );
 
                 Log::Debug << "Only one move available" << std::endl;
 
@@ -1083,19 +1098,20 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             }
 
             // Sort moves - this is a bit coarse grained
-            std::sort( candidateMoves.begin(), candidateMoves.end(), [&] (Move a, Move b)
+            // TODO make this part of MoveArray as its own sort() method to avoid exposing begin/end?
+            std::sort( candidateMoves->begin(), candidateMoves->end(), [&] (Move* a, Move* b)
             {
-                if ( a.isCapture() != b.isCapture() ) // includes en passant
+                if ( a->isCapture() != b->isCapture() ) // includes en passant
                 {
-                    return a.isCapture();
+                    return a->isCapture();
                 }
-                if ( a.isPromotion() != b.isPromotion() )
+                if ( a->isPromotion() != b->isPromotion() )
                 {
-                    return a.isPromotion();
+                    return a->isPromotion();
                 }
-                if ( a.isCastling() != b.isCastling() )
+                if ( a->isCastling() != b->isCastling() )
                 {
-                    return a.isCastling();
+                    return a->isCastling();
                 }
                 return false;
             } );
@@ -1103,16 +1119,17 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             // Start of minmax/alphabeta/negamax/whatever
             // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
 
-            Move bestMove = Move::nullMove;
+            Move* bestMove = Move::getNullMove();
             short bestScore = std::numeric_limits<short>::lowest();
-            for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
+            for( size_t loop = 0; loop < candidateMoves->count(); loop++ )
             {
+                Move* move = ( *candidateMoves )[ loop ];
                 Log::Debug( [&] ( const Log::Logger& logger) 
                 {
-                    logger << "Considering " << ( *it ).toString() << std::endl;
+                    logger << "Considering " << move->toString() << std::endl;
                 } ); 
 
-                short score = Evaluation::minimax( board->makeMove( *it ),
+                short score = Evaluation::minimax( board->makeMove( *move ),
                                                    depth,
                                                    std::numeric_limits<short>::lowest(),
                                                    std::numeric_limits<short>::max(),
@@ -1122,12 +1139,12 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                 if ( score > bestScore )
                 {
                     bestScore = score;
-                    bestMove = *it;
+                    bestMove = move;
                 }
 
                 Log::Debug( [&] ( const Log::Logger& logger )
                 {
-                    logger << "--Score for " << ( *it ).toString() << " is " << score << std::endl;
+                    logger << "--Score for " << move->toString() << " is " << score << std::endl;
                 } ); 
             }
 

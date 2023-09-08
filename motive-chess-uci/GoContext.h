@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@ private:
     bool infinite;
 
 public:
-    GoContext( std::vector<Move> searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite ) :
+    GoContext( std::vector<Move>& searchMoves, bool ponder, int wtime, int btime, int winc, int binc, int movestogo, int depth, int nodes, int mate, int movetime, bool infinite ) :
         searchMoves( searchMoves ),
         ponder( ponder ),
         wtime( wtime ),
@@ -35,23 +36,6 @@ public:
         mate( mate ),
         movetime( movetime ),
         infinite( infinite )
-    {
-
-    }
-
-    GoContext( GoContext& context ) :
-        searchMoves( context.searchMoves ),
-        ponder( context.ponder ),
-        wtime( context.wtime ),
-        btime( context.btime ),
-        winc( context.winc ),
-        binc( context.binc ),
-        movestogo( context.movestogo ),
-        depth( context.depth ),
-        nodes( context.nodes ),
-        mate( context.mate ),
-        movetime( context.movetime ),
-        infinite( context.infinite )
     {
 
     }

@@ -11,6 +11,12 @@
 #include <string>
 #include <thread>
 
+#ifdef _DEBUG
+    #define LOG_TRACE( lambda ) Log::Trace( lambda )
+#else
+    #define LOG_TRACE( lambda )
+#endif
+
 extern std::mutex consoleLogMutex;
 extern std::mutex fileLogMutex;
 extern thread_local std::stringstream perThreadBuffer;

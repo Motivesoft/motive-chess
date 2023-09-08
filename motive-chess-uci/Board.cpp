@@ -15,7 +15,7 @@ Board Board::makeMove( const Move& move )
 
 void Board::applyMove( const Move& move )
 {
-    Log::Trace( [&] ( const Log::Logger& logger )
+    LOG_TRACE( [&] ( const Log::Logger& logger )
     {
         logger << "Apply move: " << move.toString() << " for " << Piece::toColorString( activeColor ) << std::endl;
     } );
@@ -93,7 +93,7 @@ void Board::applyMove( const Move& move )
         castlingRights.removeBlackQueensideCastlingRights();
     }
 
-    Log::Trace( [&] ( const Log::Logger& logger )
+    LOG_TRACE( [&] ( const Log::Logger& logger )
     {
         logger << "Castling set to " << castlingRights.toString() << std::endl;
     } );
@@ -104,7 +104,7 @@ void Board::applyMove( const Move& move )
     {
         setPiece( move.getTo(), move.getPromotionPiece( activeColor ) );
 
-        Log::Trace( [&] ( const Log::Logger& logger )
+        LOG_TRACE( [&] ( const Log::Logger& logger )
         {
             logger << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece( activeColor ) ) << std::endl;
         } );
@@ -116,7 +116,7 @@ void Board::applyMove( const Move& move )
     {
         if ( Piece::isPawn( movingPiece ) )
         {
-            Log::Trace( [&] ( const Log::Logger& logger )
+            LOG_TRACE( [&] ( const Log::Logger& logger )
             {
                 logger << "Handling en-passant capture at " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
             } );
@@ -140,7 +140,7 @@ void Board::applyMove( const Move& move )
     // Swap whose move it is
     activeColor = Piece::oppositeColor( activeColor );
 
-    Log::Trace( [&] ( const Log::Logger& logger )
+    LOG_TRACE( [&] ( const Log::Logger& logger )
     {
         logger << "Active color now " << Piece::toColorString( activeColor ) << std::endl;
     } );
@@ -156,7 +156,7 @@ void Board::applyMove( const Move& move )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
 
-            Log::Trace( [&] ( const Log::Logger& logger )
+            LOG_TRACE( [&] ( const Log::Logger& logger )
             {
                 logger << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
             } );
@@ -165,7 +165,7 @@ void Board::applyMove( const Move& move )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
 
-            Log::Trace( [&] ( const Log::Logger& logger )
+            LOG_TRACE( [&] ( const Log::Logger& logger )
             {
                 logger << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
             } );
@@ -177,7 +177,7 @@ void Board::applyMove( const Move& move )
     {
         halfmoveClock++;
 
-        Log::Trace( [&] ( const Log::Logger& logger )
+        LOG_TRACE( [&] ( const Log::Logger& logger )
         {
             logger << "Adding one to halfmove clock. Now " << halfmoveClock << std::endl;
         } );
@@ -194,7 +194,7 @@ void Board::applyMove( const Move& move )
     {
         fullmoveNumber++;
 
-        Log::Trace( [&] ( const Log::Logger& logger )
+        LOG_TRACE( [&] ( const Log::Logger& logger )
         {
             logger << "Full move incrementing to " << fullmoveNumber << std::endl;
         } );
@@ -339,12 +339,12 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
-std::vector<Move> Board::getMoves()
+std::unique_ptr<MoveArray> Board::getMoves()
 { 
     bool isWhite = Piece::isWhite( activeColor );
 
     // Worker variables
-    std::vector<Move> moves;
+    std::unique_ptr<MoveArray> moves = std::make_unique<MoveArray>( MoveArray() );
 
     unsigned long long mask = 1;
     unsigned short index;
@@ -393,31 +393,16 @@ std::vector<Move> Board::getMoves()
             // Promotions lead to extra moves
             if ( Utilities::indexToRank( destination ) == promotionRank )
             {
-                // Promote to...
-                const unsigned char* promotionPieces = Piece::getPromotionPieces( activeColor );
-                for ( unsigned int loop = 0; loop < Piece::numberOfPromotionPieces; loop++ )
-                {
-                    Move::Builder builder = Move::createBuilder( index, destination );
-                    builder.setPromotion( promotionPieces[ loop ] );
-                    if ( !isEmpty( destination ) )
-                    {
-                        builder.setCapture();
-                    }
-                    moves.push_back( builder.build() );
-                }
+                bool capture = !isEmpty( destination );
+
+                moves->add( Move::createQueenPromotionMove( index, destination, capture ) );
+                moves->add( Move::createRookPromotionMove( index, destination, capture ) );
+                moves->add( Move::createBishopPromotionMove( index, destination, capture ) );
+                moves->add( Move::createKnightPromotionMove( index, destination, capture ) );
             }
             else
             {
-                Move::Builder builder = Move::createBuilder( index, destination );
-                if ( destination == enPassantIndex )
-                {
-                    builder.setEnPassantCapture();
-                }
-                else if ( !isEmpty( destination ) )
-                {
-                    builder.setCapture();
-                }
-                moves.push_back( builder.build() );
+                moves->add( Move::createMove( index, destination, !isEmpty( destination ), destination == enPassantIndex ) );
             }
         }
     }
@@ -431,12 +416,7 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            Move::Builder builder = Move::createBuilder( index, destination );
-            if ( !isEmpty( destination ) )
-            {
-                builder.setCapture();
-            }
-            moves.push_back( builder.build() );
+            moves->add( Move::createMove( index, destination, !isEmpty( destination ) ) );
         }
     }
 
@@ -463,12 +443,7 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            Move::Builder builder = Move::createBuilder( index, destination );
-            if ( !isEmpty( destination ) )
-            {
-                builder.setCapture();
-            }
-            moves.push_back( builder.build() );
+            moves->add( Move::createMove( index, destination, !isEmpty( destination ) ) );
         }
     }
 
@@ -495,12 +470,7 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            Move::Builder builder = Move::createBuilder( index, destination );
-            if ( !isEmpty( destination ) )
-            {
-                builder.setCapture();
-            }
-            moves.push_back( builder.build() );
+            moves->add( Move::createMove( index, destination, !isEmpty( destination ) ) );
         }
     }
 
@@ -513,12 +483,7 @@ std::vector<Move> Board::getMoves()
 
         while ( Bitboard::getEachIndexForward( &destination, setOfMoves ) )
         {
-            Move::Builder builder = Move::createBuilder( index, destination );
-            if ( !isEmpty( destination ) )
-            {
-                builder.setCapture();
-            }
-            moves.push_back( builder.build() );
+            moves->add( Move::createMove( index, destination, !isEmpty( destination ) ) );
         }
 
         bool kingside;
@@ -546,7 +511,7 @@ std::vector<Move> Board::getMoves()
             if ( ( kingsideMask & emptySquares ) == kingsideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                moves.push_back( Move::createBuilder( index, index + 2 ).setKingsideCastling().build() );
+                moves->add( Move::createKingsideCastlingMove( index ) );
             }
         }
 
@@ -555,23 +520,23 @@ std::vector<Move> Board::getMoves()
             if ( ( queensideMask & emptySquares ) == queensideMask )
             {
                 // Check for moving out of, or through check is done as a refutation check, later
-                moves.push_back( Move::createBuilder( index, index - 2 ).setQueensideCastling().build() );
+                moves->add( Move::createQueensideCastlingMove( index ) );
             }
         }
     }
 
     // Make the move and test whether it is really legal, not just pseudo legal
     unsigned long long protectedSquares;
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
+    for ( size_t loop = 0; loop < moves->count(); )
     {
-        Move& move = *it;
-        Board testBoard = makeMove( move );
+        Move* move = ( *moves )[ loop ];
+        Board testBoard = makeMove( *move );
 
         // Which squares are we testing? Just the king for check, or the squares it passes
         // through when castling
-        if ( move.isCastling() )
+        if ( move->isCastling() )
         {
-            if ( move.isKingsideCastle() )
+            if ( move->isKingsideCastle() )
             {
                 protectedSquares = ( isWhite ? 0b01110000ull : 0b01110000ull << 56 );
             }
@@ -587,20 +552,21 @@ std::vector<Move> Board::getMoves()
 
         if ( testBoard.failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
         {
-            it = moves.erase( it );
+            moves->remove( loop );
         }
         else
         {
             // Move is fine, go on to the next one
-            it++;
+            loop++;
         }
     }
 
-    Log::Trace( [&] ( const Log::Logger& logger )
+    LOG_TRACE( [&] ( const Log::Logger& logger )
     {
-        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+        for( size_t loop = 0; loop < moves->count(); loop++ )
         {
-            logger << (*it).toString() << ". Promotion? " << ( *it ).isPromotion() << ". Castling? " << ( *it ).isCastling() << std::endl;
+            Move* move = ( *moves )[ loop ];
+            logger << move->toString() << ". Promotion? " << move->isPromotion() << ". Castling? " << move->isCastling() << std::endl;
         }
     } );
 
@@ -715,7 +681,7 @@ bool Board::failsCheckTests( unsigned long long protectedSquares, bool asWhite )
 
 void Board::validateCastlingRights()
 {
-    Log::Trace( [&] ( const Log::Logger& logger )
+    LOG_TRACE( [&] ( const Log::Logger& logger )
     {
         logger << "Validating castling rights: " << castlingRights.toString() << std::endl;
     } );
@@ -758,7 +724,7 @@ void Board::validateCastlingRights()
         }
     }
 
-    Log::Trace( [&] ( const Log::Logger& logger )
+    LOG_TRACE( [&] ( const Log::Logger& logger )
     {
         logger << "Castling rights now: " << castlingRights.toString() << std::endl;
     } );
@@ -766,8 +732,8 @@ void Board::validateCastlingRights()
 
 bool Board::isTerminal( short* result )
 {
-    std::vector<Move> moves = getMoves();
-    if ( moves.size() == 0 )
+    std::unique_ptr<MoveArray> moves = getMoves();
+    if ( moves->count() == 0 )
     {
         unsigned long long king = makePieceBitboard( Piece::ownKingPiece( activeColor ) );
         if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )
