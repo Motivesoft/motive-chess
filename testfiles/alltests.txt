@@ -1,5 +1,5 @@
 uci
-perft file motive-chess.epd
-perft file stock.epd
+perft file C:\Projects\Motivesoft\motive-chess\testfiles\motive-chess.epd
+#perft file C:\Projects\Motivesoft\motive-chess\testfiles\stock.epd
 perft 6
 quit

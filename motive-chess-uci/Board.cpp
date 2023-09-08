@@ -1,10 +1,11 @@
 #include "Board.h"
 
 #include <algorithm>
+#include <array>
 
 #include "Bitboard.h"
 
-Board Board::makeMove( const Move& move )
+Board Board::makeMove( const Move* move )
 {
     Board board( *this );
 
@@ -13,14 +14,14 @@ Board Board::makeMove( const Move& move )
     return board;
 }
 
-void Board::applyMove( const Move& move )
+void Board::applyMove( const Move* move )
 {
     Log::Trace( [&] ( const Log::Logger& logger )
     {
-        logger << "Apply move: " << move.toString() << " for " << Piece::toColorString( activeColor ) << std::endl;
+        logger << "Apply move: " << move->toString() << " for " << Piece::toColorString( activeColor ) << std::endl;
     } );
 
-    if ( move.isNullMove() )
+    if ( move->isNullMove() )
     {
         // To be honest, not sure what to do here - return an unchanged board, or an updated one with no move made
         // but other attributes updated as though a move had been made and it was now the other side's go?
@@ -29,12 +30,15 @@ void Board::applyMove( const Move& move )
     }
 
     // Store this for later tests
-    unsigned char movingPiece = pieceAt( move.getFrom() ); // Will not be Piece::NOTHING
-    unsigned char capturedPiece = pieceAt( move.getTo() ); // May be Piece::NOTHING
+    unsigned short moveFrom = move->getFrom();
+    unsigned short moveTo = move->getTo();
+
+    unsigned char movingPiece = pieceAt( moveFrom ); // Will not be Piece::NOTHING
+    unsigned char capturedPiece = pieceAt( moveTo ); // May be Piece::NOTHING
 
     // Make the main part of the move and then check for other actions
 
-    movePiece( move.getFrom(), move.getTo() );
+    movePiece( moveFrom, moveTo );
 
     // Handle castling - check the piece that has just moved and work it out from there
     // TODO use Move's new knowledge about whether it is a castling move
@@ -44,13 +48,13 @@ void Board::applyMove( const Move& move )
         // Even if (eg) the black king has made it to E1 and gets caught up in this code inaccurately, it still means
         // white can't castle because its king must be elsewhere...
 
-        if ( move.getFrom() == Board::E1 )
+        if ( moveFrom == Board::E1 )
         {
-            if ( move.getTo() == Board::C1 )
+            if ( moveTo == Board::C1 )
             {
                 movePiece( Board::A1, Board::D1 );
             }
-            else if ( move.getTo() == Board::G1 )
+            else if ( moveTo == Board::G1 )
             {
                 movePiece( Board::H1, Board::F1 );
             }
@@ -58,13 +62,13 @@ void Board::applyMove( const Move& move )
             // White king has moved - no more castling
             castlingRights.removeWhiteCastlingRights();
         }
-        else if ( move.getFrom() == Board::E8 )
+        else if ( moveFrom == Board::E8 )
         {
-            if ( move.getTo() == Board::C8 )
+            if ( moveTo == Board::C8 )
             {
                 movePiece( Board::A8, Board::D8 );
             }
-            else if ( move.getTo() == Board::G8 )
+            else if ( moveTo == Board::G8 )
             {
                 movePiece( Board::H8, Board::F8 );
             }
@@ -76,19 +80,19 @@ void Board::applyMove( const Move& move )
 
     // if any piece has moved from or to (eg) H1, then white kingside castling is prevented, so we don't need
     // more detailed tests here
-    if ( move.getFrom() == Board::H1 || move.getTo() == Board::H1 )
+    if ( moveFrom == Board::H1 || moveTo == Board::H1 )
     {
         castlingRights.removeWhiteKingsideCastlingRights();
     }
-    if ( move.getFrom() == Board::A1 || move.getTo() == Board::A1 )
+    if ( moveFrom == Board::A1 || moveTo == Board::A1 )
     {
         castlingRights.removeWhiteQueensideCastlingRights();
     }
-    if ( move.getFrom() == Board::H8 || move.getTo() == Board::H8 )
+    if ( moveFrom == Board::H8 || moveTo == Board::H8 )
     {
         castlingRights.removeBlackKingsideCastlingRights();
     }
-    if ( move.getFrom() == Board::A8 || move.getTo() == Board::A8 )
+    if ( moveFrom == Board::A8 || moveTo == Board::A8 )
     {
         castlingRights.removeBlackQueensideCastlingRights();
     }
@@ -100,19 +104,19 @@ void Board::applyMove( const Move& move )
 
     // Promotions
 
-    if ( move.isPromotion() )
+    if ( move->isPromotion() )
     {
-        setPiece( move.getTo(), move.getPromotionPiece( activeColor ) );
+        setPiece( moveTo, move->getPromotionPiece( activeColor ) );
 
         Log::Trace( [&] ( const Log::Logger& logger )
         {
-            logger << "Handling promotion to " << Piece::toFENString( move.getPromotionPiece( activeColor ) ) << std::endl;
+            logger << "Handling promotion to " << Piece::toFENString( move->getPromotionPiece( activeColor ) ) << std::endl;
         } );
     }
 
     // En-passant
 
-    if ( move.getTo() == enPassantIndex )
+    if ( moveTo == enPassantIndex )
     {
         if ( Piece::isPawn( movingPiece ) )
         {
@@ -150,9 +154,9 @@ void Board::applyMove( const Move& move )
 
     if ( Piece::isPawn( movingPiece ) )
     {
-        unsigned short file = Utilities::indexToFile( move.getFrom() );
+        unsigned short file = Utilities::indexToFile( moveFrom );
 
-        if ( Utilities::indexToRank( move.getFrom() ) == RANK_2 && Utilities::indexToRank( move.getTo() ) == RANK_4 )
+        if ( Utilities::indexToRank( moveFrom ) == RANK_2 && Utilities::indexToRank( moveTo ) == RANK_4 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_3 );
 
@@ -161,7 +165,7 @@ void Board::applyMove( const Move& move )
                 logger << "En-passant square: " << Utilities::indexToSquare( enPassantIndex ) << std::endl;
             } );
         }
-        else if ( Utilities::indexToRank( move.getFrom() ) == RANK_7 && Utilities::indexToRank( move.getTo() ) == RANK_5 )
+        else if ( Utilities::indexToRank( moveFrom ) == RANK_7 && Utilities::indexToRank( moveTo ) == RANK_5 )
         {
             enPassantIndex = Utilities::squareToIndex( file, RANK_6 );
 
@@ -339,12 +343,12 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
-std::vector<Move> Board::getMoves()
+std::unique_ptr<std::vector<Move*>> Board::getMoves()
 { 
     bool isWhite = Piece::isWhite( activeColor );
 
     // Worker variables
-    std::vector<Move> moves;
+    std::vector<Move*> moves;
 
     unsigned long long mask = 1;
     unsigned short index;
@@ -562,20 +566,20 @@ std::vector<Move> Board::getMoves()
 
     // Make the move and test whether it is really legal, not just pseudo legal
     unsigned long long protectedSquares;
-    for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); )
+    for ( std::vector<Move*>::iterator it = moves.begin(); it != moves.end(); )
     {
-        Move& move = *it;
+        Move* move = *it;
         Board testBoard = makeMove( move );
 
         // Which squares are we testing? Just the king for check, or the squares it passes
         // through when castling
-        if ( move.isCastling() )
+        if ( move->isCastling() )
         {
-            if ( move.isKingsideCastle() )
+            if ( move->isKingsideCastle() )
             {
                 protectedSquares = ( isWhite ? 0b01110000ull : 0b01110000ull << 56 );
             }
-            else // if ( move.isQueensideCastle() )
+            else // if ( move->isQueensideCastle() )
             {
                 protectedSquares = ( isWhite ? 0b00011100ull : 0b00011100ull << 56 );
             }
@@ -598,13 +602,13 @@ std::vector<Move> Board::getMoves()
 
     Log::Trace( [&] ( const Log::Logger& logger )
     {
-        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++ )
+        for ( std::vector<Move*>::iterator it = moves.begin(); it != moves.end(); it++ )
         {
-            logger << (*it).toString() << ". Promotion? " << ( *it ).isPromotion() << ". Castling? " << ( *it ).isCastling() << std::endl;
+            logger << (*it)->toString() << ". Promotion? " << (*it)->isPromotion() << ". Castling? " << (*it)->isCastling() << std::endl;
         }
     } );
 
-    return moves;
+    return std::make_unique<std::vector<Move*>>( moves );
 }
 
 /// <summary>
@@ -766,8 +770,7 @@ void Board::validateCastlingRights()
 
 bool Board::isTerminal( short* result )
 {
-    std::vector<Move> moves = getMoves();
-    if ( moves.size() == 0 )
+    if ( getMoves()->size() == 0 )
     {
         unsigned long long king = makePieceBitboard( Piece::ownKingPiece( activeColor ) );
         if ( failsCheckTests( king, !Piece::isWhite( activeColor ) ) )

@@ -1,6 +1,6 @@
 #include "Evaluation.h"
 
-#include <vector>
+#include <list>
 
 #include "Board.h"
 #include "Move.h"
@@ -130,12 +130,12 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     if ( maximising )
     {
         score = std::numeric_limits<short>::lowest();
-        std::vector<Move> moves = board.getMoves();
+        std::unique_ptr<std::vector<Move*>> moves = board.getMoves();
 
         int count = 0;
-        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++, count++ )
+        for ( std::vector<Move*>::iterator it = moves->begin(); it != moves->end(); it++, count++ )
         {
-            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising, color );
+            short evaluation = minimax( board.makeMove( *it ), depth - 1, alpha, beta, !maximising, color );
 
             if ( evaluation > score )
             {
@@ -149,7 +149,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             {
                 Log::Debug( [&] ( const Log::Logger& logger )
                 {
-                    logger << "Exiting maximising after " << count << "/" << moves.size() << " moves considered" << std::endl;
+                    logger << "Exiting maximising after " << count << "/" << moves->size() << " moves considered" << std::endl;
                 } );
                 break;
             }
@@ -160,12 +160,12 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     else
     {
         score = std::numeric_limits<short>::max();
-        std::vector<Move> moves = board.getMoves();
+        std::unique_ptr<std::vector<Move*>> moves = board.getMoves();
 
         int count = 0;
-        for ( std::vector<Move>::iterator it = moves.begin(); it != moves.end(); it++, count++ )
+        for ( std::vector<Move*>::iterator it = moves->begin(); it != moves->end(); it++, count++ )
         {
-            short evaluation = minimax( board.makeMove( *( it ) ), depth - 1, alpha, beta, !maximising, color );
+            short evaluation = minimax( board.makeMove( *it ), depth - 1, alpha, beta, !maximising, color );
 
             if ( evaluation < score )
             {
@@ -179,7 +179,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
             {
                 Log::Debug( [&] ( const Log::Logger& logger )
                 {
-                    logger << "Exiting minimising after " << count << "/" << moves.size() << " moves considered" << std::endl;
+                    logger << "Exiting minimising after " << count << "/" << moves->size() << " moves considered" << std::endl;
                 } );
                 break;
             }

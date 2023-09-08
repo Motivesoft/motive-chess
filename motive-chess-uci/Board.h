@@ -108,7 +108,7 @@ private:
     /// Applies move to this board
     /// </summary>
     /// <param name="move">the move</param>
-    void applyMove( const Move& move );
+    void applyMove( const Move* move );
 
     void validateCastlingRights();
 
@@ -286,9 +286,9 @@ public:
     /// </summary>
     /// <param name="move">the move</param>
     /// <returns>a new board</returns>
-    Board makeMove( const Move& move );
+    Board makeMove( const Move* move );
 
-    std::vector<Move> getMoves();
+    std::unique_ptr<std::vector<Move*>> getMoves();
 
     /// <summary>
     /// Looks for terminal positions and reports back with details as applied to the current board

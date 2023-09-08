@@ -99,9 +99,9 @@ public:
             moveBits |= EP_CAPTURE_MASK;
             return *this;
         }
-        Move build()
+        Move* build()
         {
-            return Move( moveBits );
+            return new Move( moveBits );
         }
     };
 
@@ -110,7 +110,7 @@ public:
         return Builder( from, to );
     }
 
-    static Move fromString( const std::string& moveString );
+    static Move* fromString( const std::string& moveString );
 
     static const Move nullMove;
 
@@ -126,7 +126,6 @@ public:
 
     virtual ~Move()
     {
-
     }
 
     inline bool operator == ( const Move& move ) const
@@ -202,3 +201,8 @@ public:
     std::string toString() const;
 };
 
+template<typename T> class MoveArray
+{
+private:
+public:
+}

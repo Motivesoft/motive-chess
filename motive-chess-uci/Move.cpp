@@ -25,7 +25,7 @@ Move::Move( unsigned short from,
     moveBits |= castlingQueenside ? CASTLE_QUEENSIDE : 0;
 }
 
-Move Move::fromString( const std::string& moveString )
+Move* Move::fromString( const std::string& moveString )
 {
     // Contains a promotion?
     if ( moveString.length() > 4 )

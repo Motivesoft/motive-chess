@@ -21,3 +21,11 @@ When black being considered and white loses, terminal: -1
 
 position fen 7K/r7/kr6/8/8/8/8/8 b - -
 go searchmoves b6b1 b6b8 b6g6 depth 1
+
+
+
+position startpos moves e2e4 e7e5 b1c3 b8c6 a1b1 g8f6 h2h3 f8c5 c3a4 f6e4 a4c5 e4c5 g1f3 e8g8 h1g1 f8e8 d2d3 e5e4 d3e4 c
+5e4 f1d3 e4c3
+
+
+R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNN1KB1 218 moves
