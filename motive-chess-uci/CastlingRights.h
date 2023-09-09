@@ -126,22 +126,22 @@ public:
         rights &= ~BLACK_QUEENSIDE;
     }
 
-    inline bool canWhiteCastleKingside()
+    inline bool canWhiteCastleKingside() const
     {
         return rights & WHITE_KINGSIDE;
     }
 
-    inline bool canWhiteCastleQueenside()
+    inline bool canWhiteCastleQueenside() const
     {
         return rights & WHITE_QUEENSIDE;
     }
 
-    inline bool canBlackCastleKingside()
+    inline bool canBlackCastleKingside() const
     {
         return rights & BLACK_KINGSIDE;
     }
 
-    inline bool canBlackCastleQueenside()
+    inline bool canBlackCastleQueenside() const
     {
         return rights & BLACK_QUEENSIDE;
     }

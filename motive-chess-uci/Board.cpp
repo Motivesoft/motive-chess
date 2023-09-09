@@ -5,9 +5,9 @@
 
 #include "Bitboard.h"
 
-std::unique_ptr<Board> Board::makeMove( Move* move )
+Board* Board::makeMove( Move* move ) const
 {
-    std::unique_ptr<Board> board = std::make_unique<Board>( *this );
+    Board* board = new Board( *this );
 
     board->applyMove( move );
 
@@ -346,7 +346,7 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
-std::unique_ptr<MoveArray> Board::getMoves()
+std::unique_ptr<MoveArray> Board::getMoves() const
 { 
     bool isWhite = Piece::isWhite( activeColor );
 
@@ -537,7 +537,7 @@ std::unique_ptr<MoveArray> Board::getMoves()
     for ( size_t loop = 0; loop < moves->count(); )
     {
         Move* move = ( *moves )[ loop ];
-        std::unique_ptr<Board> testBoard = makeMove( move );
+        Board* testBoard = makeMove( move );
 
         // Which squares are we testing? Just the king for check, or the squares it passes
         // through when castling
@@ -737,7 +737,7 @@ void Board::validateCastlingRights()
     } );
 }
 
-bool Board::isTerminal( short* result )
+bool Board::isTerminal( short* result ) const
 {
     std::unique_ptr<MoveArray> moves = getMoves();
     if ( moves->count() == 0 )

@@ -54,7 +54,7 @@ private:
     volatile bool broadcastThinkingOutcome;
 
     std::thread* thinkingThread;
-    std::unique_ptr<Board> thinkingBoard;
+    Board* thinkingBoard;
 
     GameContext* gameContext;
 
@@ -116,10 +116,10 @@ private:
     void positionImpl( const std::string& fen, std::vector<std::string> moves );
     void goImpl( GoContext* goContext );
 
-    unsigned long perftImpl( int depth, std::unique_ptr<Board>& board, bool divide = false );
+    unsigned long perftImpl( int depth, Board* board, bool divide = false );
 
-    void perftDepth( std::unique_ptr<Board>& board, int depth );
-    void perftRange( std::unique_ptr<Board>& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults );
+    void perftDepth( Board* board, int depth );
+    void perftRange( Board* board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults );
     void perftFile( std::string& filename );
 
     void initializeImpl();

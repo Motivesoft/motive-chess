@@ -689,7 +689,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
         }
 
         Fen fen = Fen::fromPosition( fenString );
-        std::unique_ptr<Board> board = Board::fromFEN( fen );
+        Board* board = Board::fromFEN( fen );
 
         if ( expectedResults.empty() )
         {
@@ -720,7 +720,7 @@ void Engine::perftCommand( std::vector<std::string>& arguments, bool expectsDept
 }
 
 // Helper methods
-void Engine::perftDepth( std::unique_ptr<Board>& board, int depth )
+void Engine::perftDepth( Board* board, int depth )
 {
     clock_t start = clock();
     unsigned long nodes = perftImpl( depth, board, true );
@@ -735,7 +735,7 @@ void Engine::perftDepth( std::unique_ptr<Board>& board, int depth )
     Log::Info << "Total node count at depth " << depth << " is " << nodes << ". Time " << elapsed << "s (" << longNPS << " nps)" << std::endl;
 }
 
-void Engine::perftRange( std::unique_ptr<Board>& board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults )
+void Engine::perftRange( Board* board, std::vector<std::pair<unsigned int, unsigned int>> expectedResults )
 {
     for ( std::vector<std::pair<unsigned int, unsigned int>>::iterator it = expectedResults.begin(); it != expectedResults.end(); it++ )
     {
@@ -853,7 +853,7 @@ void Engine::stopImpl( ThinkingOutcome thinkingOutcome )
     delete thinkingThread;
     thinkingThread = nullptr;
 
-    thinkingBoard.release();
+    delete thinkingBoard;
     thinkingBoard = nullptr;
 }
 
@@ -947,7 +947,7 @@ void Engine::goImpl( GoContext* goContext )
     broadcastThinkingOutcome = true;
 
     // Construct the position to think from
-    std::unique_ptr<Board> thinkingBoard = Board::fromFEN( gameContext->getFEN() );
+    Board* thinkingBoard = Board::fromFEN( gameContext->getFEN() );
     for( size_t loop = 0; loop < gameContext->getMoves().size(); loop++ )
     {
         Move move = gameContext->getMoves()[ loop ];
@@ -955,14 +955,14 @@ void Engine::goImpl( GoContext* goContext )
     }
 
     // Use this as the board to work from
-    thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard.get(), goContext);
+    thinkingThread = new std::thread( &Engine::thinking, this, thinkingBoard, goContext);
 
     Log::Trace << "Thread " << thinkingThread->get_id() << " running" << std::endl;
 }
 
 // Special perft command
 
-unsigned long Engine::perftImpl( int depth, std::unique_ptr<Board>& board, bool divide )
+unsigned long Engine::perftImpl( int depth, Board* board, bool divide )
 {
     unsigned long nodes = 0;
 
@@ -976,7 +976,7 @@ unsigned long Engine::perftImpl( int depth, std::unique_ptr<Board>& board, bool 
     for( size_t loop = 0; loop < moves->count(); loop++ )
     {
         Move* move = (*moves)[ loop ];
-        std::unique_ptr<Board> tBoard = board->makeMove( move );
+        Board* tBoard = board->makeMove( move );
 
         if ( divide )
         {

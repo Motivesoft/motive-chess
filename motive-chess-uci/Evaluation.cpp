@@ -33,7 +33,7 @@ short Evaluation::pawnAdvancementFile[] =
 /// </summary>
 /// <param name="board">the board</param>
 /// <returns>a centipawn score</returns>
-short Evaluation::scorePosition( const std::unique_ptr<Board>& board, unsigned char color )
+short Evaluation::scorePosition( const Board* board, unsigned char color )
 {
     short score = 0;
 
@@ -65,7 +65,7 @@ short Evaluation::scorePosition( const std::unique_ptr<Board>& board, unsigned c
     return score;
 }
 
-short Evaluation::minimax( const std::unique_ptr<Board>& board, unsigned short depth, short alphaInput, short betaInput, bool maximising, unsigned char color )
+short Evaluation::minimax( const Board* board, unsigned short depth, short alphaInput, short betaInput, bool maximising, unsigned char color )
 {
     static const std::string spaces( "                                                                                                                  " );
     

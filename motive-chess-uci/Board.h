@@ -241,9 +241,9 @@ public:
         LOG_TRACE( "ConstCopyConstructor" );
     };
 
-    static std::unique_ptr<Board> fromFEN( const Fen& fen )
+    static Board* fromFEN( const Fen& fen )
     {
-        return std::make_unique<Board>( fen.pieces, fen.activeColor, fen.castlingRights, fen.enPassantIndex, fen.halfmoveClock, fen.fullmoveNumber );
+        return new Board( fen.pieces, fen.activeColor, fen.castlingRights, fen.enPassantIndex, fen.halfmoveClock, fen.fullmoveNumber );
     }
 
     virtual ~Board()
@@ -286,18 +286,18 @@ public:
     /// </summary>
     /// <param name="move">the move</param>
     /// <returns>a new board</returns>
-    std::unique_ptr<Board> makeMove( Move* move );
+    Board* makeMove( Move* move ) const;
 
-    std::unique_ptr<MoveArray> getMoves();
+    std::unique_ptr<MoveArray> getMoves() const;
 
     /// <summary>
     /// Looks for terminal positions and reports back with details as applied to the current board
     /// </summary>
     /// <param name="result">pointer to accept the outcome of a terminal position -1/0/+1</param>
     /// <returns>true if the position is terminal</returns>
-    bool isTerminal( short* result );
+    bool isTerminal( short* result ) const;
 
-    inline unsigned char getActiveColor()
+    inline unsigned char getActiveColor() const
     {
         return activeColor;
     }
