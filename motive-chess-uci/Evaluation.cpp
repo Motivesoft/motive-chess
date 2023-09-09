@@ -16,8 +16,6 @@ short Evaluation::pieceWeights[] =
 /// <returns>a centipawn score</returns>
 short Evaluation::scorePosition( const Board& board, unsigned char color )
 {
-    Utilities::dumpBoard( board.pieces );
-
     short score = 0;
 
     // Piece differential
