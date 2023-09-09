@@ -1,14 +1,15 @@
 #include "Board.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "Bitboard.h"
 
-Board Board::makeMove( Move* move )
+std::unique_ptr<Board> Board::makeMove( Move* move )
 {
-    Board board( *this );
+    std::unique_ptr<Board> board = std::make_unique<Board>( *this );
 
-    board.applyMove( move );
+    board->applyMove( move );
 
     return board;
 }
@@ -189,7 +190,10 @@ void Board::applyMove( Move* move )
     {
         halfmoveClock = 0;
 
-        Log::Trace << "Reset halfmove clock to zero" << std::endl;
+        Log::Trace( [&] ( const Log::Logger& logger )
+        {
+            logger << "Reset halfmove clock to zero" << std::endl;
+        } );
     }
 
     // Increment move number
@@ -197,7 +201,7 @@ void Board::applyMove( Move* move )
     {
         fullmoveNumber++;
 
-        LOG_TRACE( [&] ( const Log::Logger& logger )
+        Log::Trace( [&] ( const Log::Logger& logger )
         {
             logger << "Full move incrementing to " << fullmoveNumber << std::endl;
         } );
@@ -533,7 +537,7 @@ std::unique_ptr<MoveArray> Board::getMoves()
     for ( size_t loop = 0; loop < moves->count(); )
     {
         Move* move = ( *moves )[ loop ];
-        Board testBoard = makeMove( move );
+        std::unique_ptr<Board> testBoard = makeMove( move );
 
         // Which squares are we testing? Just the king for check, or the squares it passes
         // through when castling
@@ -550,10 +554,10 @@ std::unique_ptr<MoveArray> Board::getMoves()
         }
         else
         {
-            protectedSquares = testBoard.makePieceBitboard( Piece::ownKingPiece( activeColor) );
+            protectedSquares = testBoard->makePieceBitboard( Piece::ownKingPiece( activeColor) );
         }
 
-        if ( testBoard.failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
+        if ( testBoard->failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
         {
             moves->remove( loop );
         }

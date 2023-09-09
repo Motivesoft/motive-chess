@@ -33,14 +33,14 @@ short Evaluation::pawnAdvancementFile[] =
 /// </summary>
 /// <param name="board">the board</param>
 /// <returns>a centipawn score</returns>
-short Evaluation::scorePosition( Board board, unsigned char color )
+short Evaluation::scorePosition( const std::unique_ptr<Board>& board, unsigned char color )
 {
     short score = 0;
 
     // Piece differential
     for ( int index = 0; index < 64; index++ )
     {
-        unsigned char piece = board.pieceAt( index );
+        unsigned char piece = board->pieceAt( index );
 
         // Score this from one player's perspective, always
         score += ( Piece::isColor( piece, color ) ? pieceWeights[ piece & 0b00000111 ] : -pieceWeights[ piece & 0b00000111 ] );
@@ -49,13 +49,13 @@ short Evaluation::scorePosition( Board board, unsigned char color )
     // Placement
     for ( int index = 0; index < 64; index++ )
     {
-        unsigned char piece = board.pieceAt( index );
+        unsigned char piece = board->pieceAt( index );
 
         if ( ( piece & 0b00000111 ) == 0b00000001 ) // PAWN
         {
             auto& advancement = Piece::isWhite( piece ) ? pawnAdvancementWhite : pawnAdvancementBlack;
 
-            if ( !Piece::isColor( piece, board.activeColor ) )
+            if ( !Piece::isColor( piece, board->activeColor ) )
             {
 //                score += advancement[ Utilities::indexToRank( index ) ] * pawnAdvancementFile[ Utilities::indexToFile( index ) ];
             }
@@ -65,7 +65,7 @@ short Evaluation::scorePosition( Board board, unsigned char color )
     return score;
 }
 
-short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, short betaInput, bool maximising, unsigned char color )
+short Evaluation::minimax( const std::unique_ptr<Board>& board, unsigned short depth, short alphaInput, short betaInput, bool maximising, unsigned char color )
 {
     static const std::string spaces( "                                                                                                                  " );
     
@@ -82,7 +82,7 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
 
     // Simple win semantics
     short score = 0;
-    if ( board.isTerminal( &score ) )
+    if ( board->isTerminal( &score ) )
     {
         // Why? Win (+1), Loss (-1) or Stalemate (0)
         if ( score == 0 )
@@ -92,14 +92,14 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
         }
         else
         {
-            if ( board.getActiveColor() != color )
+            if ( board->getActiveColor() != color )
             {
                 score = -score;
             } 
 
             Log::Debug( [&] ( const Log::Logger logger )
             {
-                logger << "Score: " << score << " Active color: " << Piece::toColorString( board.getActiveColor() ) << " Provided color: " << Piece::toColorString( color ) << std::endl;
+                logger << "Score: " << score << " Active color: " << Piece::toColorString( board->getActiveColor() ) << " Provided color: " << Piece::toColorString( color ) << std::endl;
             } );
             
             // Give it a critially large value, but not quite at lowest/highest...
@@ -130,12 +130,12 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     if ( maximising )
     {
         score = std::numeric_limits<short>::lowest();
-        std::unique_ptr<MoveArray> moves = board.getMoves();
+        std::unique_ptr<MoveArray> moves = board->getMoves();
 
         for( size_t loop = 0; loop < moves->count(); loop++ )
         {
             Move* move = ( *moves )[ loop ];
-            short evaluation = minimax( board.makeMove( move ), depth - 1, alpha, beta, !maximising, color );
+            short evaluation = minimax( board->makeMove(move), depth - 1, alpha, beta, !maximising, color);
 
             if ( evaluation > score )
             {
@@ -160,12 +160,12 @@ short Evaluation::minimax( Board board, unsigned short depth, short alphaInput, 
     else
     {
         score = std::numeric_limits<short>::max();
-        std::unique_ptr<MoveArray> moves = board.getMoves();
+        std::unique_ptr<MoveArray> moves = board->getMoves();
 
         for( size_t loop = 0; loop < moves->count(); loop++ )
         {
             Move* move = ( *moves )[ loop ];
-            short evaluation = minimax( board.makeMove( move ), depth - 1, alpha, beta, !maximising, color );
+            short evaluation = minimax( board->makeMove( move ), depth - 1, alpha, beta, !maximising, color );
 
             if ( evaluation < score )
             {

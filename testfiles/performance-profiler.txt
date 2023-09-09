@@ -1,0 +1,3 @@
+uci
+perft file performance-profiler.epd
+quit

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 
 #include "CastlingRights.h"
 #include "Fen.h"
@@ -196,6 +197,7 @@ public:
         fullmoveNumber( 1 )
     {
         std::fill( pieces.begin(), pieces.end(), Piece::emptyPiece() );
+        LOG_TRACE( "DefaultConstructor" );
     };
 
     Board( std::array< unsigned char, 64 > pieces,
@@ -212,6 +214,7 @@ public:
         fullmoveNumber( fullmoveNumber )
     {
         validateCastlingRights();
+        LOG_TRACE( "FullConstructor" );
     };
 
     Board( Board& board ) :
@@ -223,6 +226,7 @@ public:
         fullmoveNumber( board.fullmoveNumber )
     {
         // Plain copy, nothing to do
+        LOG_TRACE( "CopyConstructor" );
     };
 
     Board( const Board& board ) :
@@ -234,22 +238,18 @@ public:
         fullmoveNumber( board.fullmoveNumber )
     {
         // Plain copy, nothing to do
+        LOG_TRACE( "ConstCopyConstructor" );
     };
 
-    Board( const Fen& fen ) :
-        pieces( fen.pieces ),
-        activeColor( fen.activeColor ),
-        castlingRights( fen.castlingRights ),
-        enPassantIndex( fen.enPassantIndex ),
-        halfmoveClock( fen.halfmoveClock ),
-        fullmoveNumber( fen.fullmoveNumber )
+    static std::unique_ptr<Board> fromFEN( const Fen& fen )
     {
-        validateCastlingRights();
+        return std::make_unique<Board>( fen.pieces, fen.activeColor, fen.castlingRights, fen.enPassantIndex, fen.halfmoveClock, fen.fullmoveNumber );
     }
 
     virtual ~Board()
     {
         // Do nothing
+        LOG_TRACE( "Destructor" );
     }
 
     bool operator == ( const Board& board ) const
@@ -286,7 +286,7 @@ public:
     /// </summary>
     /// <param name="move">the move</param>
     /// <returns>a new board</returns>
-    Board makeMove( Move* move );
+    std::unique_ptr<Board> makeMove( Move* move );
 
     std::unique_ptr<MoveArray> getMoves();
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <string>
 
 #include "CastlingRights.h"
@@ -23,7 +24,7 @@ private:
 
     std::string nextWord( std::string::iterator& it, std::string::iterator& end );
 
-private:
+public:
     Fen( const std::array<unsigned char,64>& pieces,
          const unsigned char activeColor,
          const CastlingRights& castlingRights,
@@ -40,21 +41,6 @@ private:
 
     }
 
-public:
-    inline static const std::string startingPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-    static Fen fromStartingPosition()
-    {
-        return fromPosition( startingPosition );
-    }
-
-    static Fen fromPosition( std::string position )
-    {
-        return Fen( position );
-    }
-
-    std::string toString();
-
     Fen( Fen& fen ) :
         pieces( fen.pieces ),
         activeColor( fen.activeColor ),
@@ -70,6 +56,20 @@ public:
     {
 
     }
+
+    static Fen fromStartingPosition()
+    {
+        return fromPosition( startingPosition );
+    }
+
+    static Fen fromPosition( std::string position )
+    {
+        return Fen( position );
+    }
+
+    inline static const std::string startingPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    std::string toString();
 
     void dumpBoard( const std::string title = "" ) const;
 
