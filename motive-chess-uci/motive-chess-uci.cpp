@@ -207,6 +207,17 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
         }
     }
 
+    it = std::find( arguments.begin(), arguments.end(), "-tee" );
+    if ( it != arguments.end() )
+    {
+        // Take the next argument as a filename
+        ++it;
+        if ( it != arguments.end() )
+        {
+            Log::setDestination( new TeeLogDestination( *it ) );
+        }
+    }
+
     // Complete logging setup now we have determined its configuration
 
     Log::getDestination()->setLevel( logLevel );
@@ -268,6 +279,7 @@ bool processCommandLine( int argc, char** argv, bool* benchmarking, Streams& str
         std::cout << "  -input <file>   - read input from file rather than stdin" << std::endl;
         std::cout << "  -output <file>  - write output to file rather than stdout" << std::endl;
         std::cout << "  -logfile <file> - write logging to file rather than stderr" << std::endl;
+        std::cout << "  -tee <file>     - write logging to file and stderr" << std::endl;
         std::cout << std::endl;
 
         return false;

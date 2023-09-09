@@ -43,14 +43,14 @@ public:
             // Nothing to do here
         }
 
+        virtual void setLevel( Log::Level level )
+        {
+            this->level = level;
+        }
+
         inline Log::Level getLevel() const
         {
             return level;
-        }
-
-        inline void setLevel( Log::Level level )
-        {
-            this->level = level;
         }
 
         inline bool isIncluded( Log::Level level ) const 
@@ -323,5 +323,46 @@ public:
     inline void write( Log::Level level, const char* message ) override
     {
         // Nothing to do here
+    }
+};
+
+class TeeLogDestination : public Log::Destination
+{
+private:
+    FileLogDestination* fileLogDestination;
+    ConsoleLogDestination* consoleLogDestination;
+
+public:
+    TeeLogDestination( const std::string& filename, Log::Level level = Log::Level::INFO ) :
+        TeeLogDestination( filename.c_str(), level )
+    {
+        // Do nothing. All the action deferred to the other constructor
+    }
+
+    TeeLogDestination( const char* filename, Log::Level level = Log::Level::INFO ) :
+        Log::Destination( level ),
+        fileLogDestination( new FileLogDestination( filename, level ) ),
+        consoleLogDestination( new ConsoleLogDestination() )
+    {
+        // Nothing to do here
+    }
+
+    virtual ~TeeLogDestination()
+    {
+        delete fileLogDestination;
+        delete consoleLogDestination;
+    }
+
+    inline void write( Log::Level level, const char* message ) override
+    {
+        fileLogDestination->write( level, message );
+        consoleLogDestination->write( level, message );
+    }
+
+    void setLevel( Log::Level level ) override
+    {
+        this->level = level;
+        fileLogDestination->setLevel( level );
+        consoleLogDestination->setLevel( level );
     }
 };
