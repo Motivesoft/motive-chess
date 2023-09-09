@@ -1055,7 +1055,7 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
-                short score = Evaluation::score( board->makeMove( *it ) );
+                short score = Evaluation::scorePosition( board->makeMove( *it ), board->getActiveColor() );
 
                 if ( score > bestScore )
                 {

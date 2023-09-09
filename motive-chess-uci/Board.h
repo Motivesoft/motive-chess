@@ -111,7 +111,7 @@ private:
 
     void validateCastlingRights();
 
-    bool failsCheckTests( unsigned long long protectedSquares ) const;
+    bool failsCheckTests( unsigned long long protectedSquares, bool asWhite ) const;
 
     unsigned long long movesInARay( unsigned long long possibleMoves,
                                     unsigned long long rayMask,
@@ -296,6 +296,18 @@ public:
     Board makeMove( const Move& move ) const;
 
     std::vector<Move> getMoves() const;
+
+    /// <summary>
+    /// Looks for terminal positions and reports back with details as applied to the current board
+    /// </summary>
+    /// <param name="result">pointer to accept the outcome of a terminal position -1/0/+1</param>
+    /// <returns>true if the position is terminal</returns>
+    bool isTerminal( short* result ) const;
+
+    inline unsigned char getActiveColor() const
+    {
+        return activeColor;
+    }
 
     friend class Evaluation;
 };
