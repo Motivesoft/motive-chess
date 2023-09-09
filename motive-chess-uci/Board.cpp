@@ -4,7 +4,7 @@
 
 #include "Bitboard.h"
 
-Board Board::makeMove( const Move& move )
+Board Board::makeMove( const Move& move ) const
 {
     Board board( *this );
 
@@ -268,7 +268,7 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
                                        unsigned long long enemyPieces,
                                        unsigned long long aboveMask,
                                        unsigned long long belowMask,
-                                       bool supportsCaptures )
+                                       bool supportsCaptures ) const
 {
     unsigned long long moves = 0;
     unsigned long long rayMoves = possibleMoves & rayMask;
@@ -339,7 +339,7 @@ unsigned long long Board::movesInARay( unsigned long long possibleMoves,
     return moves;
 }
 
-std::vector<Move> Board::getMoves()
+std::vector<Move> Board::getMoves() const
 { 
     bool isWhite = Piece::isWhite( activeColor );
 
@@ -582,7 +582,7 @@ std::vector<Move> Board::getMoves()
 /// </summary>
 /// <param name="protectedSquares">bitmask of square or squares to test</param>
 /// <returns>true if a square is under attack</returns>
-bool Board::failsCheckTests( unsigned long long protectedSquares )
+bool Board::failsCheckTests( unsigned long long protectedSquares ) const
 {
     // If any of the protected squares are attacked by this player, the test fails and should return true immediately
     // This will be called after making our move and so the state should be as though the opponent was about to play
@@ -737,7 +737,7 @@ void Board::validateCastlingRights()
 /// </summary>
 /// <param name="piece">the piece</param>
 /// <returns>the bitboard for that piece type and color</returns>
-unsigned long long Board::makePieceBitboard( unsigned char piece )
+unsigned long long Board::makePieceBitboard( unsigned char piece ) const
 {
     unsigned long long bitboard = 0;
 
@@ -758,7 +758,7 @@ void Board::makePieceBitboards( bool isWhite,
                                 unsigned long long& bishop,
                                 unsigned long long& rook,
                                 unsigned long long& queen,
-                                unsigned long long& king )
+                                unsigned long long& king ) const
 {
     pawn = knight = bishop = rook = queen = king = 0;
 
@@ -804,7 +804,7 @@ void Board::makePieceBitboards( bool isWhite,
 
 void Board::makePieceBitboards( bool isWhite,
                                 PieceBitboards& ownBitboards,
-                                PieceBitboards& enemyBitboards )
+                                PieceBitboards& enemyBitboards ) const
 {
     unsigned char colorMask = isWhite ? 0b00001000 : 0b00010000;
 

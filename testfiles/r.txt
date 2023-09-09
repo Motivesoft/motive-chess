@@ -1,0 +1,6 @@
+uci
+perft 5
+perft 5
+perft 5
+perft 5
+quit
