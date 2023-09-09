@@ -309,6 +309,11 @@ public:
         return activeColor;
     }
 
+    void dumpBoard() const
+    {
+        Utilities::dumpBoard( pieces );
+    }
+
     friend class Evaluation;
 };
 

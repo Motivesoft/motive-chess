@@ -550,7 +550,7 @@ std::vector<Move> Board::getMoves() const
             protectedSquares = testBoard.makePieceBitboard( isWhite ? Piece::WKING : Piece::BKING );
         }
 
-        if ( testBoard.failsCheckTests( protectedSquares, !Piece::isWhite( activeColor ) ) )
+        if ( testBoard.failsCheckTests( protectedSquares, !isWhite ) )
         {
             it = moves.erase( it );
         }
