@@ -304,7 +304,7 @@ void Engine::goCommand( std::vector<std::string>& arguments )
 {
     UCI_DEBUG << "Received go";
 
-    std::vector<std::string> searchMoves;
+    std::vector<Move> searchMoves;
     bool ponder = false;
     unsigned int wtime = 0;
     unsigned int btime = 0;
@@ -332,7 +332,7 @@ void Engine::goCommand( std::vector<std::string>& arguments )
                     break;
                 }
 
-                searchMoves.push_back( *it );
+                searchMoves.push_back( Move::fromString( *it ) );
             }
         }
         else if ( *it == "ponder" )
@@ -1021,41 +1021,96 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     // Test this repeatedly for interuptions
     engine->continueThinking = true;
 
+    unsigned short depth = context->getDepth();
+
     // OK, beging the thinking process - we have to test flags, but make sure we have a candidate move
     // before being interrupted - unless we are quitting
 
     Thoughts thoughts;
 
+    // TODO This is debug code. Remove when we're happy to lose it
+    Log::Debug << "Current position scoring: " << Evaluation::scorePosition( *board, board->getActiveColor() ) << std::endl;
+
     unsigned int loop = 0;
-    bool readyToMove = false;
-    while ( !readyToMove && !engine->quitting )
+    //while ( engine->continueThinking && !engine->quitting )
+    while ( !engine->quitting && ( engine->continueThinking || thoughts.getBestMove().isNullMove() ) )
     {
         do
         {
             std::vector<Move> candidateMoves = board->getMoves();
+
+            // Filter the moves down to the requested 'searchmoves' subset, if there is one
+            if ( !context->getSearchMoves().empty() )
+            {
+                for ( std::vector<Move>::iterator it = candidateMoves.begin(); it != candidateMoves.end(); )
+                {
+                    if ( std::find( context->getSearchMoves().begin(), context->getSearchMoves().end(), *it ) == context->getSearchMoves().end() )
+                    {
+                        it = candidateMoves.erase( it );
+                    }
+                    else
+                    {
+                        it++;
+                    }
+                }
+            }
+
             if ( candidateMoves.empty() )
             {
                 // TODO we need to decide what to do here. Return nullmove? something based on win/loss/draw?
-                Log::Debug << "No candidate moves" << std::endl;
+                Log::Info << "No candidate moves" << ( context->getSearchMoves().empty() ? "" : " match with searchmove list" ) << std::endl;
+                engine->continueThinking = false;
                 break;
             }
 
-            if ( candidateMoves.size() == 1 )
+            if ( candidateMoves.size() == 1 || depth == 0 )
             {
                 // Don't waste clock time analysing a forced move situation
                 thoughts = Thoughts( candidateMoves[ 0 ] );
 
                 Log::Debug << "Only one move available" << std::endl;
 
-                readyToMove = true;
+                engine->continueThinking = false;
                 break;
             }
+
+            // Sort moves - this is a bit coarse grained
+            // TODO CHS-99 reinstate
+            //std::sort( candidateMoves.begin(), candidateMoves.end(), [&] ( Move a, Move b )
+            //{
+            //    if ( a.isCapture() != b.isCapture() ) // includes en passant
+            //    {
+            //        return a.isCapture();
+            //    }
+            //    if ( a.isPromotion() != b.isPromotion() )
+            //    {
+            //        return a.isPromotion();
+            //    }
+            //    if ( a.isCastling() != b.isCastling() )
+            //    {
+            //        return a.isCastling();
+            //    }
+            //    return false;
+            //} );
+
+            // Start of minmax/alphabeta/negamax/whatever
+            // For each move at this level, use the recursive algorithm to arrive at a score and then go with the best
 
             Move bestMove = Move::nullMove;
             short bestScore = std::numeric_limits<short>::lowest();
             for ( std::vector<Move>::const_iterator it = candidateMoves.cbegin(); it != candidateMoves.cend(); it++ )
             {
-                short score = Evaluation::score( board->makeMove( *it ) );
+                Log::Debug( [&] ( const Log::Logger& logger )
+                {
+                    logger << "Considering " << ( *it ).toString() << std::endl;
+                } );
+
+                short score = Evaluation::minimax( board->makeMove( *it ),
+                                                   depth,
+                                                   std::numeric_limits<short>::lowest(),
+                                                   std::numeric_limits<short>::max(),
+                                                   false,
+                                                   board->getActiveColor() );
 
                 if ( score > bestScore )
                 {
@@ -1063,7 +1118,10 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
                     bestMove = *it;
                 }
 
-                Log::Debug << "Score for " << (*it).toString() << " is " << score << std::endl;
+                Log::Debug( [&] ( const Log::Logger& logger )
+                {
+                    logger << "--Score for " << ( *it ).toString() << " is " << score << std::endl;
+                } );
             }
 
             // If we haven't got a move in mind, establish one
@@ -1071,32 +1129,14 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
             {
                 thoughts = Thoughts( bestMove );
 
-                readyToMove = true;
+                engine->continueThinking = false;
             }
 
-            //if ( thoughts.getBestMove().isNullMove() )
-            //{
-            //    // TODO don't select target move randomly!
-            //    int random = std::rand();
-            //    int randomMove = random % candidateMoves.size();
-            //    thoughts = Thoughts( candidateMoves[ randomMove ] );
-
-            //    if ( candidateMoves.size() == 1 )
-            //    {
-            //        // Don't waste clock time analysing a forced move situation
-            //        Log::Debug << "Only one move available" << std::endl;
-            //        readyToMove = true;
-            //        break;
-            //    }
-            //}
-
-            // TODO do work here
-
             // TODO this probably wants to be a better check
-            if ( loop++ >= context->getDepth() )
+            if ( --depth == 0 )
             {
                 Log::Debug << "Reached search depth" << std::endl;
-                readyToMove = true;
+                engine->continueThinking = false;
                 break;
             }
         }
@@ -1107,13 +1147,13 @@ void Engine::thinking( Engine* engine, Board* board, GoContext* context )
     {
         if ( thoughts.getPonderMove().isNullMove() )
         {
-            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << std::endl;
+            Log::Info << "Broadcasting best move: " << thoughts.getBestMove().toString() << std::endl;
 
             engine->broadcaster.bestmove( thoughts.getBestMove().toString() );
         }
         else
         {
-            Log::Debug << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString() << std::endl;
+            Log::Info << "Broadcasting best move: " << thoughts.getBestMove().toString() << " with ponder: " << thoughts.getPonderMove().toString() << std::endl;
 
             engine->broadcaster.bestmove( thoughts.getBestMove().toString(), thoughts.getPonderMove().toString() );
         }

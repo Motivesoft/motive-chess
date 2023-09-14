@@ -6,11 +6,10 @@ class Evaluation
 {
 private:
     static short pieceWeights[ 8 ];
-    static short pawnAdvancementWhite[ 8 ];
-    static short pawnAdvancementBlack[ 8 ];
-    static short pawnAdvancementFile[ 8 ];
 
 public:
-    static short score( const Board& board );
+    static short scorePosition( const Board& board, unsigned char color );
+
+    static short minimax( const Board& board, unsigned short depth, short alpha, short beta, bool maximizing, unsigned char color );
 };
 

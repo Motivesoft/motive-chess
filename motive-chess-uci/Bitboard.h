@@ -7,8 +7,6 @@
 class Bitboard
 {
 private:
-    static std::unique_ptr<Bitboard> instance;
-
     static unsigned long long whitePawnMoves[ 64 ];
     static unsigned long long whitePawnCaptures[ 64 ];
     static unsigned long long blackPawnMoves[ 64 ];

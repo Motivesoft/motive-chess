@@ -1,0 +1,23 @@
+# Mate in 1
+position fen 7k/R7/KR6/8/8/8/8/8 w - -
+position fen 7K/r7/kr6/8/8/8/8/8 b - -
+
+# Take the pawn with no depth search, don't otherwise
+position fen r6k/p7/Q7/K7/8/8/8/8 w - -
+position fen R6K/P7/q7/k7/8/8/8/8 b - -
+
+# Philidor's mate (in 4) for white and black to test depth search
+position fen 4r2k/2pRP1pp/2p5/p4pN1/2Q3n1/q5P1/P3PP1P/6K1 w - - 0 1
+position fen 6k1/p3pp1p/Q5p1/2q3N1/P4Pn1/2P5/2Prp1PP/4R2K b - - 0 1
+
+
+
+
+
+
+
+When white being considered and black loses, terminal: +1
+When black being considered and white loses, terminal: -1
+
+position fen 7K/r7/kr6/8/8/8/8/8 b - -
+go searchmoves b6b1 b6b8 b6g6 depth 1

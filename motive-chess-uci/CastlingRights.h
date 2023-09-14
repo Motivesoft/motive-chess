@@ -84,14 +84,9 @@ public:
         return castlingRights;
     }
 
-    static const std::string toFENString( CastlingRights& castlingRights )
+    const std::string toString() const
     {
-        return castlingFENStrings[ castlingRights.rights ];
-    }
-
-    const std::string toString()
-    {
-        return toFENString( *this );
+        return castlingFENStrings[ rights ];
     }
 
     void removeWhiteCastlingRights()
@@ -126,22 +121,22 @@ public:
         rights &= ~BLACK_QUEENSIDE;
     }
 
-    inline bool canWhiteCastleKingside()
+    inline bool canWhiteCastleKingside() const
     {
         return rights & WHITE_KINGSIDE;
     }
 
-    inline bool canWhiteCastleQueenside()
+    inline bool canWhiteCastleQueenside() const
     {
         return rights & WHITE_QUEENSIDE;
     }
 
-    inline bool canBlackCastleKingside()
+    inline bool canBlackCastleKingside() const
     {
         return rights & BLACK_KINGSIDE;
     }
 
-    inline bool canBlackCastleQueenside()
+    inline bool canBlackCastleQueenside() const
     {
         return rights & BLACK_QUEENSIDE;
     }
