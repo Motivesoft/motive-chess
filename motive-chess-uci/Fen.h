@@ -6,7 +6,6 @@
 #include "CastlingRights.h"
 #include "Log.h"
 #include "Piece.h"
-#include "Utilities.h"
 
 class Fen
 {
@@ -71,6 +70,8 @@ public:
     {
 
     }
+
+    void dumpBoard( std::string title ) const;
 
     friend class Board;
 };

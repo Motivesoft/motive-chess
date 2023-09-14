@@ -801,3 +801,9 @@ void Board::makePieceBitboards( bool isWhite,
     ownBitboards.complete();
     enemyBitboards.complete();
 }
+
+
+void Board::dumpBoard( std::string title ) const
+{
+    Utilities::dumpBoard( pieces, title );
+}

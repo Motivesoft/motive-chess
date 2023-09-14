@@ -6,6 +6,7 @@
 #include "Fen.h"
 #include "Move.h"
 #include "Piece.h"
+#include "Utilities.h"
 
 class Board
 {
@@ -122,14 +123,6 @@ private:
                                     bool supportsCaptures = true ) const;
 
     unsigned long long makePieceBitboard( unsigned char piece ) const;
-
-    void makePieceBitboards( bool isWhite,
-                             unsigned long long& pawn,
-                             unsigned long long& knight,
-                             unsigned long long& bishop,
-                             unsigned long long& rook,
-                             unsigned long long& queen,
-                             unsigned long long& king ) const;
 
     /// <summary>
     /// A collection class for all bitmasks for one particular color.
@@ -309,10 +302,7 @@ public:
         return activeColor;
     }
 
-    void dumpBoard() const
-    {
-        Utilities::dumpBoard( pieces );
-    }
+    void dumpBoard( std::string title ) const;
 
     friend class Evaluation;
 };

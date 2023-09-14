@@ -77,18 +77,14 @@ private:
             }
         }
 
-        std::ostringstream& log( std::string prefix = "", const std::source_location location = std::source_location::current() )
+        std::ostringstream& log( std::string prefix = "" )
         {
-            this->location = location;
-
             os << prefix;
             return os;
         }
 
     private:
         std::ostringstream os;
-
-        std::source_location location;
 
         Engine& engine;
         Log::Level level;
